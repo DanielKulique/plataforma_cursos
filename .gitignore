@@ -1,0 +1,4 @@
+#ignorar os/as seguintes pastas/arquivos
+
+.env
+node_modules/

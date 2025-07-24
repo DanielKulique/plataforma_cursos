@@ -2,16 +2,30 @@
 require('dotenv').config();
 const express = require('express');
 const db = require('./src/config/database'); //importa dados de conexao bd
+const path = require('path');
 
-//cria instancia express
-const app = express();
-//define a porta
-const PORTA = 3000;
+//importa arquivos de rotas
+const cursosRoutes = require('./src/api/routes/cursos.routes');
+//const turmasRoutes = require('./src/api/routes/turmas.routes');
+//const matriculasRoutes = require('./src/api/routes/matricula.routes');
+//const usuariosRoutes = require('./src/api/routes/usuarios.routes');
 
-//cria rota teste
-app.get('/', (req, res) => {
+//aplicacao express
+const app = express(); //cria instancia express
+const PORTA = 3000; //define a porta
+
+//midleware essenciais
+app.use(express.json()); //permite receber dados em formato json
+
+app.use(express.static(path.join(__dirname, 'src', 'public')));
+
+//registro da rotas apis
+app.use('/api/cursos', cursosRoutes);
+
+/*app.get('/', (req, res) => {  //cria rota teste
     res.send('Servidor funcionando!');
 });
+*/
 
 app.get('/teste-db', async(req, res) => {
     try {

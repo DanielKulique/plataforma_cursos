@@ -9,9 +9,19 @@
 
 const express = require('express');
 const router = express.Router();
-const cursosController = require('../controllers/cursos.control');
+const cursosController = require('../controllers/cursos.controller');
+const { body } = require('express-validator');
 
 router.get('/', cursosController.listarTodos);
-router.get('/:id', cursosController.ListarCursoPorId);
+router.get('/:id', cursosController.listarCursoPorId);
+router.delete('/:id', cursosController.deletarCurso);
+router.post('/', body('nome_curso').notEmpty().withMessage('O nome do curso é obrigatório.'),
+    body('descricao').notEmpty().withMessage('A descrição do curso é obrigatória.'),
+    body('carga_horaria').isInt({ min: 1 }).withMessage('A carga horária deve ser um número inteiro positivo.'),
+    cursosController.criarCurso);
+router.put('/:id', body('nome_curso').notEmpty().withMessage('O nome do curso é obrigatório.'),
+    body('descricao').notEmpty().withMessage('A descrição do curso é obrigatória.'),
+    body('carga_horaria').isInt({ min: 1 }).withMessage('A carga horária deve ser um número inteiro positivo.'),
+    cursosController.atualizarCurso);
 
 module.exports = router;

@@ -9,6 +9,7 @@ const cursosRoutes = require('./src/api/routes/cursos.routes');
 //const turmasRoutes = require('./src/api/routes/turmas.routes');
 //const matriculasRoutes = require('./src/api/routes/matricula.routes');
 const usuariosRoutes = require('./src/api/routes/usuarios.routes');
+const authRoutes = require('./src/api/routes/auth.routes');
 
 //aplicacao express
 const app = express(); //cria instancia express
@@ -22,6 +23,7 @@ app.use(express.static(path.join(__dirname, 'src', 'public')));
 //registro da rotas apis
 app.use('/api/cursos', cursosRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/auth', authRoutes);
 
 /*app.get('/', (req, res) => {  //cria rota teste
     res.send('Servidor funcionando!');

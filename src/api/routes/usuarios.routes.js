@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const UsuariosController = require('../controllers/usuarios.controller');
-const { body } = require = ('express-validator'); 
+const { body } = require('express-validator'); 
 
 router.post('/',
 	body('email').isEmail().withMessage('O e-mail fornecido não é valido.'),

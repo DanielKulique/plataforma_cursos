@@ -6,23 +6,34 @@ const bcrypt = require('bcrypt');
 
 //criar um novo usuário
 async function criarUsuario(req, res) {
-    const errors = validationResult(req);
+    const errors = validationResult(req); //verifica se houve erro de validação
     if (!errors.isEmpty()) {
         return res.status(400).json( { errors: errors.array() });
     }
 
     try {
+        const totalUsuarios = await usuariosModel.count();
+
+        if( totalUsuarios == 0) {
+            req.body.tipo = 'ADMIN'; //define o primeiro usuário como admin
+        } else {
+            req.body.tipo = 'ALUNO'; //define os demais usuários como comum
+        }
+
         const novoUsuario = await usuariosModel.criarUsuario(req.body);
         res.status(201).json(novoUsuario);
         console.log("Usuário criado com sucesso:", novoUsuario);
     } catch (error) {
         console.error("Erro ao criar usuário:", error);
-        if (error.message === 'Erro ao criar usuário') {
-            res.status(400).json({ message: error.message });
+        if(error.errno === 1062) {
+            if(error.message.includes('cpf_UNIQUE')) {
+                res.status(409).json({ message: 'CPF já cadastrado.' });
+            }
+            if(error.message.includes('email_UNIQUE')) {
+                res.status(409).json({ message: 'E-mail já cadastrado.'})
+            }
         }
-        else {
-            res.status(500).json({ message: "Ocorreu um erro no servidor." });
-        }
+        res.status(500).json({message: "Ocorreu um erro no servidor ao criar o usuário." });
     }
 }
 
@@ -91,11 +102,25 @@ async function buscarTodosUsuarios(req, res) {
 
 async function deletarUsuario(req, res) {
     const id = req.params.id;
+    try {
+        const affectedRows = await usuariosModel.deletarUsuario(id);
+        if (affectedRows === 0){
+            console.log("Usuário não encontrado:", id);
+            return res.status(404).json({ message: 'Usuário não encontrado.' });
+        }
+        console.log("Usuário deletado com sucesso:", id);
+        res.status(204).json({message: 'Usuário deletado com sucesso.'});
+    }
+    catch (error) {
+        console.error("Erro ao deletar usuário:", error);
+        res.status(500).json({ message: "Ocorreu um erro no servidor." });
+    }
 }
 
 module.exports = {
     criarUsuario,
     atualizarUsuario,
     buscarUsuarioPorId,
-    buscarTodosUsuarios
+    buscarTodosUsuarios,
+    deletarUsuario
 }

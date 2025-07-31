@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
 const db = require('../../config/database');
-const e = require('express');
 const fatorCusto = 10;
 
 
@@ -57,6 +56,10 @@ async function deletarUsuario(id) {
     }
 }
 
+async function count(){
+    const [result] = await db.query('SELECT COUNT(*) as total FROM Usuarios');
+    return [result[0].total];
+}
 
 
 module.exports = {
@@ -64,5 +67,6 @@ module.exports = {
     atualizarUsuario,
     buscarUsuarioPorId,
     buscarTodosUsuarios,
-    deletarUsuario
+    deletarUsuario,
+    count
 }

@@ -17,7 +17,7 @@ async function buscarCursoPorId(id){
 
 async function criarCurso(curso) {
 	const { nome_curso, descricao, carga_horaria } = curso;
-	const [result] = await db.query('INSERT INTO Cursos (nome_curso, descricao, carga_horaria) VALUES ( ?, ?, ?)', [nome_curso, descricao, cargaHoraria]);
+	const [result] = await db.query('INSERT INTO Cursos (nome_curso, descricao, carga_horaria) VALUES ( ?, ?, ?)', [nome_curso, descricao, carga_horaria]);
 	if (result.affectedRows === 0) {
 		throw new Error('Erro ao criar curso');
 	}

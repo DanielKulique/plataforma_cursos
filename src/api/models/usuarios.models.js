@@ -18,7 +18,7 @@ async function criarUsuario(usuario) {
 async function atualizarUsuario(id, dadosParaAtualizar) {
     const colunasParaAtualizar = Object.keys(dadosParaAtualizar);
     const setClause = colunasParaAtualizar.map(coluna => `${coluna} = ?`).join(',');
-    const valoresParaAtualizar = Obect.values(dadosParaAtualizar);
+    const valoresParaAtualizar = Object.values(dadosParaAtualizar);
     const [result] = await db.query(`UPDATE Usuarios SET ${setClause} WHERE id_usuario = ?`, [...valoresParaAtualizar, id]);
     return { affectedRows: result.affectedRows };
 }

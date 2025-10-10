@@ -42,7 +42,7 @@ async function atualizarUsuario(req, res) {
     const dadosParaAtualizar = req.body;
 
     try {
-        if (Object.keys(dadosParaAtulizar).length === 0) {
+        if (Object.keys(dadosParaAtualizar).length === 0) {
             return res.status(400).json( {message: 'Nenhum dado para atualizar.' });
         }
         if(dadosParaAtualizar.senha) {

@@ -3,9 +3,9 @@ const { route } = require('../routes/usuarios.routes');
 
 async function criarTurma(turma) {
     const {nome_turma, id_curso, id_professor, status } = turma;
-    const [result] = await db.query('INSERT INTO Turmas (nome_turma = ?, id_curso = ?, id_professor = ?, status = ?)', 
+    const [result] = await db.query('INSERT INTO Turmas (nome_turma, id_curso, id_professor, status) VALUES (?, ?, ?, ?)', 
         [nome_turma, id_curso, id_professor, status]);
-        if(result.affectedRows === 0) {
+        if(result.affectedRows === 0) {         
             throw new Error('Erro ao criar turma');
         }
         else{
@@ -22,7 +22,7 @@ async function atualizarTurma(id, dadosParaAtualizar) {
 }
 
 async function buscarTurmaPorId(id) {
-    const [reult] = await db.query('SELECT * FROM Turmas WHERE id_turma = ?', [id]);
+    const [result] = await db.query('SELECT * FROM Turmas WHERE id_turma = ?', [id]);
     if(result.length === 0) {
         console.error("Turma não encontrada:", error);
         throw new Error('Turma não encontrada!');
@@ -57,7 +57,7 @@ async function deletarTurmar(id){
     }
 }
 
-modules.exports = {
+module.exports = {
     criarTurma,
     atualizarTurma,
     buscarTurmaPorId,

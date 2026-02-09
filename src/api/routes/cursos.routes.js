@@ -17,13 +17,23 @@ const checkRole = require('../../middlewares/checkRole.middleware');
 router.get('/', cursosController.listarTodos);
 router.get('/:id', cursosController.listarCursoPorId);
 router.delete('/:id', checkAuth, checkRole('ADMIN'), cursosController.deletarCurso);
-router.post('/', body('nome_curso').notEmpty().withMessage('O nome do curso é obrigatório.'),
-    body('descricao').notEmpty().withMessage('A descrição do curso é obrigatória.'),
-    body('carga_horaria').isInt({ min: 1 }).withMessage('A carga horária deve ser um número inteiro positivo.'), checkAuth, checkRole('ADMIN'),
-    cursosController.criarCurso);
-router.put('/:id', body('nome_curso').notEmpty().withMessage('O nome do curso é obrigatório.'),
-    body('descricao').notEmpty().withMessage('A descrição do curso é obrigatória.'),
-    body('carga_horaria').isInt({ min: 1 }).withMessage('A carga horária deve ser um número inteiro positivo.'), checkAuth, checkRole('ADMIN'),
-    cursosController.atualizarCurso);
+router.post(
+    '/',
+    body('nome_curso').notEmpty().withMessage('O nome do curso Ã© obrigatÃ³rio.'),
+    body('descricao').optional({ nullable: true }).isString().withMessage('A descriÃ§Ã£o deve ser um texto.'),
+    body('carga_horaria').isInt({ min: 1 }).withMessage('A carga horÃ¡ria deve ser um nÃºmero inteiro positivo.'),
+    checkAuth,
+    checkRole('ADMIN'),
+    cursosController.criarCurso
+);
+router.put(
+    '/:id',
+    body('nome_curso').notEmpty().withMessage('O nome do curso Ã© obrigatÃ³rio.'),
+    body('descricao').optional({ nullable: true }).isString().withMessage('A descriÃ§Ã£o deve ser um texto.'),
+    body('carga_horaria').isInt({ min: 1 }).withMessage('A carga horÃ¡ria deve ser um nÃºmero inteiro positivo.'),
+    checkAuth,
+    checkRole('ADMIN'),
+    cursosController.atualizarCurso
+);
 
 module.exports = router;

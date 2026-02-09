@@ -28,7 +28,7 @@ async function atualizarCurso(id, curso) {
 	const { nome_curso, descricao, carga_horaria } = curso;
 	const [result] = await db.query('UPDATE Cursos SET nome_curso = ?, descricao = ?, carga_horaria = ? WHERE id_curso = ?', [nome_curso, descricao, carga_horaria, id]);
 	if (result.affectedRows === 0) {
-		throw new Error('Erro ao atualizar curso ou curso não encontrado');
+		throw new Error('Curso não encontrado para atualizar!');
 	}
 	return { id_curso: id, nome_curso, descricao, carga_horaria};
 }
@@ -36,7 +36,7 @@ async function atualizarCurso(id, curso) {
 async function deletarCurso(id) {
 	const [result] = await db.query('DELETE FROM Cursos WHERE id_curso = ?', [id]);
 	if (result.affectedRows === 0) {
-		throw new Error('Erro ao deletar curso ou curso não encontrado');
+		throw new Error('Curso não encontrado para deletar!');
 	}
 	return { message: 'Curso deletado com sucesso' };
 }

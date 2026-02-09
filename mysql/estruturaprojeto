@@ -1,0 +1,57 @@
+O que vai em cada pasta?
+
+/src/config ⚙️
+
+Aqui você coloca suas configurações. Um bom começo é criar um arquivo database.js que exporta a conexão com o seu banco de dados MySQL. Assim, em vez de reescrever os dados de conexão em vários lugares, você só importa deste arquivo.
+
+/src/routes ↔️
+
+Esta pasta define as URLs da sua API. Para cada entidade do seu banco, você terá um arquivo.
+
+    usuarios.routes.js: Terá as rotas como GET /usuarios, POST /usuarios, GET /usuarios/:id.
+
+    cursos.routes.js: Terá GET /cursos, POST /cursos, etc.
+
+A única responsabilidade de um arquivo de rota é receber a requisição e chamar a função correspondente no controller.
+
+/src/controllers 🧠
+
+Esta é a camada de lógica de negócio. Cada função aqui recebe a requisição (req) e a resposta (res) da rota.
+
+    usuarios.controller.js: Terá funções como listarTodosUsuarios, criarUsuario, buscarUsuarioPorId.
+
+    Uma função de controller não fala diretamente com o banco. Ela chama uma função do model para buscar ou salvar os dados e, então, decide o que responder ao usuário (ex: res.json(dados) ou res.status(404).send('Usuário não encontrado')).
+
+/src/models 🗃️
+
+Esta é a camada de acesso a dados. A única responsabilidade dos arquivos aqui é executar os comandos SQL no banco de dados e retornar os resultados.
+
+    usuarios.model.js: Terá funções como findAll(), create(novoUsuario), findById(id).
+
+    A função findAll(), por exemplo, conteria a query SELECT * FROM Usuarios;.
+
+index.js (na raiz)
+
+Este arquivo se torna o ponto de partida. A responsabilidade dele será apenas:
+
+    Importar o Express.
+
+    Importar e usar as rotas definidas na pasta /routes.
+
+    Iniciar o servidor com app.listen().
+
+Como Tudo se Conecta (Exemplo: Requisição GET /cursos)
+
+    O usuário acessa http://localhost:3000/cursos.
+
+    Seu index.js recebe a requisição e a direciona para o arquivo de rotas de cursos.
+
+    O arquivo /src/routes/cursos.routes.js vê a rota GET / e chama a função listarCursos do controller.
+
+    A função listarCursos em /src/controllers/cursos.controller.js é executada. Ela não tem lógica complexa, apenas chama a função findAll do model de cursos.
+
+    A função findAll em /src/models/cursos.model.js executa a query SELECT * FROM Cursos; no banco, pega o resultado e o retorna para o controller.
+
+    O controller recebe a lista de cursos e a envia como resposta: res.json(cursos).
+
+Essa estrutura, conhecida como separação de responsabilidades, torna seu projeto extremamente organizado, fácil de dar manutenção e de testar.

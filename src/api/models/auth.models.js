@@ -19,6 +19,22 @@ async function login(email, senha) {
     return usuario;
 }
 
+async function buscarUsuarioPorId(id_usuario) {
+    const [users] = await db.query(
+        `SELECT id_usuario, nome_completo, email, telefone, tipo
+         FROM Usuarios
+         WHERE id_usuario = ?`,
+        [id_usuario]
+    );
+
+    if (users.length === 0) {
+        throw new Error('Usuário não encontrado');
+    }
+
+    return users[0];
+}
+
 module.exports = {
-    login
+    login,
+    buscarUsuarioPorId
 };

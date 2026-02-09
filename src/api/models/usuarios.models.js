@@ -16,17 +16,27 @@ async function criarUsuario(usuario) {
 }
 
 async function atualizarUsuario(id, dadosParaAtualizar) {
-    const colunasParaAtualizar = Object.keys(dadosParaAtualizar);
+    const camposPermitidos = ['nome_completo', 'cpf', 'email', 'senha', 'telefone'];
+    const colunasParaAtualizar = Object.keys(dadosParaAtualizar).filter((coluna) => camposPermitidos.includes(coluna));
+
+    if (colunasParaAtualizar.length === 0) {
+        throw new Error('Nenhum campo válido para atualizar.');
+    }
+
     const setClause = colunasParaAtualizar.map(coluna => `${coluna} = ?`).join(',');
-    const valoresParaAtualizar = Object.values(dadosParaAtualizar);
+    const valoresParaAtualizar = colunasParaAtualizar.map((coluna) => dadosParaAtualizar[coluna]);
     const [result] = await db.query(`UPDATE Usuarios SET ${setClause} WHERE id_usuario = ?`, [...valoresParaAtualizar, id]);
+
+    if (result.affectedRows === 0) {
+        throw new Error('Usuário não encontrado!');
+    }
+
     return { affectedRows: result.affectedRows };
 }
 
 async function buscarUsuarioPorId(id) {
     const [affectedRows] = await db.query('SELECT * FROM Usuarios WHERE id_usuario = ?', [id]);
     if (affectedRows.length === 0) {
-        console.error("Usuário não encontrado:", error);
         throw new Error('Usuário não encontrado!');
     }else{
         console.log("Usuário encontrado:", affectedRows[0]);
@@ -38,7 +48,7 @@ async function buscarTodosUsuarios() {
     const [affectedRows] = await db.query('SELECT * FROM Usuarios');
     if (affectedRows.length === 0) {
         console.error("Nenhum usuário encontrado.");
-        throw new error('Nenhum usuário encontrado!');
+		throw new Error('Nenhum usuário encontrado!');
     } else {
         console.log("Usuários encontrados:", affectedRows);
         return affectedRows;
@@ -58,7 +68,7 @@ async function deletarUsuario(id) {
 
 async function count(){
     const [result] = await db.query('SELECT COUNT(*) as total FROM Usuarios');
-    return [result[0].total];
+	return result[0].total;
 }
 
 

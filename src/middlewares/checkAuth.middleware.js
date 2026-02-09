@@ -11,7 +11,7 @@ function checkAuth(req, res, next) {
         req.user = decoded;
         next();
     }catch (error) {
-        res.status(400).json({ mensagem: 'Token inválido' })
+        return res.status(401).json({ mensagem: 'Token inválido' });
     }
 }
 

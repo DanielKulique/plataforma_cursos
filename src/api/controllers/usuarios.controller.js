@@ -27,13 +27,13 @@ async function criarUsuario(req, res) {
         console.error("Erro ao criar usuário:", error);
         if(error.errno === 1062) {
             if(error.message.includes('cpf_UNIQUE')) {
-                res.status(409).json({ message: 'CPF já cadastrado.' });
+                return res.status(409).json({ message: 'CPF já cadastrado.' });
             }
             if(error.message.includes('email_UNIQUE')) {
-                res.status(409).json({ message: 'E-mail já cadastrado.'})
+                return res.status(409).json({ message: 'E-mail já cadastrado.'});
             }
         }
-        res.status(500).json({message: "Ocorreu um erro no servidor ao criar o usuário." });
+        return res.status(500).json({message: "Ocorreu um erro no servidor ao criar o usuário." });
     }
 }
 
@@ -49,20 +49,19 @@ async function atualizarUsuario(req, res) {
             const hash = await bcrypt.hash(dadosParaAtualizar.senha, fatorCusto);
             dadosParaAtualizar.senha = hash;
         }
-        const affectedRows = await usuariosModel.atualizarUsuario(id, dadosParaAtualizar);
-        
-        if(affectedRows === 0){
-            return res.status(404).json({ message: 'Usuário não encontrado.' });
-        }
+        await usuariosModel.atualizarUsuario(id, dadosParaAtualizar);
         res.status(200).json({ message: 'Usuário atualizado com sucesso.' });
         console.log("Usuário atualizado com sucesso:", id);
     }
     catch (error) {
         console.error("Erro ao atualizar usuário:", error);
+        if (error.message === 'Nenhum campo válido para atualizar.') {
+            return res.status(400).json({ message: error.message });
+        }
         if (error.message === 'Usuário não encontrado!') {
-            res.status(404).json({ message: error.message });
+            return res.status(404).json({ message: error.message });
         } else {
-            res.status(500).json({ message: "Ocorreu um erro no servidor." });
+            return res.status(500).json({ message: "Ocorreu um erro no servidor." });
         }
     }
 }
@@ -77,9 +76,9 @@ async function buscarUsuarioPorId(req, res) {
     } catch (error) {
         console.error("Erro ao buscar usuário:", error);
         if (error.message === 'Usuário não encontrado!') {
-            res.status(404).json({ message: error.message });
+            return res.status(404).json({ message: error.message });
         } else{
-            res.status(500).json({ message: "Ocorreu um erro no servidor." });
+            return res.status(500).json({ message: "Ocorreu um erro no servidor." });
         }
     }
 }
@@ -92,10 +91,10 @@ async function buscarTodosUsuarios(req, res) {
     } catch (error) {
         console.error("Erro ao buscar usuários:", error);
         if (error.message === 'Nenhum usuário encontrado!') {
-            res.status(404).json({ message: error.message });
+            return res.status(404).json({ message: error.message });
         }
         else {
-            res.status(500).json({ message: "Ocorreu um erro no servidor." });
+            return res.status(500).json({ message: "Ocorreu um erro no servidor." });
         }
     }
 }
@@ -103,17 +102,16 @@ async function buscarTodosUsuarios(req, res) {
 async function deletarUsuario(req, res) {
     const id = req.params.id;
     try {
-        const affectedRows = await usuariosModel.deletarUsuario(id);
-        if (affectedRows === 0){
-            console.log("Usuário não encontrado:", id);
-            return res.status(404).json({ message: 'Usuário não encontrado.' });
-        }
+        await usuariosModel.deletarUsuario(id);
         console.log("Usuário deletado com sucesso:", id);
-        res.status(204).json({message: 'Usuário deletado com sucesso.'});
+        return res.status(204).send();
     }
     catch (error) {
         console.error("Erro ao deletar usuário:", error);
-        res.status(500).json({ message: "Ocorreu um erro no servidor." });
+        if (error.message === 'Usuário não encontrado para deletar!') {
+            return res.status(404).json({ message: 'Usuário não encontrado.' });
+        }
+        return res.status(500).json({ message: "Ocorreu um erro no servidor." });
     }
 }
 

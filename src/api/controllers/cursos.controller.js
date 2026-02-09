@@ -58,15 +58,12 @@ async function atualizarCurso(req, res) {
 	console.log("controller atualizarCurso chamado");
 	const id = req.params.id;
 	try {
-		const affectedRows = await cursosModel.atualizarCurso(id, req.body);
-		if(affectedRows === 0) {
-			return res.status(404).json({ message: 'Curso não encontrado para atualizar!' });
-		}
+		await cursosModel.atualizarCurso(id, req.body);
 		res.json({id_curso: id, ...req.body});
 	} catch (error) {
 		console.error("Erro ao atualizar curso:", error);
-		if (error.message === 'Erro ao atualizar curso') {
-			return res.status(400).json({ message: error.message });
+		if (error.message === 'Curso não encontrado para atualizar!') {
+			return res.status(404).json({ message: error.message });
 		}
 		res.status(500).json({ message: "Ocorreu um erro no servidor ao atualizar curso." });
 	}
@@ -75,15 +72,12 @@ async function atualizarCurso(req, res) {
 async function deletarCurso(req, res) {
 	const id = req.params.id;
 	try {
-		const affectedRows = await cursosModel.deletarCurso(id);
-		if(affectedRows === 0){
-			return res.status(404).json({ message: 'Curso não encontrado para deletar!' });
-		}
+		await cursosModel.deletarCurso(id);
 		res.status(204).send(); // 204 No Content
 	}catch(error){
 		console.error("Erro ao deletar curso:", error);
-		if (error.message === 'Erro ao deletar curso') {
-			return res.status(400).json({ message: error.message });
+		if (error.message === 'Curso não encontrado para deletar!') {
+			return res.status(404).json({ message: error.message });
 		}
 		res.status(500).json({ message: "Ocorreu um erro no servidor ao deletar curso." });
 	}

@@ -31,6 +31,26 @@ async function login(req, res) {
     }
 }
 
+async function me(req, res) {
+    try {
+        const usuario = await authModel.buscarUsuarioPorId(req.user.id_usuario);
+
+        return res.status(200).json({
+            mensagem: `Bem vindo, ${usuario.nome_completo}`,
+            usuario
+        });
+    } catch (error) {
+        if (error.message === 'Usuário não encontrado') {
+            return res.status(404).json({ mensagem: error.message });
+        }
+
+        return res.status(500).json({
+            mensagem: 'Ocorreu um erro no servidor.'
+        });
+    }
+}
+
 module.exports = {
-    login
+    login,
+    me
 };

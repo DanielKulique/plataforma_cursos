@@ -8,6 +8,8 @@ const checkAuth = require('../../middlewares/checkAuth.middleware');
 
 //rota de login
 router.post('/login', authController.login);
+router.post('/enviar-codigo-verificacao', authController.enviarCodigoVerificacao);
+router.post('/verificar-codigo-email', authController.verificarCodigoEmail);
 router.get('/me', checkAuth, authController.me);
 
 module.exports = router;

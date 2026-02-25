@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionário</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="catalog-page">
+    <header class="site-header">
+        <div class="header-top">
+            <a href="/index.html" class="brand" aria-label="Plataforma de Cursos">
+                <span class="brand-dot" aria-hidden="true"></span>
+                <span class="brand-text">Plataforma de Cursos</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegação do questionário">
+                <a href="/index.html" class="nav-link">Catálogo</a>
+                <a href="/sala-virtual.html" class="nav-link">Sala virtual</a>
+                <button id="btn-logout" type="button">Sair</button>
+            </nav>
+        </div>
+
+        <section class="hero-card" aria-labelledby="questionario-title">
+            <p id="questionario-tag" class="hero-tag">Questionário</p>
+            <h1 id="questionario-title">Carregando ambiente...</h1>
+            <p id="questionario-description" class="hero-description">
+                Aguarde enquanto preparamos sua avaliação.
+            </p>
+        </section>
+
+        <div class="status-bar">
+            <p id="status-usuario">Carregando usuário...</p>
+            <p id="mensagem-questionario" class="sala-message"></p>
+        </div>
+    </header>
+
+    <main class="catalog-main">
+        <section class="panel panel-full">
+            <div class="panel-heading">
+                <h2 id="contexto-questionario">Contexto da turma</h2>
+                <p id="subtitulo-questionario">Carregando dados da turma e do questionário...</p>
+            </div>
+
+            <form id="form-questionario" class="questionario-form">
+                <ul id="lista-questoes" class="question-list">
+                    <li class="question-item loading-state">Carregando perguntas...</li>
+                </ul>
+
+                <div class="questionario-form-actions">
+                    <button id="btn-finalizar-questionario" type="submit" class="action-button">
+                        Finalizar questionário
+                    </button>
+                    <a id="link-voltar-sala" class="action-button action-button--ghost" href="/sala-virtual.html">
+                        Voltar para sala
+                    </a>
+                </div>
+            </form>
+
+            <section id="resultado-questionario" class="result-card" hidden>
+                <p class="result-kicker">Resultado</p>
+                <h3 id="resultado-titulo">Questionário finalizado</h3>
+                <p id="resultado-descricao"></p>
+            </section>
+        </section>
+    </main>
+
+    <script type="module" src="/js/questionario.js"></script>
+</body>
+</html>

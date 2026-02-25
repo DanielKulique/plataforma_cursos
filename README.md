@@ -64,9 +64,9 @@ Servidor disponível em:
 
 - `http://localhost:3000`
 
-Rota de teste de conexão com banco:
+Rota de status da aplicação e conexão com banco (protegida para ADMIN):
 
-- `GET /teste-db`
+- `GET /api/health`
 
 ## Rotas principais da API
 

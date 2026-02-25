@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Aula</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="catalog-page">
+    <header class="site-header">
+        <div class="header-top">
+            <a href="/index.html" class="brand" aria-label="Plataforma de Cursos">
+                <span class="brand-dot" aria-hidden="true"></span>
+                <span class="brand-text">Plataforma de Cursos</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegação da sala de aula">
+                <a href="/index.html" class="nav-link">Catálogo</a>
+                <a href="/sala-virtual.html" class="nav-link">Sala virtual</a>
+                <button id="btn-logout" type="button">Sair</button>
+            </nav>
+        </div>
+
+        <section class="hero-card" aria-labelledby="sala-aula-title">
+            <p class="hero-tag">Turma ativa</p>
+            <h1 id="sala-aula-title">Sala de aula da turma</h1>
+            <p class="hero-description">
+                Acompanhe os conteúdos da turma, seu progresso e acesse avaliações de prova e exercícios.
+            </p>
+        </section>
+
+        <div class="status-bar">
+            <p id="status-usuario">Carregando usuário...</p>
+            <p id="mensagem-sala-aula" class="sala-message"></p>
+        </div>
+    </header>
+
+    <main class="catalog-main">
+        <section class="panel panel-full">
+            <div class="panel-heading">
+                <h2 id="titulo-turma">Carregando turma...</h2>
+                <p id="nome-curso">Aguarde enquanto validamos seu acesso.</p>
+            </div>
+
+            <div class="aula-grid">
+                <article class="aula-card">
+                    <h3>Informações da turma</h3>
+                    <ul class="aula-meta-list">
+                        <li>
+                            <span>Status</span>
+                            <span id="badge-status-turma" class="badge badge--neutral">Carregando</span>
+                        </li>
+                        <li>
+                            <span>Progresso atual</span>
+                            <strong id="progresso-turma">--</strong>
+                        </li>
+                        <li>
+                            <span>Período</span>
+                            <strong id="periodo-turma">--</strong>
+                        </li>
+                        <li>
+                            <span>Carga horária</span>
+                            <strong id="carga-horaria">--</strong>
+                        </li>
+                    </ul>
+
+                    <p id="descricao-curso" class="card-item__description">
+                        Carregando descrição do curso...
+                    </p>
+                </article>
+
+                <article class="aula-card">
+                    <h3>Conteúdo da aula</h3>
+                    <ul id="lista-conteudos" class="module-list">
+                        <li>Carregando conteúdos liberados...</li>
+                    </ul>
+
+                    <div class="card-actions">
+                        <a id="link-prova" class="action-button" href="#">Ir para prova</a>
+                        <a id="link-exercicios" class="action-button action-button--ghost" href="#">Ir para exercícios</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="/js/sala-aula.js"></script>
+</body>
+</html>

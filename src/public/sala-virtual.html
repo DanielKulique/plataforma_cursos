@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala Virtual</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="catalog-page">
+    <header class="site-header">
+        <div class="header-top">
+            <a href="/index.html" class="brand" aria-label="Plataforma de Cursos">
+                <span class="brand-dot" aria-hidden="true"></span>
+                <span class="brand-text">Plataforma de Cursos</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegação da sala virtual">
+                <a href="/index.html" class="nav-link">Catálogo</a>
+                <button id="btn-logout" type="button">Sair</button>
+            </nav>
+        </div>
+
+        <section class="hero-card" aria-labelledby="sala-title">
+            <p class="hero-tag">Área do aluno</p>
+            <h1 id="sala-title">Sala virtual da sua turma</h1>
+            <p class="hero-description">
+                Aqui você acompanha as turmas com acesso ativo, progresso e conteúdos liberados.
+            </p>
+        </section>
+
+        <div class="status-bar">
+            <p id="status-usuario">Carregando usuário...</p>
+            <p id="mensagem-sala" class="sala-message"></p>
+        </div>
+    </header>
+
+    <main class="catalog-main">
+        <section class="panel panel-full">
+            <div class="panel-heading">
+                <h2>Minhas turmas abertas</h2>
+                <p>Confira abaixo as suas turmas com participação ativa.</p>
+            </div>
+            <ul id="lista-minhas-turmas" class="card-list"></ul>
+        </section>
+    </main>
+
+    <script type="module" src="/js/sala-virtual.js"></script>
+</body>
+</html>

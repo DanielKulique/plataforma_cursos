@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Plataforma de Cursos</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="login-page">
+    <main class="login-main">
+        <section class="login-card" aria-labelledby="titulo-login">
+            <p class="auth-brand">Plataforma de Cursos</p>
+            <p class="login-kicker">Acesso à área do aluno</p>
+            <h1 id="titulo-login">Bem-vindo de volta 👋</h1>
+            <p class="login-subtitle">Faça login para acessar seu painel.</p>
+
+            <form id="form-login" class="login-form">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="voce@email.com" autocomplete="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" minlength="8" placeholder="Sua senha" autocomplete="current-password" required>
+                </div>
+
+                <button type="submit" class="btn-login">Entrar</button>
+            </form>
+
+            <p id="mensagem-login" class="login-message" role="status" aria-live="polite"></p>
+
+            <p class="login-back-link">
+                Não tem conta? <a href="/cadastro.html">Criar conta</a>
+            </p>
+
+            <p class="login-back-link">
+                <a href="/index.html">← Voltar para o catálogo</a>
+            </p>
+        </section>
+    </main>
+
+    <script type="module" src="/js/login.js"></script>
+</body>
+</html>

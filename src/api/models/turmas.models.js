@@ -1,6 +1,6 @@
 const db = require('../../config/database');
 
-const STATUS_TURMA_PADRAO = 'INSCRI\u00C7\u00D5ES ABERTAS';
+const STATUS_TURMA_PADRAO = 'INSCRIÇÕES ABERTAS';
 
 async function criarTurma(turma) {
     const { nome_turma, id_curso, id_professor, data_inicio, data_fim, status } = turma;
@@ -48,23 +48,36 @@ async function atualizarTurma(id, dadosParaAtualizar) {
 async function buscarTurmaPorId(id) {
     const [result] = await db.query('SELECT * FROM Turmas WHERE id_turma = ?', [id]);
     if (result.length === 0) {
-        throw new Error('Turma nÃ£o encontrada!');
+        throw new Error('Turma não encontrada!');
     }
     return result[0];
 }
 
 async function buscarTodasTurmas() {
     const [result] = await db.query('SELECT * FROM Turmas');
-    if (result.length === 0) {
-        throw new Error('Nenhuma turma encontrada!');
-    }
     return result;
+}
+
+async function buscarTurmasDoProfessor(id_professor) {
+    const query = `
+        SELECT t.*, c.nome_curso, COUNT(m.id_matricula) as total_alunos
+        FROM Turmas t
+        LEFT JOIN Cursos c ON t.id_curso = c.id_curso
+        LEFT JOIN Matriculas m ON t.id_turma = m.id_turma
+        WHERE t.id_professor = ?
+        GROUP BY t.id_turma, c.nome_curso
+        ORDER BY t.data_inicio DESC
+    `;
+
+    const [rows] = await db.query(query, [id_professor]);
+
+    return rows;
 }
 
 async function deletarTurma(id) {
     const [result] = await db.query('DELETE FROM Turmas WHERE id_turma = ?', [id]);
     if (result.affectedRows === 0) {
-        throw new Error('Turma nÃ£o encontrada para deletar!');
+        throw new Error('Turma não encontrada para deletar!');
     }
     return { affectedRows: result.affectedRows };
 }
@@ -83,6 +96,7 @@ module.exports = {
     atualizarTurma,
     buscarTurmaPorId,
     buscarTodasTurmas,
+    buscarTurmasDoProfessor,
     deletarTurma,
     professorEhDaTurma
 };

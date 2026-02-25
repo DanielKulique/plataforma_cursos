@@ -35,24 +35,22 @@ async function atualizarUsuario(id, dadosParaAtualizar) {
 }
 
 async function buscarUsuarioPorId(id) {
-    const [affectedRows] = await db.query('SELECT * FROM Usuarios WHERE id_usuario = ?', [id]);
+    const [affectedRows] = await db.query(
+        'SELECT id_usuario, nome_completo, cpf, email, telefone, tipo, data_cadastro FROM Usuarios WHERE id_usuario = ?',
+        [id]
+    );
     if (affectedRows.length === 0) {
         throw new Error('Usuário não encontrado!');
-    }else{
-        console.log("Usuário encontrado:", affectedRows[0]);
+    } else {
         return affectedRows[0];
     }
 }
 
 async function buscarTodosUsuarios() {
-    const [affectedRows] = await db.query('SELECT * FROM Usuarios');
-    if (affectedRows.length === 0) {
-        console.error("Nenhum usuário encontrado.");
-		throw new Error('Nenhum usuário encontrado!');
-    } else {
-        console.log("Usuários encontrados:", affectedRows);
-        return affectedRows;
-    }
+    const [affectedRows] = await db.query(
+        'SELECT id_usuario, nome_completo, cpf, email, telefone, tipo, data_cadastro FROM Usuarios'
+    );
+    return affectedRows;
 }
 
 async function deletarUsuario(id) {
@@ -71,6 +69,21 @@ async function count(){
 	return result[0].total;
 }
 
+async function verificarDisponibilidade(email, cpf) {
+    const [rows] = await db.query(
+        'SELECT email, cpf FROM Usuarios WHERE email = ? OR cpf = ? LIMIT 10',
+        [email, cpf]
+    );
+
+    const emailDisponivel = !rows.some((item) => item.email === email);
+    const cpfDisponivel = !rows.some((item) => item.cpf === cpf);
+
+    return {
+        email_disponivel: emailDisponivel,
+        cpf_disponivel: cpfDisponivel
+    };
+}
+
 
 module.exports = {
     criarUsuario,
@@ -78,5 +91,6 @@ module.exports = {
     buscarUsuarioPorId,
     buscarTodosUsuarios,
     deletarUsuario,
-    count
+    count,
+    verificarDisponibilidade
 }

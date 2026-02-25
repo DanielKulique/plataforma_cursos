@@ -73,7 +73,38 @@ async function buscarMatriculaPorAluno(id_aluno) {
     return rows;
 }
 
-//buscar todas as matriculas de uma turma especifica
+async function buscarSalaVirtualDoAluno(id_aluno) {
+    const [rows] = await db.query(
+        `
+        SELECT
+            m.id_matricula,
+            m.data_matricula,
+            m.status_aprovacao,
+            m.progresso_percentual,
+            t.id_turma,
+            t.nome_turma,
+            t.status AS status_turma,
+            t.data_inicio,
+            t.data_fim,
+            c.id_curso,
+            c.nome_curso,
+            c.descricao AS descricao_curso,
+            c.carga_horaria
+        FROM Matriculas m
+        INNER JOIN Turmas t ON m.id_turma = t.id_turma
+        INNER JOIN Cursos c ON t.id_curso = c.id_curso
+        WHERE m.id_aluno = ?
+          AND m.status_aprovacao <> 'CANCELADO'
+          AND t.status IN ('INSCRIÇÕES ABERTAS', 'EM ANDAMENTO')
+        ORDER BY m.data_matricula DESC
+        `,
+        [id_aluno]
+    );
+
+    return rows;
+}
+
+// Buscar todas as matrículas de uma turma específica
 async function buscarMatriculaPorTurma(id_turma) {
     const [rows] = await db.query(
         `
@@ -115,7 +146,7 @@ async function buscarMatriculaPorId(id) {
     );
 
     if (rows.length === 0) {
-        throw new Error('MatrÃ­cula nÃ£o encontrada!');
+        throw new Error('Matrícula não encontrada!');
     }
 
     return rows[0];
@@ -137,7 +168,7 @@ async function atualizarMatricula(id, dadosParaAtualizar) {
         [...valoresParaAtualizar, id]
     );
     if (result.affectedRows === 0) {
-        throw new Error('MatrÃ­cula nÃ£o encontrada para atualizar!');
+        throw new Error('Matrícula não encontrada para atualizar!');
     }
 
     return { affectedRows: result.affectedRows };
@@ -159,7 +190,7 @@ async function cancelarMatricula(id) {
     );
 
     if (result.affectedRows === 0) {
-        throw new Error('MatrÃ­cula nÃ£o encontrada para cancelar!');
+        throw new Error('Matrícula não encontrada para cancelar!');
     }
 
     return { affectedRows: result.affectedRows };
@@ -200,6 +231,7 @@ async function buscarEscopoMatriculaPorId(id_matricula) {
 module.exports = {
     criarMatricula,
     buscarMatriculaPorAluno,
+    buscarSalaVirtualDoAluno,
     buscarMatriculaPorTurma,
     buscarMatriculaPorId,
     atualizarMatricula,

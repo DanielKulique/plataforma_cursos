@@ -1,0 +1,79 @@
+const express = require('express');
+const router = express.Router();
+const usuariosController = require('../controllers/usuarios.controller');
+const { body, param } = require('express-validator');
+const checkAuth = require('../../middlewares/checkAuth.middleware');
+const checkRole = require('../../middlewares/checkRole.middleware');
+
+/**
+ * Rotas administrativas para gerenciamento de usuários
+ * Todas requerem autenticação e papel ADMIN
+ */
+
+// POST /api/admin/usuarios - Criar novo usuário (ADMIN ou PROFESSOR)
+router.post('/usuarios',
+    checkAuth,
+    checkRole('ADMIN'),
+    body('email').isEmail().withMessage('O e-mail fornecido não é válido.'),
+    body('senha')
+        .isLength({ min: 8 }).withMessage('A senha precisa ter no mínimo 8 caracteres')
+        .matches(/[A-Z]/).withMessage('A senha precisa ter pelo menos uma letra maiúscula')
+        .matches(/[a-z]/).withMessage('A senha precisa ter pelo menos uma letra minúscula')
+        .matches(/\d/).withMessage('A senha precisa ter pelo menos um número')
+        .matches(/[^A-Za-z0-9]/).withMessage('A senha precisa ter pelo menos um símbolo'),
+    body('cpf').isLength({ min: 11, max: 11 }).withMessage('O CPF deve ter exatamente 11 dígitos').isNumeric().withMessage('O CPF deve conter apenas números.'),
+    body('nome_completo').notEmpty().withMessage('O nome completo é obrigatório.'),
+    body('tipo').isIn(['ALUNO', 'PROFESSOR', 'ADMIN']).withMessage('Tipo inválido. Aceitos: ALUNO, PROFESSOR, ADMIN.'),
+    body('telefone').optional().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres.'),
+    (req, res, next) => {
+        console.log('>>> Rota admin/usuarios chamada!');
+        console.log('>>> Body:', req.body);
+        next();
+    },
+    usuariosController.criarUsuarioAdmin
+);
+
+// GET /api/admin/usuarios - Listar todos os usuários
+router.get('/usuarios',
+    checkAuth,
+    checkRole('ADMIN'),
+    usuariosController.buscarTodosUsuarios
+);
+
+// GET /api/admin/usuarios/:id - Buscar usuário por ID
+router.get('/usuarios/:id',
+    checkAuth,
+    checkRole('ADMIN'),
+    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
+    usuariosController.buscarUsuarioPorId
+);
+
+// PATCH /api/admin/usuarios/:id - Atualizar usuário
+router.patch('/usuarios/:id',
+    checkAuth,
+    checkRole('ADMIN'),
+    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
+    body('email').optional().isEmail().withMessage('O e-mail fornecido não é válido.'),
+    body('senha')
+        .optional()
+        .isLength({ min: 8 }).withMessage('A senha precisa ter no mínimo 8 caracteres')
+        .matches(/[A-Z]/).withMessage('A senha precisa ter pelo menos uma letra maiúscula')
+        .matches(/[a-z]/).withMessage('A senha precisa ter pelo menos uma letra minúscula')
+        .matches(/\d/).withMessage('A senha precisa ter pelo menos um número')
+        .matches(/[^A-Za-z0-9]/).withMessage('A senha precisa ter pelo menos um símbolo'),
+    body('cpf').optional().isLength({ min: 11, max: 11 }).withMessage('O CPF deve ter exatamente 11 dígitos').isNumeric().withMessage('O CPF deve conter apenas números.'),
+    body('nome_completo').optional().notEmpty().withMessage('O nome completo é obrigatório.'),
+    body('tipo').optional().isIn(['ALUNO', 'PROFESSOR', 'ADMIN']).withMessage('Tipo inválido. Aceitos: ALUNO, PROFESSOR, ADMIN.'),
+    body('telefone').optional().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres.'),
+    usuariosController.atualizarUsuario
+);
+
+// DELETE /api/admin/usuarios/:id - Deletar usuário
+router.delete('/usuarios/:id',
+    checkAuth,
+    checkRole('ADMIN'),
+    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
+    usuariosController.deletarUsuario
+);
+
+module.exports = router;

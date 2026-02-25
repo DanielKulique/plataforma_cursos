@@ -1,6 +1,24 @@
 const turmasModel = require('../api/models/turmas.models');
 const matriculaModel = require('../api/models/matricula.models');
 
+async function checkProfessorPermission(req, res, next) {
+    try {
+        // Verificar se o usuário está autenticado (isto é feito pelo checkAuth)
+        if (!req.user) {
+            return res.status(401).json({ mensagem: 'Acesso não autorizado.' });
+        }
+
+        // Verificar se o tipo de usuário é professor
+        if (req.user.tipo !== 'PROFESSOR') {
+            return res.status(403).json({ mensagem: 'Acesso negado. Apenas professores podem acessar este recurso.' });
+        }
+
+        next();
+    } catch (error) {
+        return res.status(500).json({ mensagem: 'Erro interno do servidor.' });
+    }
+}
+
 async function checkProfessorTurmaPermission(req, res, next) {
     try {
         if (req.user?.tipo === 'ADMIN') {
@@ -121,6 +139,7 @@ async function checkMatriculaCancelPermission(req, res, next) {
 }
 
 module.exports = {
+    checkProfessorPermission,
     checkProfessorTurmaPermission,
     checkProfessorMatriculaPermission,
     checkMatriculaReadPermission,

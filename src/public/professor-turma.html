@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Turma - Plataforma de Cursos</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="catalog-page">
+    <header class="site-header">
+        <div class="header-top">
+            <a href="/index.html" class="brand" aria-label="Plataforma de Cursos">
+                <span class="brand-dot" aria-hidden="true"></span>
+                <span class="brand-text">Plataforma de Cursos</span>
+            </a>
+            <nav class="main-nav" aria-label="Navegação do professor">
+                <a href="/index.html" class="nav-link">Catálogo</a>
+                <a href="/professor.html" class="nav-link">Minhas Turmas</a>
+                <button id="btn-logout" type="button">Sair</button>
+            </nav>
+        </div>
+
+        <section class="hero-card" aria-labelledby="turma-title">
+            <p class="hero-tag">Turma</p>
+            <h1 id="turma-title">Carregando turma...</h1>
+            <p class="hero-description">
+                Gerencie os alunos matriculados e acompanhe seu desempenho.
+            </p>
+        </section>
+
+        <div class="status-bar">
+            <p id="status-usuario">Carregando usuário...</p>
+            <p id="mensagem-turma" class="sala-message"></p>
+        </div>
+    </header>
+
+    <main class="catalog-main">
+        <section class="panel panel-full">
+            <div class="panel-heading">
+                <h2 id="titulo-alunos">Alunos Matriculados</h2>
+                <p id="subtitulo-alunos">Lista de alunos e seu desempenho na turma.</p>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Email</th>
+                            <th>Progresso</th>
+                            <th>Nota Final</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-alunos-turma">
+                        <tr>
+                            <td colspan="6" class="loading-state">Carregando alunos matriculados...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para edição de matrícula -->
+    <div id="modal-edicao" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Matrícula</h3>
+                <span id="fechar-modal" class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="form-edicao-matricula">
+                    <div class="form-group">
+                        <label for="nota-final">Nota Final</label>
+                        <input type="number" id="nota-final" name="nota_final" min="0" max="10" step="0.1" placeholder="0.0 a 10.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="status-aprovacao">Status de Aprovação</label>
+                        <select id="status-aprovacao" name="status_aprovacao">
+                            <option value="CURSANDO">CURSANDO</option>
+                            <option value="APROVADO">APROVADO</option>
+                            <option value="REPROVADO">REPROVADO</option>
+                            <option value="CANCELADO">CANCELADO</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="progresso">Progresso (%)</label>
+                        <input type="number" id="progresso" name="progresso_percentual" min="0" max="100" placeholder="0 a 100">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="action-button">Atualizar</button>
+                        <button type="button" id="cancelar-modal" class="action-button action-button--ghost">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/professor-turma.js"></script>
+</body>
+</html>

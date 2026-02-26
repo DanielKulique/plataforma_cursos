@@ -1,5 +1,20 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const fs = require('fs');
+
+// Prioridade para .env.test se estiver em contexto de teste (Jest)
+const isTest = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined;
+const envTestExists = fs.existsSync(path.join(__dirname, '.env.test'));
+const envExists = fs.existsSync(path.join(__dirname, '.env'));
+
+let envFile = '.env';
+if (isTest && envTestExists) {
+    envFile = '.env.test';
+} else if (!envExists && envTestExists) {
+    envFile = '.env.test';
+}
+
+require('dotenv').config({ path: path.join(__dirname, envFile), override: true });
+
 const express = require('express');
 const { garantirTabelaVerificacaoEmail } = require('./src/api/models/auth.models');
 
@@ -50,4 +65,10 @@ async function iniciarServidor() {
     }
 }
 
-iniciarServidor();
+// Exporta app e iniciarServidor para testes
+module.exports = { app, iniciarServidor };
+
+// Inicia o servidor se não estiver em modo teste
+if (process.env.NODE_ENV !== 'test') {
+    iniciarServidor();
+}

@@ -7,7 +7,12 @@
     "dev": "node index.js",
     "test": "jest --coverage --detectOpenHandles",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --detectOpenHandles"
+    "test:coverage": "jest --coverage --detectOpenHandles",
+    "test:integration": "jest --config=jest.integration.config.js --runInBand",
+    "test:integration:watch": "jest --config=jest.integration.config.js --watch",
+    "db:test:setup": "node scripts/setup_test_database.js",
+    "db:test:seed": "node scripts/seed_test_database.js",
+    "test:all": "npm run test && npm run test:integration"
   },
   "keywords": [],
   "author": "",
@@ -44,6 +49,9 @@
     "testMatch": [
       "**/__tests__/**/*.test.js"
     ],
-    "verbose": true
+    "verbose": true,
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    }
   }
 }

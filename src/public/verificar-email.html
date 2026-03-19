@@ -1,52 +1,58 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirmar E-mail - Plataforma de Cursos</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmar E-mail — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="login-page">
-    <main class="login-main">
-        <section class="login-card" aria-labelledby="titulo-verificacao-email">
-            <p class="auth-brand">Plataforma de Cursos</p>
-            <p class="login-kicker">Ativação de conta</p>
-            <h1 id="titulo-verificacao-email">Confirmar e-mail</h1>
-            <p class="login-subtitle">
-                Digite seu e-mail e o código de 6 dígitos recebido para ativar sua conta.
-            </p>
+<body class="auth-page">
 
-            <!--
-                Fluxo desta tela:
-                1) Usuário informa e-mail + código
-                2) Front chama /api/auth/verificar-codigo-email
-                3) Se ok, redireciona para login
-            -->
-            <form id="form-verificar-email" class="login-form">
-                <div class="form-group">
-                    <label for="email">E-mail</label>
-                    <input type="email" id="email" name="email" autocomplete="email" required>
-                </div>
+<section class="auth-card" aria-labelledby="titulo-verificacao-email">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+    <div class="auth-brand">
+      <div class="brand-mark">🧠</div>
+      <div>
+        <div class="auth-brand-text">Plágio</div>
+        <div class="auth-brand-sub">Nao Copie Essa Ideia</div>
+      </div>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema">
+      <span class="icon-moon">🌙</span>
+      <span class="icon-sun">☀️</span>
+    </button>
+  </div>
 
-                <div class="form-group">
-                    <label for="codigo">Código de verificação</label>
-                    <input type="text" id="codigo" name="codigo" inputmode="numeric" maxlength="6" placeholder="000000" required>
-                </div>
+  <p class="auth-kicker">Ativacao de conta</p>
+  <h1 class="auth-title" id="titulo-verificacao-email">Confirmar e-mail</h1>
+  <p class="auth-subtitle">
+    Digite seu e-mail e o codigo de 6 digitos recebido para ativar sua conta.
+  </p>
 
-                <button type="submit" class="btn-login">Confirmar e-mail</button>
-            </form>
+  <form id="form-verificar-email" class="auth-form">
+    <div class="form-group">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" placeholder="voce@email.com" autocomplete="email" required>
+    </div>
 
-            <p id="mensagem-verificacao-email" class="login-message" role="status" aria-live="polite"></p>
+    <div class="form-group">
+      <label for="codigo">Codigo de verificacao</label>
+      <input type="text" id="codigo" name="codigo" inputmode="numeric" maxlength="6" placeholder="000000" required>
+    </div>
 
-            <p class="login-back-link">
-                Não recebeu código? <a href="/cadastro.html">Voltar ao cadastro</a>
-            </p>
-            <p class="login-back-link">
-                <a href="/login.html">← Ir para login</a>
-            </p>
-        </section>
-    </main>
+    <button type="submit" class="btn-submit">Confirmar e-mail</button>
+  </form>
 
-    <script type="module" src="/js/verificar-email.js"></script>
+  <p id="mensagem-verificacao-email" class="auth-message" role="status" aria-live="polite"></p>
+
+  <div class="auth-links">
+    <p>Nao recebeu codigo? <a href="/cadastro.html">Voltar ao cadastro</a></p>
+    <p><a href="/login.html">← Ir para login</a></p>
+  </div>
+</section>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/verificar-email.js"></script>
 </body>
 </html>

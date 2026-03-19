@@ -1,59 +1,226 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meus Cursos</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plágio — Nao Copie Essa Ideia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="catalog-page">
-    <header class="site-header">
-        <div class="header-top">
-            <a href="/index.html" class="brand" aria-label="Plataforma de Cursos">
-                <span class="brand-dot" aria-hidden="true"></span>
-                <span class="brand-text">Plataforma de Cursos</span>
-            </a>
-            <nav class="main-nav" aria-label="Navegação principal">
-                <a href="/index.html" class="nav-link is-active">Catálogo</a>
-                <a href="/sala-virtual.html" class="nav-link" id="link-sala" hidden>Sala virtual</a>
-                <a href="/login.html" class="nav-link" id="link-login">Entrar</a>
-                <button id="btn-logout" type="button" hidden>Sair</button>
-            </nav>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="/index.html">
+    <div class="brand-mark">🧠</div>
+    <div class="brand-texts">
+      <span class="brand-name">Plágio</span>
+      <span class="brand-sub">Nao Copie Essa Ideia</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/index.html" class="active">Catalogo</a>
+    <a href="/sala-virtual.html" id="link-sala" hidden>Sala Virtual</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema">
+      <span class="icon-moon">🌙</span>
+      <span class="icon-sun">☀️</span>
+    </button>
+    <div class="nav-bell" title="Notificações">🔔</div>
+    <div class="avatar" id="avatar">AT</div>
+    <a href="/login.html" class="btn btn-ghost" id="link-login">Entrar</a>
+    <button class="btn-exit" id="btn-logout" hidden>Sair</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="hero-fade"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Propriedade Intelectual</div>
+      <h1 class="hero-title">Crie. Assine.<br><em>Nao copie.</em></h1>
+      <div class="hero-version">Plagio: Nao Copie Essa Ideia 3.0</div>
+      <p class="hero-sub">Desenvolva originalidade, reconheca autoria e construa sua identidade criativa — dentro e fora da plataforma.</p>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-num" id="stat-cursos">--</div>
+          <div class="stat-label">Cursos ativos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="stat-turmas">--</div>
+          <div class="stat-label">Turmas abertas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-widget" id="widget-progresso" hidden>
+      <div class="widget-head">
+        <span class="widget-title">Seu progresso</span>
+        <a href="/sala-virtual.html" class="widget-link">Ver tudo</a>
+      </div>
+      <div id="widget-progresso-lista"></div>
+    </div>
+  </div>
+</section>
+
+<!-- WELCOME BAR -->
+<div class="welcome-wrap">
+  <div class="welcome-card">
+    <div class="welcome-left">
+      <div class="welcome-icon">👋</div>
+      <div class="welcome-info">
+        <strong id="status-usuario">Visitante</strong>
+        <p id="aviso-acesso">Faca login para acessar sua area.</p>
+      </div>
+      <span class="badge-role" id="badge-role" hidden>Aluno</span>
+    </div>
+    <div class="welcome-actions">
+      <a href="/sala-virtual.html" class="btn btn-primary" id="btn-continuar" hidden>▶ Continuar aprendendo</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div class="grid-3">
+
+    <!-- Cursos -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Cursos disponiveis</div>
+          <div class="card-sub">Formacoes ativas com carga horaria por trilha</div>
+        </div>
+      </div>
+      <div class="card-div"></div>
+      <div class="course-list" id="lista-de-cursos">
+        <div class="loading-state">Carregando cursos...</div>
+      </div>
+    </div>
+
+    <!-- Turmas -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Turmas abertas</div>
+          <div class="card-sub">Status das turmas — matricule-se quando disponivel</div>
+        </div>
+      </div>
+      <div class="card-div"></div>
+      <div class="class-list" id="lista-de-turmas">
+        <div class="loading-state">Carregando turmas...</div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px;">Acesso rápido</div>
+      <div class="quick-list">
+        <div class="quick-item">
+          <div class="quick-icon" style="background:rgba(124,58,237,.12);">📁</div>
+          <div class="quick-body">
+            <div class="quick-name">Meus certificados</div>
+            <div class="quick-desc">2 certificados emitidos</div>
+          </div>
+          <span class="quick-chev">›</span>
+        </div>
+        <div class="quick-item">
+          <div class="quick-icon" style="background:rgba(34,211,238,.08);">📅</div>
+          <div class="quick-body">
+            <div class="quick-name">Agenda de aulas</div>
+            <div class="quick-desc">Próxima: 22 mar, 19h</div>
+          </div>
+          <span class="quick-chev">›</span>
+        </div>
+        <div class="quick-item">
+          <div class="quick-icon" style="background:rgba(74,222,128,.08);">💬</div>
+          <div class="quick-body">
+            <div class="quick-name">Fórum de dúvidas</div>
+            <div class="quick-desc">3 respostas novas</div>
+          </div>
+          <span class="quick-chev">›</span>
+        </div>
+        <div class="quick-item">
+          <div class="quick-icon" style="background:rgba(244,114,182,.1);">📝</div>
+          <div class="quick-body">
+            <div class="quick-name">Avaliações pendentes</div>
+            <div class="quick-desc">1 quiz disponível</div>
+          </div>
+          <span class="quick-chev">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="card" style="grid-column:span 2;">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Atividade recente</div>
+          <div class="card-sub">Suas últimas interações na plataforma</div>
+        </div>
+      </div>
+      <div class="card-div"></div>
+
+      <div class="act-list">
+        <div class="act-item">
+          <div class="act-timeline">
+            <div class="act-dot" style="background:var(--green); color:var(--green);"></div>
+            <div class="act-line"></div>
+          </div>
+          <div class="act-body">
+            <div class="act-text">Você concluiu o módulo <strong>"O que é plágio e como evitá-lo"</strong> no curso Plágio 3.0</div>
+            <div class="act-time">🕒 Hoje, 14h32</div>
+          </div>
         </div>
 
-        <section class="hero-card" aria-labelledby="catalogo-title">
-            <p class="hero-tag">Aprendizado contínuo</p>
-            <h1 id="catalogo-title">Explore nossos cursos e turmas abertas</h1>
-            <p class="hero-description">
-                Navegue pelo catálogo, escolha sua trilha e acompanhe seu desenvolvimento dentro da plataforma.
-            </p>
-        </section>
-
-        <div class="status-bar">
-            <p id="aviso-acesso"></p>
-            <p id="status-usuario">Você não está logado.</p>
+        <div class="act-item">
+          <div class="act-timeline">
+            <div class="act-dot" style="background:var(--purple-3); color:var(--purple-3);"></div>
+            <div class="act-line"></div>
+          </div>
+          <div class="act-body">
+            <div class="act-text">Matriculado com sucesso na turma <strong>"Plágio 3.0 — Março 2025"</strong></div>
+            <div class="act-time">🕒 Ontem, 10h15</div>
+          </div>
         </div>
-    </header>
 
-    <main class="catalog-main">
-        <section class="panel">
-            <div class="panel-heading">
-                <h2>Cursos disponíveis</h2>
-                <p>Veja as formações ativas com a carga horária de cada trilha.</p>
-            </div>
-            <ul id="lista-de-cursos" class="card-list"></ul>
-        </section>
+        <div class="act-item">
+          <div class="act-timeline">
+            <div class="act-dot" style="background:var(--pink); color:var(--pink);"></div>
+            <div class="act-line"></div>
+          </div>
+          <div class="act-body">
+            <div class="act-text">Certificado emitido: <strong>"Direitos Autorais — Turma A"</strong></div>
+            <div class="act-time">🕒 15 mar, 09h00</div>
+          </div>
+        </div>
 
-        <section class="panel">
-            <div class="panel-heading">
-                <h2>Turmas abertas</h2>
-                <p>Acompanhe o status das turmas para saber quando se matricular.</p>
-            </div>
-            <ul id="lista-de-turmas" class="card-list"></ul>
-        </section>
-    </main>
+        <div class="act-item">
+          <div class="act-timeline">
+            <div class="act-dot" style="background:var(--cyan); color:var(--cyan);"></div>
+          </div>
+          <div class="act-body">
+            <div class="act-text">Nova turma disponível: <strong>"Propriedade Intelectual T1"</strong> — inscrições abertas</div>
+            <div class="act-time">🕒 12 mar, 08h45</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <script type="module" src="/js/script.js"></script>
+  </div>
+</main>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/script.js"></script>
 </body>
 </html>

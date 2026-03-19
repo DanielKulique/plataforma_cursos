@@ -1,48 +1,85 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala Virtual</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala Virtual — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="catalog-page">
-    <header class="site-header">
-        <div class="header-top">
-            <a href="/index.html" class="brand" aria-label="Plataforma de Cursos">
-                <span class="brand-dot" aria-hidden="true"></span>
-                <span class="brand-text">Plataforma de Cursos</span>
-            </a>
-            <nav class="main-nav" aria-label="Navegação da sala virtual">
-                <a href="/index.html" class="nav-link">Catálogo</a>
-                <button id="btn-logout" type="button">Sair</button>
-            </nav>
-        </div>
+<body>
 
-        <section class="hero-card" aria-labelledby="sala-title">
-            <p class="hero-tag">Área do aluno</p>
-            <h1 id="sala-title">Sala virtual da sua turma</h1>
-            <p class="hero-description">
-                Aqui você acompanha as turmas com acesso ativo, progresso e conteúdos liberados.
-            </p>
-        </section>
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="/index.html">
+    <div class="brand-mark">🧠</div>
+    <div class="brand-texts">
+      <span class="brand-name">Plágio</span>
+      <span class="brand-sub">Nao Copie Essa Ideia</span>
+    </div>
+  </a>
 
-        <div class="status-bar">
-            <p id="status-usuario">Carregando usuário...</p>
-            <p id="mensagem-sala" class="sala-message"></p>
-        </div>
-    </header>
+  <div class="nav-links">
+    <a href="/index.html">Catalogo</a>
+    <a href="/sala-virtual.html" class="active">Sala Virtual</a>
+  </div>
 
-    <main class="catalog-main">
-        <section class="panel panel-full">
-            <div class="panel-heading">
-                <h2>Minhas turmas abertas</h2>
-                <p>Confira abaixo as suas turmas com participação ativa.</p>
-            </div>
-            <ul id="lista-minhas-turmas" class="card-list"></ul>
-        </section>
-    </main>
+  <div class="nav-right">
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <div class="nav-bell" title="Notificações">🔔</div>
+    <div class="avatar" id="avatar">AT</div>
+    <button class="btn-exit" id="btn-logout">Sair</button>
+  </div>
+</nav>
 
-    <script type="module" src="/js/sala-virtual.js"></script>
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="hero-fade"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Area do Aluno</div>
+      <h1 class="hero-title">Sala <em>Virtual</em></h1>
+      <p class="hero-sub">Acompanhe suas turmas ativas, progresso e conteudos liberados.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WELCOME BAR -->
+<div class="welcome-wrap">
+  <div class="welcome-card">
+    <div class="welcome-left">
+      <div class="welcome-icon">📚</div>
+      <div class="welcome-info">
+        <strong id="status-usuario">Carregando...</strong>
+        <p id="mensagem-sala"></p>
+      </div>
+      <span class="badge-role">Aluno</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Minhas turmas abertas</div>
+        <div class="card-sub">Confira abaixo as suas turmas com participacao ativa.</div>
+      </div>
+    </div>
+    <div class="card-div"></div>
+    <div class="class-list" id="lista-minhas-turmas">
+      <div class="loading-state">Carregando suas turmas...</div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/sala-virtual.js"></script>
 </body>
 </html>

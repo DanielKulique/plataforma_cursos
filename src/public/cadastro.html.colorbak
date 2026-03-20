@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --bg: #080c12;
+      --yellow: #f5c518;
+      --blue: #2563eb;
+      --silver: #94a3b8;
+      --status-ok: #22c55e;
+      --ease: .18s cubic-bezier(.4,0,.2,1);
+    }
+
+    .light-mode {
+      --bg: #f8fafc;
+      --yellow: #d97706;
+      --blue: #1d4ed8;
+      --silver: #64748b;
+      --border: rgba(0,0,0,.07);
+      --border-2: rgba(0,0,0,.11);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--yellow);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      z-index: 99999;
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: var(--yellow, #f5c518);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      transition: top .2s;
+    }
+
+    .skip-link:focus-visible {
+      top: 16px;
+    }
+
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .breadcrumb {
+      max-width: 1100px;
+      margin: 10px auto 0;
+      padding: 0 24px;
+      color: var(--silver);
+      font-size: 12px;
+    }
+
+    .bc-list {
+      list-style: none;
+      display: flex;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .bc-list li + li::before {
+      content: '/';
+      margin-right: 8px;
+      color: var(--silver);
+    }
+  </style>
+</head>
+<body class="auth-page">
+<a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+
+<nav aria-label="Trilha de navegação" class="breadcrumb">
+  <ol class="bc-list">
+    <li><a href="/index.html">Catálogo</a></li>
+    <li aria-current="page">Cadastro</li>
+  </ol>
+</nav>
+
+<main id="main-content" role="main">
+<section class="auth-card" aria-labelledby="titulo-cadastro">
+  <div class="auth-card-head" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+    <div class="auth-brand">
+      <div class="brand-mark">🧠</div>
+      <div>
+        <div class="auth-brand-text">Plágio</div>
+        <div class="auth-brand-sub">Nao Copie Essa Ideia</div>
+      </div>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar tema">
+      <span class="icon-moon">🌙</span>
+      <span class="icon-sun">☀️</span>
+    </button>
+  </div>
+
+  <p class="auth-kicker">Crie seu acesso</p>
+  <h1 class="auth-title" id="titulo-cadastro">Criar conta</h1>
+  <p class="auth-subtitle">Preencha os dados para comecar na plataforma.</p>
+
+  <form id="form-cadastro" class="auth-form">
+    <div class="form-group">
+      <label for="nome_completo">Nome completo</label>
+      <input type="text" id="nome_completo" name="nome_completo" placeholder="Seu nome completo" minlength="3" required>
+    </div>
+
+    <div class="form-group">
+      <label for="cpf">CPF (somente numeros)</label>
+      <input type="text" id="cpf" name="cpf" inputmode="numeric" maxlength="11" placeholder="00000000000" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" placeholder="voce@email.com" autocomplete="email" required>
+    </div>
+
+    <div class="form-group">
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" name="senha" minlength="6" placeholder="Crie uma senha forte" autocomplete="new-password" required>
+      <small class="field-help">
+        Use pelo menos 8 caracteres com: letra maiuscula, minuscula, numero e simbolo.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="confirmar_senha">Repita sua senha</label>
+      <input type="password" id="confirmar_senha" name="confirmar_senha" minlength="6" placeholder="Confirme sua senha" autocomplete="new-password" required>
+    </div>
+
+    <button type="submit" class="btn-submit">Cadastrar</button>
+  </form>
+
+  <p id="mensagem-cadastro" class="auth-message" role="status" aria-live="polite"></p>
+
+  <div class="auth-links">
+    <p>Ja possui conta? <a href="/login.html">Entrar</a></p>
+  </div>
+
+  <!-- Bloco pos-cadastro (aparece apos sucesso) -->
+  <div id="bloco-pos-cadastro" class="post-register" hidden>
+    <p class="post-register-title">Cadastro realizado!</p>
+    <p class="post-register-text">Codigo enviado para seu e-mail. Agora confirme sua conta.</p>
+    <p class="post-register-actions" style="margin-top:12px;">
+      <a id="link-confirmar-email" href="/verificar-email.html" class="btn btn-primary" style="display:inline-flex;">Confirmar e-mail agora</a>
+    </p>
+  </div>
+
+  <div class="auth-links">
+    <p><a href="/index.html">← Voltar para o catalogo</a></p>
+  </div>
+</section>
+</main>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/cadastro.js"></script>
+<script>
+  window.__loadingHint = 'loading';
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      const form = document.getElementById('form-cadastro');
+      if (form) form.requestSubmit();
+    }
+  });
+</script>
+<div id="toast-container" role="status" aria-live="polite"></div>
+</body>
+</html>

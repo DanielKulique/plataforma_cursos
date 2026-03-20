@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório de Cores — Autoria Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Sora',sans-serif;background:#080c12;color:#cbd5e1;padding:36px;-webkit-font-smoothing:antialiased;}
+h2{font-size:17px;font-weight:700;color:#f1f5f9;margin:28px 0 14px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:8px 12px;background:#0f1420;color:#f5c518;font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid rgba(255,255,255,.08);}
+td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);}
+tr:hover td{background:rgba(255,255,255,.02);}
+</style>
+</head>
+<body>
+<div style="max-width:960px;margin:0 auto;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+    <div style="width:32px;height:32px;border-radius:8px;background:#f5c518;display:flex;align-items:center;justify-content:center;font-size:16px;">🧠</div>
+    <div>
+      <div style="font-size:20px;font-weight:700;color:#f1f5f9;">Relatório de Migração de Cores</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Autoria Platform v2 · Design System · 19/03/2026, 19:22:21</div>
+    </div>
+  </div>
+
+  <h2>🎨 Paleta oficial (dark / light)</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:32px;">
+    
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#080c12;border:1px solid rgba(255,255,255,.1);" title="#080c12"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#f8fafc;border:1px solid rgba(0,0,0,.1);" title="#f8fafc"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--bg</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Fundo página</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#080c12 / #f8fafc</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#0f1420;border:1px solid rgba(255,255,255,.1);" title="#0f1420"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#ffffff;border:1px solid rgba(0,0,0,.1);" title="#ffffff"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--bg-panel</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Painéis</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#0f1420 / #ffffff</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#111926;border:1px solid rgba(255,255,255,.1);" title="#111926"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#ffffff;border:1px solid rgba(0,0,0,.1);" title="#ffffff"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--bg-card</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Cards</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#111926 / #ffffff</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#f5c518;border:1px solid rgba(255,255,255,.1);" title="#f5c518"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#d97706;border:1px solid rgba(0,0,0,.1);" title="#d97706"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--yellow</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Marca / Acento</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#f5c518 / #d97706</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#2563eb;border:1px solid rgba(255,255,255,.1);" title="#2563eb"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#1d4ed8;border:1px solid rgba(0,0,0,.1);" title="#1d4ed8"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--blue</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Ação primária</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#2563eb / #1d4ed8</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#60a5fa;border:1px solid rgba(255,255,255,.1);" title="#60a5fa"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#3b82f6;border:1px solid rgba(0,0,0,.1);" title="#3b82f6"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--blue-3</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Links / destaque</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#60a5fa / #3b82f6</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#cbd5e1;border:1px solid rgba(255,255,255,.1);" title="#cbd5e1"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#475569;border:1px solid rgba(0,0,0,.1);" title="#475569"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--silver-2</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Texto corrido</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#cbd5e1 / #475569</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#f1f5f9;border:1px solid rgba(255,255,255,.1);" title="#f1f5f9"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#0f172a;border:1px solid rgba(0,0,0,.1);" title="#0f172a"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--white</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Títulos</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#f1f5f9 / #0f172a</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#22c55e;border:1px solid rgba(255,255,255,.1);" title="#22c55e"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#16a34a;border:1px solid rgba(0,0,0,.1);" title="#16a34a"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--status-ok</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Sucesso</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#22c55e / #16a34a</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#f59e0b;border:1px solid rgba(255,255,255,.1);" title="#f59e0b"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#d97706;border:1px solid rgba(0,0,0,.1);" title="#d97706"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--status-warn</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Atenção</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#f59e0b / #d97706</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:#ef4444;border:1px solid rgba(255,255,255,.1);" title="#ef4444"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:#dc2626;border:1px solid rgba(0,0,0,.1);" title="#dc2626"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--status-error</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Erro</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">#ef4444 / #dc2626</div>
+      </div>
+    </div>
+    <div style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;gap:6px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);" title="rgba(255,255,255,.1)"></div>
+        <div style="width:40px;height:40px;border-radius:8px;background:rgba(0,0,0,.11);border:1px solid rgba(0,0,0,.1);" title="rgba(0,0,0,.11)"></div>
+      </div>
+      <div>
+        <div style="font-family:monospace;font-size:11px;color:#f5c518;font-weight:600;">--border-2</div>
+        <div style="font-size:12px;color:#f1f5f9;margin-top:2px;">Borda</div>
+        <div style="font-family:monospace;font-size:10px;color:#94a3b8;margin-top:2px;">rgba(255,255,255,.1) / rgba(0,0,0,.11)</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>🔄 Mapa de migração (62 regras)</h2>
+  <div style="border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;margin-bottom:32px;">
+    <table>
+      <thead><tr><th>De (legado)</th><th>Para (v2)</th><th>Motivo</th></tr></thead>
+      <tbody>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#7c3aed</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">roxo primário → blue</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#8b5cf6</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">roxo secundário → blue-2</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#a78bfa</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-3)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">roxo claro → blue-3</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#6d28d9</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">roxo escuro → blue</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#9333ea</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">roxo médio → blue-2</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(124,58,237[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(37,99,235,.16)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">purple glow → blue-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(109,40,217[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(37,99,235,.16)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">purple dim → blue-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(139,92,246[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(59,130,246,.2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">purple border → blue-brd</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#f472b6</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--status-warn)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">pink acento → amber/warn</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#f9a8d4</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--status-warn)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">pink claro → amber/warn</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#db2777</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--status-error)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">pink escuro → status-error</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#ec4899</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--status-error)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">pink md → status-error</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(244,114,182[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(245,158,11,.1)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">pink rgba → amber-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(219,39,119[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(239,68,68,.1)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">pink bg → red-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#22d3ee</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-3)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">cyan → blue-3</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#0ea5a0</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-3)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">teal → blue-3</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#0891b2</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">teal escuro → blue</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(34,211,238[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(59,130,246,.2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">cyan rgba → blue-brd</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(14,165,160[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(37,99,235,.16)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">teal rgba → blue-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#0d1b35</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg-2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">navy antigo → bg-2</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#162344</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg-panel)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">navy-2 → bg-panel</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#0e1420</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg-card)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">bg-2 antigo → bg-card</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#07090f</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">bg antigo → bg</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#0d1117</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">bg escuro → bg</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#111827</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg-panel)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">gray-900 → bg-panel</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#ccd6f6</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--silver-2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">text antigo → silver-2</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#3d4f72</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--silver)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">text-2 → silver</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#7a8db0</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--silver)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">muted antigo → silver</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#4a5568</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--silver)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">muted-2 → silver</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#6b7898</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--silver)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">muted → silver</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#f0f2ff</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--white)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">white antigo → white</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#1e2535</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--border-2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">border antigo → border-2</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#2a3550</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--border-2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">border-2 antigo → border-2</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(13,27,53[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(0,0,0,.5)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">shadow antigo → genérico</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#f4a826</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--yellow)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">amarelo antigo → yellow</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#fbd072</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--yellow)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">amarelo claro → yellow</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(244,168,38[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--yellow-g)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">yellow-glow antigo → yellow-g</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#2152a3</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue antigo → blue</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#3068cc</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue-2 antigo → blue-2</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#5b8fee</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-3)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue-3 antigo → blue-3</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(33,82,163[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(37,99,235,.16)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue glow antigo → blue-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(91,143,238[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(59,130,246,.2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue border antigo → blue-brd</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(29,78,216[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(37,99,235,.16)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue-light → blue-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#dce8ff</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-dim)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue bg antigo → blue-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#c2d5ff</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-brd)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue border antigo → blue-brd</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#4ade80</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--status-ok)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">green-400 → status-ok</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#fbbf24</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--status-warn)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">amber-400 → status-warn</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#fb7185</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--status-error)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">rose-400 → status-error</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#e85d75</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--status-error)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">rose antigo → status-error</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">rgba\(232,93,117[^)]*\)</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">rgba(239,68,68,.1)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">rose antigo → red-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#ede9fe</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg-2)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">lavanda → bg-2 (light)</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#f5f3ff</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">violeta claro → bg (light)</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#faf5ff</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--bg)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">purple-50 → bg (light)</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#eef4ff</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-dim)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue-50 → blue-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#dbeafe</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--blue-dim)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">blue-100 → blue-dim</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#1e1b4b</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--white)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">indigo-900 → white (dark text)</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">#312e81</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">var(--white)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">indigo-800 → white</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">font-family:\s*['"]?Inter['"]?</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">font-family: var(--font-body)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Inter → Sora</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">font-family:\s*['"]?Roboto['"]?</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">font-family: var(--font-body)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Roboto → Sora</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">font-family:\s*['"]?Arial['"]?</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">font-family: var(--font-body)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Arial → Sora</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">font-family:\s*system-ui</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">font-family: var(--font-body)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">system-ui → Sora</td>
+    </tr>
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#fca5a5;">'Space Grotesk'</td>
+      <td style="font-family:monospace;font-size:11px;color:#86efac;">'Sora'</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Space Grotesk → Sora</td>
+    </tr></tbody>
+    </table>
+  </div>
+
+  
+  <h2>📄 Arquivos analisados (50)</h2>
+  <div style="border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;margin-bottom:32px;">
+    <table>
+      <thead><tr><th>Arquivo</th><th>Patches</th><th>Aplicados</th></tr></thead>
+      <tbody>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">audit-report.html</td>
+      <td style="font-size:12px;color:#f5c518;">1 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">setup.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">auth.controller.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">cursos.controller.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">health.controller.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">matricula.controller.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">plagio.controller.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">turmas.controller.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">usuarios.controller.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">analise.model.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">auth.models.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">cursos.models.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">matricula.models.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">turmas.models.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">usuarios.models.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">admin.routes.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">auth.routes.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">cursos.routes.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">health.routes.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">matricula.routes.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">plagio.routes.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">turmas.routes.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">usuarios.routes.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">plagio.service.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">database.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">checkAuth.middleware.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">checkProfessorPermission.middleware.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">checkRole.middleware.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">checkUserPermission.middleware.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">email.service.js.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">3 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">layout.html</td>
+      <td style="font-size:12px;color:#f5c518;">5 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Tokens :root + .light-mode, Mapa de migração de cores, Import fontes oficiais, Theme toggle padronizado, Nav → amarelo + tokens</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">admin.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">cadastro.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">index.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">login.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">professor-turma.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">professor.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">questionario.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">sala-aula.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">sala-virtual.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr>
+    <tr>
+      <td style="font-size:13px;color:#f1f5f9;font-weight:600;">verificar-email.html</td>
+      <td style="font-size:12px;color:#f5c518;">2 patch(es)</td>
+      <td style="font-size:11.5px;color:#94a3b8;">Import fontes oficiais, Theme toggle padronizado</td>
+    </tr></tbody>
+    </table>
+  </div>
+
+  <div style="background:#0f1420;border:1px solid rgba(245,197,24,.2);border-radius:12px;padding:20px;font-size:12.5px;line-height:1.8;">
+    <div style="font-family:monospace;font-size:10px;font-weight:600;color:#f5c518;letter-spacing:1px;margin-bottom:10px;">CHECKLIST PÓS-MIGRAÇÃO</div>
+    <div>□ Confirmar que o tema toggle alterna visual corretamente (amarelo nav ativo)</div>
+    <div>□ Verificar hero em .light-mode: fundo deve permanecer roxo/índigo escuro</div>
+    <div>□ Inspecionar &lt;style&gt; — zero hex avulsos fora de :root e .light-mode</div>
+    <div>□ Conferir badges/chips: verde=status-ok, amarelo=status-warn, vermelho=status-error</div>
+    <div>□ Testar em mobile: contraste mínimo 4.5:1 (WCAG AA)</div>
+    <div>□ Rodar: node audit-autoria.js --report para score final</div>
+  </div>
+</div>
+</body>
+</html>

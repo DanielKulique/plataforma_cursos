@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciar Turma — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --bg: #080c12;
+      --yellow: #f5c518;
+      --blue: #2563eb;
+      --silver: #94a3b8;
+      --status-ok: #22c55e;
+      --ease: .18s cubic-bezier(.4,0,.2,1);
+    }
+
+    .light-mode {
+      --bg: #f8fafc;
+      --yellow: #d97706;
+      --blue: #1d4ed8;
+      --silver: #64748b;
+      --border: rgba(0,0,0,.07);
+      --border-2: rgba(0,0,0,.11);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--yellow);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      z-index: 99999;
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: var(--yellow, #f5c518);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      transition: top .2s;
+    }
+
+    .skip-link:focus-visible {
+      top: 16px;
+    }
+
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .breadcrumb {
+      max-width: 1100px;
+      margin: 10px auto 0;
+      padding: 0 24px;
+      color: var(--silver);
+      font-size: 12px;
+    }
+
+    .bc-list {
+      list-style: none;
+      display: flex;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .bc-list li + li::before {
+      content: '/';
+      margin-right: 8px;
+      color: var(--silver);
+    }
+  </style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="/index.html">
+    <div class="brand-mark">🧠</div>
+    <div class="brand-texts">
+      <span class="brand-name">Plágio</span>
+      <span class="brand-sub">Nao Copie Essa Ideia</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/index.html">Catalogo</a>
+    <a href="/professor.html">Minhas Turmas</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <button class="btn-exit" id="btn-logout">Sair</button>
+  </div>
+</nav>
+
+<nav aria-label="Trilha de navegação" class="breadcrumb">
+  <ol class="bc-list">
+    <li><a href="/index.html">Catálogo</a></li>
+    <li><a href="/professor.html">Professor</a></li>
+    <li aria-current="page">Turma</li>
+  </ol>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="hero-fade"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Gerenciamento de Turma</div>
+      <h1 class="hero-title" id="turma-title">Carregando turma...</h1>
+      <p class="hero-sub">Gerencie os alunos matriculados e acompanhe seu desempenho.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WELCOME BAR -->
+<div class="welcome-wrap">
+  <div class="welcome-card">
+    <div class="welcome-left">
+      <div class="welcome-icon">👨‍🏫</div>
+      <div class="welcome-info">
+        <strong id="status-usuario">Carregando...</strong>
+        <p id="mensagem-turma"></p>
+      </div>
+      <span class="badge-role">Professor</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main id="main-content" role="main">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title" id="titulo-alunos">Alunos Matriculados</div>
+        <div class="card-sub" id="subtitulo-alunos">Lista de alunos e seu desempenho na turma.</div>
+      </div>
+    </div>
+    <div class="card-div"></div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Aluno</th>
+            <th>Email</th>
+            <th>Progresso</th>
+            <th>Nota Final</th>
+            <th>Status</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody id="lista-alunos-turma">
+          <tr>
+            <td colspan="6" class="table-empty">Carregando alunos matriculados...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Modal para edicao de matricula -->
+<div id="modal-edicao" class="modal">
+  <div class="modal-content">
+    <button type="button" id="fechar-modal" class="modal-close" aria-label="Fechar modal">&times;</button>
+    <h3 class="modal-title">Editar Matricula</h3>
+
+    <form id="form-edicao-matricula" class="modal-form">
+      <div class="form-group">
+        <label for="nota-final">Nota Final</label>
+        <input type="number" id="nota-final" name="nota_final" min="0" max="10" step="0.1" placeholder="0.0 a 10.0">
+      </div>
+      <div class="form-group">
+        <label for="status-aprovacao">Status de Aprovacao</label>
+        <select id="status-aprovacao" name="status_aprovacao">
+          <option value="CURSANDO">CURSANDO</option>
+          <option value="APROVADO">APROVADO</option>
+          <option value="REPROVADO">REPROVADO</option>
+          <option value="CANCELADO">CANCELADO</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="progresso">Progresso (%)</label>
+        <input type="number" id="progresso" name="progresso_percentual" min="0" max="100" placeholder="0 a 100">
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Atualizar</button>
+        <button type="button" id="cancelar-modal" class="btn btn-ghost">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/professor-turma.js"></script>
+<script>
+  window.__loadingHint = 'loading';
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+    if (e.key === 'Escape') {
+      const closeModal = document.getElementById('fechar-modal');
+      if (closeModal) closeModal.click();
+    }
+  });
+</script>
+<div id="toast-container" role="status" aria-live="polite"></div>
+</body>
+</html>

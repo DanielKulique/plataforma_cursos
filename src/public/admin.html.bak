@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="/index.html">
+    <div class="brand-mark">🧠</div>
+    <div class="brand-texts">
+      <span class="brand-name">Plágio</span>
+      <span class="brand-sub">Nao Copie Essa Ideia</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/index.html">Catalogo</a>
+    <a href="/admin.html" class="active">Admin</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <a href="/login.html" class="btn btn-ghost">Login</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="hero-fade"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Gestao</div>
+      <h1 class="hero-title">Painel <em>Administrativo</em></h1>
+      <p class="hero-sub">Area exclusiva para operacoes administrativas da plataforma.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main>
+  <section id="admin-root" class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Admin</div>
+        <div class="card-sub">Carregando dados e permissoes do usuario...</div>
+      </div>
+    </div>
+    <div class="card-div"></div>
+    <p style="color:var(--muted); text-align:center; padding:40px 0;">Carregando painel...</p>
+  </section>
+</main>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/admin.js"></script>
+</body>
+</html>

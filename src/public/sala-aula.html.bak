@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala de Aula — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="/index.html">
+    <div class="brand-mark">🧠</div>
+    <div class="brand-texts">
+      <span class="brand-name">Plágio</span>
+      <span class="brand-sub">Nao Copie Essa Ideia</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/index.html">Catalogo</a>
+    <a href="/sala-virtual.html">Sala Virtual</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <div class="nav-bell" title="Notificações">🔔</div>
+    <div class="avatar" id="avatar">AT</div>
+    <button class="btn-exit" id="btn-logout">Sair</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="hero-fade"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Turma Ativa</div>
+      <h1 class="hero-title">Sala de <em>Aula</em></h1>
+      <p class="hero-sub">Acompanhe os conteudos da turma, seu progresso e acesse avaliacoes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WELCOME BAR -->
+<div class="welcome-wrap">
+  <div class="welcome-card">
+    <div class="welcome-left">
+      <div class="welcome-icon">📖</div>
+      <div class="welcome-info">
+        <strong id="status-usuario">Carregando...</strong>
+        <p id="mensagem-sala-aula"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-head">
+      <div>
+        <div class="card-title" id="titulo-turma">Carregando turma...</div>
+        <div class="card-sub" id="nome-curso">Aguarde enquanto validamos seu acesso.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="aula-grid">
+    <!-- Info da turma -->
+    <div class="aula-card">
+      <h3>📊 Informacoes da turma</h3>
+      <ul class="aula-meta-list">
+        <li>
+          <span>Status</span>
+          <span id="badge-status-turma" class="badge badge-neutral">Carregando</span>
+        </li>
+        <li>
+          <span>Progresso atual</span>
+          <strong id="progresso-turma">--</strong>
+        </li>
+        <li>
+          <span>Periodo</span>
+          <strong id="periodo-turma">--</strong>
+        </li>
+        <li>
+          <span>Carga horaria</span>
+          <strong id="carga-horaria">--</strong>
+        </li>
+      </ul>
+
+      <p id="descricao-curso" style="margin-top:16px; font-size:13px; color:var(--muted); line-height:1.6;">
+        Carregando descricao do curso...
+      </p>
+    </div>
+
+    <!-- Conteudo da aula -->
+    <div class="aula-card">
+      <h3>📚 Conteudo da aula</h3>
+      <ul id="lista-conteudos" class="module-list">
+        <li class="module-item">
+          <p>Carregando conteudos liberados...</p>
+        </li>
+      </ul>
+
+      <div class="aula-actions">
+        <a id="link-prova" class="btn btn-primary" href="#">Ir para prova</a>
+        <a id="link-exercicios" class="btn btn-ghost" href="#">Ir para exercicios</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/sala-aula.js"></script>
+</body>
+</html>

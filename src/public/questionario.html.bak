@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Questionario — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="/index.html">
+    <div class="brand-mark">🧠</div>
+    <div class="brand-texts">
+      <span class="brand-name">Plágio</span>
+      <span class="brand-sub">Nao Copie Essa Ideia</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/index.html">Catalogo</a>
+    <a href="/sala-virtual.html">Sala Virtual</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <button class="btn-exit" id="btn-logout">Sair</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="hero-fade"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow" id="questionario-tag">Questionario</div>
+      <h1 class="hero-title" id="questionario-title">Carregando ambiente...</h1>
+      <p class="hero-sub" id="questionario-description">Aguarde enquanto preparamos sua avaliacao.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WELCOME BAR -->
+<div class="welcome-wrap">
+  <div class="welcome-card">
+    <div class="welcome-left">
+      <div class="welcome-icon">📝</div>
+      <div class="welcome-info">
+        <strong id="status-usuario">Carregando...</strong>
+        <p id="mensagem-questionario"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title" id="contexto-questionario">Contexto da turma</div>
+        <div class="card-sub" id="subtitulo-questionario">Carregando dados da turma e do questionario...</div>
+      </div>
+    </div>
+    <div class="card-div"></div>
+
+    <form id="form-questionario">
+      <ul id="lista-questoes" class="question-list">
+        <li class="question-item">
+          <p style="text-align:center; color:var(--muted);">Carregando perguntas...</p>
+        </li>
+      </ul>
+
+      <div style="margin-top:24px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button id="btn-finalizar-questionario" type="submit" class="btn btn-primary">
+          Finalizar questionario
+        </button>
+        <a id="link-voltar-sala" class="btn btn-ghost" href="/sala-virtual.html">
+          Voltar para sala
+        </a>
+      </div>
+    </form>
+
+    <section id="resultado-questionario" class="result-card" hidden>
+      <h3 id="resultado-titulo">Questionario finalizado</h3>
+      <p id="resultado-descricao"></p>
+    </section>
+  </div>
+</main>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/questionario.js"></script>
+</body>
+</html>

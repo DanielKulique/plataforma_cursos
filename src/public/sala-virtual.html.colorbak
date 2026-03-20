@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala Virtual — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --bg: #080c12;
+      --yellow: #f5c518;
+      --blue: #2563eb;
+      --silver: #94a3b8;
+      --status-ok: #22c55e;
+      --ease: .18s cubic-bezier(.4,0,.2,1);
+    }
+
+    .light-mode {
+      --bg: #f8fafc;
+      --yellow: #d97706;
+      --blue: #1d4ed8;
+      --silver: #64748b;
+      --border: rgba(0,0,0,.07);
+      --border-2: rgba(0,0,0,.11);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--yellow);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      z-index: 99999;
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: var(--yellow, #f5c518);
+      color: var(--bg);
+      font-weight: 700;
+      font-size: 13px;
+      transition: top .2s;
+    }
+
+    .skip-link:focus-visible {
+      top: 16px;
+    }
+
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg,
+        rgba(255,255,255,.04) 0%,
+        rgba(255,255,255,.09) 50%,
+        rgba(255,255,255,.04) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease infinite;
+      border-radius: 6px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .breadcrumb {
+      max-width: 1100px;
+      margin: 10px auto 0;
+      padding: 0 24px;
+      color: var(--silver);
+      font-size: 12px;
+    }
+
+    .bc-list {
+      list-style: none;
+      display: flex;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .bc-list li + li::before {
+      content: '/';
+      margin-right: 8px;
+      color: var(--silver);
+    }
+  </style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="/index.html">
+    <div class="brand-mark">🧠</div>
+    <div class="brand-texts">
+      <span class="brand-name">Plágio</span>
+      <span class="brand-sub">Nao Copie Essa Ideia</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/index.html">Catalogo</a>
+    <a href="/sala-virtual.html" class="active">Sala Virtual</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+    <div class="nav-bell" title="Notificações" aria-label="Notificações">🔔</div>
+    <div class="avatar" id="avatar">AT</div>
+    <button class="btn-exit" id="btn-logout">Sair</button>
+  </div>
+</nav>
+
+<nav aria-label="Trilha de navegação" class="breadcrumb">
+  <ol class="bc-list">
+    <li><a href="/index.html">Catálogo</a></li>
+    <li aria-current="page">Sala Virtual</li>
+  </ol>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="hero-fade"></div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Area do Aluno</div>
+      <h1 class="hero-title">Sala <em>Virtual</em></h1>
+      <p class="hero-sub">Acompanhe suas turmas ativas, progresso e conteudos liberados.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WELCOME BAR -->
+<div class="welcome-wrap">
+  <div class="welcome-card">
+    <div class="welcome-left">
+      <div class="welcome-icon">📚</div>
+      <div class="welcome-info">
+        <strong id="status-usuario">Carregando...</strong>
+        <p id="mensagem-sala"></p>
+      </div>
+      <span class="badge-role">Aluno</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main id="main-content" role="main">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Minhas turmas abertas</div>
+        <div class="card-sub">Confira abaixo as suas turmas com participacao ativa.</div>
+      </div>
+    </div>
+    <div class="card-div"></div>
+    <div class="class-list" id="lista-minhas-turmas">
+      <div class="loading-state">Carregando suas turmas...</div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/sala-virtual.js"></script>
+<script>
+  window.__loadingHint = 'loading';
+  function confirmarSaida() {
+    return confirm('Deseja sair da plataforma agora?');
+  }
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+    if (e.key === 'Escape') {
+      const bell = document.querySelector('.nav-bell');
+      if (bell) bell.blur();
+    }
+  });
+</script>
+<div id="toast-container" role="status" aria-live="polite"></div>
+</body>
+</html>

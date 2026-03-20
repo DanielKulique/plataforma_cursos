@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório IHC — Autoria Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Sora',sans-serif; background:#080c12; color:#cbd5e1; padding:32px; -webkit-font-smoothing:antialiased; }
+summary { cursor:pointer; }
+details[open] summary { color:#f1f5f9; }
+</style>
+</head>
+<body>
+<div style="max-width:900px;margin:0 auto;">
+  <!-- Header -->
+  <div style="margin-bottom:32px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="width:32px;height:32px;border-radius:8px;background:#f5c518;display:flex;align-items:center;justify-content:center;font-size:16px;">🧠</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#f1f5f9;">Autoria</div>
+        <div style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;">NÃO COPIE ESSA IDEIA</div>
+      </div>
+    </div>
+    <h1 style="font-size:28px;font-weight:700;color:#f1f5f9;margin-bottom:6px;">Relatório de Auditoria IHC</h1>
+    <p style="font-size:13px;color:#94a3b8;">Gerado em: 19/03/2026, 21:06:37 · 1 páginas auditadas</p>
+  </div>
+
+  <!-- Summary cards -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;">
+    <div style="background:#0f1420;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:30px;font-weight:700;color:#22c55e">95</div>
+      <div style="font-family:monospace;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-top:4px;">Score médio</div>
+    </div>
+    <div style="background:#0f1420;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:30px;font-weight:700;color:#f1f5f9;">1</div>
+      <div style="font-family:monospace;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-top:4px;">Páginas</div>
+    </div>
+    <div style="background:#0f1420;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:30px;font-weight:700;color:#ef4444;">1</div>
+      <div style="font-family:monospace;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-top:4px;">Violações</div>
+    </div>
+    <div style="background:#0f1420;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:30px;font-weight:700;color:#22c55e;">21</div>
+      <div style="font-family:monospace;font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-top:4px;">Aprovadas</div>
+    </div>
+  </div>
+
+  <!-- File index -->
+  <div style="background:#0f1420;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:24px;">
+    <div style="font-family:monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#f5c518;margin-bottom:12px;">Índice de páginas</div>
+    <a href="#file-verificador-html" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background='transparent'">
+        <span style="font-size:13px;color:#f1f5f9;">verificador.html</span>
+        <span style="font-family:monospace;font-size:12px;font-weight:700;color:#22c55e;">95 · 1 violação(ões)</span>
+      </a>
+  </div>
+
+  <!-- File results -->
+  
+      <div id="file-verificador-html" style="background:#0c1018;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.07);">
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#f1f5f9;">verificador.html</div>
+            <div style="font-size:11.5px;color:#94a3b8;margin-top:2px;">21/22 regras aprovadas · 1 violação(ões)</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:28px;font-weight:700;color:#22c55e;line-height:1;">95</div>
+            <div style="font-family:monospace;font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;">score</div>
+          </div>
+        </div>
+        
+      <div style="border:1px solid rgba(255,255,255,.08);border-left:3px solid #60a5fa;border-radius:8px;padding:12px 16px;margin-bottom:8px;background:#111926;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-family:monospace;font-size:10px;padding:2px 7px;border-radius:3px;background:#60a5fa22;color:#60a5fa;border:1px solid #60a5fa44;font-weight:700;text-transform:uppercase;">medium</span>
+          <span style="font-family:monospace;font-size:10px;color:#94a3b8;">IHC-05 · IHC-05-hardcoded-color</span>
+        </div>
+        <div style="font-size:13.5px;font-weight:600;color:#f1f5f9;margin-bottom:4px;">Cor hex avulsa (fora do design system)</div>
+        <div style="font-size:12.5px;color:#94a3b8;margin-bottom:8px;line-height:1.6;">10 cor(es) hex fora do design system: Linha 80: #000, Linha 130: #000, Linha 206: #000...</div>
+        <div style="font-size:12px;color:#60a5fa;margin-bottom:8px;">💡 Substituir cores avulsas pelos tokens CSS do design system (var(--yellow), var(--blue-3), etc.).</div>
+        <details>
+          <summary style="font-family:monospace;font-size:10.5px;color:#94a3b8;cursor:pointer;">Ver snippet de correção</summary>
+          <pre style="margin-top:8px;padding:10px;background:#0a0e16;border-radius:6px;font-size:11.5px;color:#a78bfa;overflow-x:auto;white-space:pre-wrap;">/* ERRADO: */  color: #f5c518;
+/* CERTO:  */  color: var(--yellow);
+
+/* ERRADO: */  background: #22c55e;
+/* CERTO:  */  background: var(--status-ok);</pre>
+        </details>
+      </div>
+      </div>
+</div>
+</body>
+</html>

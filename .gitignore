@@ -2,3 +2,19 @@
 
 .env
 node_modules/
+
+# backups / lixo
+*.bak
+*.colorbak
+
+# coverage
+coverage/
+
+# node
+node_modules/
+
+# logs
+*.log
+
+# sistema
+.DS_Store

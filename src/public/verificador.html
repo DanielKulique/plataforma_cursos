@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificador com IA — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+/* ─── TOKENS ─────────────────────────────────────────── */
+:root {
+  --bg:        #080c12;
+  --bg-2:      #0c1018;
+  --bg-panel:  #0f1420;
+  --bg-card:   #111926;
+  --bg-inset:  #0a0e16;
+  --yellow:    #f5c518;
+  --yellow-g:  rgba(245,197,24,.12);
+  --blue:      #2563eb;
+  --blue-2:    #3b82f6;
+  --blue-3:    #60a5fa;
+  --blue-dim:  rgba(37,99,235,.16);
+  --blue-brd:  rgba(59,130,246,.2);
+  --silver:    #94a3b8;
+  --silver-2:  #cbd5e1;
+  --white:     #f1f5f9;
+  --green:     #22c55e;
+  --green-dim: rgba(34,197,94,.1);
+  --amber:     #f59e0b;
+  --amber-dim: rgba(245,158,11,.1);
+  --red:       #ef4444;
+  --red-dim:   rgba(239,68,68,.1);
+  --border:    rgba(255,255,255,.06);
+  --border-2:  rgba(255,255,255,.1);
+  --shadow-md: 0 4px 24px rgba(0,0,0,.7);
+  --r:6px; --r2:10px; --r3:14px;
+  --ease:.18s cubic-bezier(.4,0,.2,1);
+  --mono:'JetBrains Mono',monospace;
+  /* IHC: Status semântico uniforme */
+  --status-ok:     #22c55e;
+  --status-warn:   #f59e0b;
+  --status-error:  #ef4444;
+  --status-info:   #60a5fa;
+  --status-neutral:#94a3b8;
+}
+.light-mode {
+  --bg:#f8fafc; --bg-2:#f1f5f9; --bg-panel:#fff; --bg-card:#fff; --bg-inset:#f1f5f9;
+  --yellow:#d97706; --yellow-g:rgba(217,119,6,.07);
+  --blue:#1d4ed8; --blue-2:#2563eb; --blue-3:#3b82f6;
+  --blue-dim:rgba(29,78,216,.07); --blue-brd:rgba(37,99,235,.18);
+  --silver:#64748b; --silver-2:#475569; --white:#0f172a;
+  --green:#16a34a; --green-dim:rgba(22,163,74,.09);
+  --amber:#d97706; --amber-dim:rgba(217,119,6,.09);
+  --red:#dc2626; --red-dim:rgba(220,38,38,.07);
+  --border:rgba(0,0,0,.07); --border-2:rgba(0,0,0,.11);
+  --shadow-md:0 4px 20px rgba(0,0,0,.07);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Sora',sans-serif;
+  background:var(--bg); color:var(--silver-2);
+  height:100vh; display:flex; flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+  transition:background .25s,color .25s;
+  overflow:hidden;
+}
+a{text-decoration:none;color:inherit;}
+button{font-family:inherit;cursor:pointer;border:none;}
+
+/* IHC #7: Focus ring visível para navegação por teclado */
+:focus-visible{outline:2px solid var(--yellow);outline-offset:3px;border-radius:4px;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:99px;}
+
+/* IHC #7: Skip link para acessibilidade */
+.skip-link{
+  position:absolute;top:-100px;left:16px;z-index:99999;
+  padding:8px 16px;border-radius:var(--r);
+  background:var(--yellow);color:#000;font-weight:700;font-size:13px;
+  transition:top .2s;
+}
+.skip-link:focus{top:16px;}
+
+/* ─── NAV ─────────────────────────────────────────────── */
+nav{
+  height:64px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 44px;
+  background:var(--bg-2);
+  border-bottom:2px solid var(--yellow);
+  position:relative;z-index:50;
+}
+
+.breadcrumb{
+  height:34px;flex-shrink:0;
+  display:flex;align-items:center;
+  padding:0 20px;
+  background:var(--bg-panel);
+  border-bottom:1px solid var(--border);
+  color:var(--silver);
+  font-size:11.5px;
+}
+.bc-list{list-style:none;display:flex;align-items:center;gap:8px;margin:0;padding:0;}
+.bc-list li+li::before{content:'/';margin-right:8px;color:var(--silver);opacity:.7;}
+.bc-list a{color:var(--silver);transition:color var(--ease);}
+.bc-list a:hover{color:var(--white);}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.brand-mark{
+  width:36px;height:36px;border-radius:11px;
+  background:linear-gradient(135deg, var(--yellow), var(--blue));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  box-shadow:0 0 18px var(--yellow-g), inset 0 1px 0 rgba(255,255,255,.15);
+  transition:transform var(--ease), box-shadow var(--ease);
+}
+.nav-brand:hover .brand-mark{
+  transform:rotate(-7deg) scale(1.1);
+  box-shadow:0 0 24px rgba(245,197,24,.35), 0 0 14px rgba(37,99,235,.2);
+}
+.brand-name{font-size:15.5px;font-weight:700;color:var(--white);letter-spacing:-.3px;}
+.brand-sub{font-size:9.5px;font-weight:600;letter-spacing:2.2px;text-transform:uppercase;color:var(--silver);}
+
+/* IHC #5: nav links com estado ativo inequívoco */
+.nav-links{
+  display:flex;align-items:center;gap:2px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border-2);border-radius:var(--r2);padding:4px;
+}
+.nav-links a{
+  padding:7px 18px;border-radius:var(--r);font-size:13.5px;font-weight:500;color:var(--silver);
+  transition:all var(--ease);
+}
+.nav-links a:hover{background:var(--blue-dim);color:var(--blue-3);}
+/* IHC #5: ativo = fundo amarelo sutil + box-shadow */
+.nav-links a.active{
+  background:rgba(245,197,24,.22);
+  color:var(--yellow);font-weight:600;
+  box-shadow:inset 0 0 0 1px rgba(245,197,24,.4);
+}
+
+.nav-right{display:flex;align-items:center;gap:10px;}
+.theme-toggle{
+  width:36px;height:36px;border-radius:var(--r);
+  border:1px solid var(--border-2);background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:var(--silver);transition:all var(--ease);
+}
+.theme-toggle:hover{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-g);}
+.theme-toggle .icon-moon{display:inline;}
+.theme-toggle .icon-sun{display:none;}
+.light-mode .theme-toggle .icon-moon{display:none;}
+.light-mode .theme-toggle .icon-sun{display:inline;}
+.nav-bell{
+  width:36px;height:36px;border-radius:var(--r);
+  border:1px solid var(--border-2);background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--silver);transition:all var(--ease);
+}
+.nav-bell:hover{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-g);}
+.avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10.5px;font-weight:700;border:2px solid var(--border-2);
+}
+.btn-exit{
+  padding:5px 12px;border-radius:var(--r);
+  border:1px solid var(--border-2);background:transparent;
+  font-size:12px;color:var(--silver);transition:all var(--ease);
+}
+.btn-exit:hover{border-color:var(--red);color:var(--red);}
+
+/* ─── TOPBAR ──────────────────────────────────────────── */
+.topbar{
+  height:42px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+  background:var(--bg-panel);border-bottom:1px solid var(--border);
+}
+.topbar-l{display:flex;align-items:center;gap:12px;}
+.pg-label{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  color:var(--yellow);letter-spacing:.5px;text-transform:uppercase;
+}
+.tsep{width:1px;height:12px;background:var(--border-2);}
+
+/* IHC #2: Status pill visível sempre */
+.status-row{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--silver);}
+.sdot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--status-neutral);transition:background .3s,box-shadow .3s;
+  flex-shrink:0;
+}
+.sdot.idle  {background:var(--status-neutral);}
+.sdot.busy  {background:var(--status-warn);animation:blink 1s infinite;}
+.sdot.done  {background:var(--status-ok);box-shadow:0 0 7px var(--status-ok);}
+.sdot.error {background:var(--status-error);box-shadow:0 0 7px var(--status-error);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* IHC #2: Shortcut hint na topbar para usuários experientes */
+.shortcut-hint{
+  font-family:var(--mono);font-size:10px;color:var(--silver);opacity:.5;
+  display:flex;align-items:center;gap:4px;
+}
+kbd{
+  padding:1px 5px;border-radius:3px;
+  background:var(--bg-inset);border:1px solid var(--border-2);
+  font-family:var(--mono);font-size:9.5px;color:var(--silver-2);
+}
+
+.topbar-r{display:flex;align-items:center;gap:8px;}
+.wc-badge{
+  font-family:var(--mono);font-size:10.5px;color:var(--silver);
+  padding:3px 9px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--bg-inset);transition:color .2s;
+}
+.wc-badge.has-text{color:var(--white);}
+.btn{
+  padding:5px 14px;border-radius:var(--r);
+  font-size:12px;font-weight:600;font-family:'Sora',sans-serif;
+  display:inline-flex;align-items:center;gap:5px;
+  transition:all var(--ease);cursor:pointer;
+}
+.btn-y{background:var(--yellow);color:#000;border:none;font-weight:700;}
+.btn-y:hover{background:#ffe033;transform:translateY(-1px);box-shadow:0 4px 12px var(--yellow-g);}
+.btn-y:active{transform:none;}
+/* IHC #3: estado desabilitado claro */
+.btn-y:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-o{background:transparent;border:1px solid var(--border-2);color:var(--silver);}
+.btn-o:hover{border-color:var(--blue-3);color:var(--blue-3);}
+
+/* ─── WORKSPACE ───────────────────────────────────────── */
+.workspace{flex:1;display:flex;min-height:0;overflow:hidden;}
+
+/* ─── EDITOR COL 60% ──────────────────────────────────── */
+.editor-col{
+  flex:0 0 60%;display:flex;flex-direction:column;
+  border-right:1px solid var(--border-2);min-height:0;
+}
+.ed-bar{
+  display:flex;align-items:center;gap:4px;
+  padding:6px 12px;
+  background:var(--bg-panel);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.tb{
+  width:26px;height:25px;border-radius:4px;background:transparent;
+  border:1px solid transparent;color:var(--silver);
+  font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--ease);
+}
+.tb:hover{background:var(--blue-dim);color:var(--blue-3);border-color:var(--blue-brd);}
+.tb.active-fmt{background:var(--blue-dim);color:var(--blue-3);border-color:var(--blue-brd);}
+.tbsep{width:1px;height:15px;background:var(--border-2);margin:0 3px;}
+.tspace{flex:1;}
+
+/* IHC #2 + #3: botão de análise com estado de loading claro */
+.analyze-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:var(--r);
+  background:var(--blue);color:#fff;border:none;
+  font-size:12px;font-weight:600;font-family:'Sora',sans-serif;
+  transition:all var(--ease);position:relative;
+}
+.analyze-btn:hover:not(:disabled){background:var(--blue-2);box-shadow:0 0 0 3px rgba(59,130,246,.15);}
+/* IHC #3: double-submit guard visual */
+.analyze-btn:disabled{opacity:.6;cursor:not-allowed;}
+.analyze-btn.loading{pointer-events:none;}
+.spinner{
+  width:11px;height:11px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.25);border-top-color:#fff;
+  animation:spin .65s linear infinite;display:none;
+}
+.loading .spinner{display:block;}.loading .a-icon{display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ─── EDITOR AREA ─────────────────────────────────────── */
+.ed-wrap{flex:1;position:relative;min-height:0;overflow:hidden;}
+
+/* IHC #6: Skeleton loader enquanto aguarda resultado */
+.ed-skeleton{
+  position:absolute;inset:0;padding:18px 20px;
+  display:none;flex-direction:column;gap:10px;
+  background:var(--bg-card);z-index:5;pointer-events:none;
+}
+.ed-skeleton.visible{display:flex;}
+.sk{
+  border-radius:6px;
+  background:linear-gradient(90deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 100%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s ease infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-line{height:14px;width:100%;}
+.sk-line.w60{width:60%;}
+.sk-line.w80{width:80%;}
+.sk-line.w45{width:45%;}
+
+/* Highlight layer + textarea */
+.hl-layer{
+  position:absolute;inset:0;padding:18px 20px;
+  font-family:'Sora',sans-serif;font-size:14px;line-height:1.85;
+  color:transparent;white-space:pre-wrap;word-wrap:break-word;
+  pointer-events:none;overflow:hidden;
+}
+/* IHC #2: highlights com affordance clara — sublinhado + fundo */
+mark.hl-red{
+  background:rgba(239,68,68,.13);
+  border-bottom:2px solid rgba(239,68,68,.7);
+  border-radius:2px 2px 0 0;color:transparent;
+  pointer-events:all;cursor:pointer;
+  transition:background .15s;
+}
+mark.hl-amber{
+  background:rgba(245,158,11,.11);
+  border-bottom:2px solid rgba(245,158,11,.6);
+  border-radius:2px 2px 0 0;color:transparent;
+  pointer-events:all;cursor:pointer;
+  transition:background .15s;
+}
+mark.hl-red:hover  {background:rgba(239,68,68,.25);}
+mark.hl-amber:hover{background:rgba(245,158,11,.22);}
+/* IHC #1: destaque ativo ao clicar no card */
+mark.hl-focus{
+  outline:2px solid var(--yellow);
+  border-radius:3px;
+  background:rgba(245,197,24,.18) !important;
+}
+
+.ed-ta{
+  position:absolute;inset:0;width:100%;height:100%;
+  padding:18px 20px;background:transparent;border:none;outline:none;resize:none;
+  font-family:'Sora',sans-serif;font-size:14px;line-height:1.85;
+  color:var(--white);caret-color:var(--yellow);overflow-y:auto;
+}
+.ed-ta::placeholder{color:var(--silver);opacity:.4;}
+
+/* IHC #2: char limit warning */
+.ed-ta.near-limit{caret-color:var(--amber);}
+.ed-ta.at-limit{caret-color:var(--red);}
+
+.ed-foot{
+  flex-shrink:0;padding:6px 16px;
+  border-top:1px solid var(--border);background:var(--bg-panel);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.foot-info{font-family:var(--mono);font-size:10px;color:var(--silver);}
+/* IHC #2: feedback de contagem muda cor conforme estado */
+.foot-info.warn{color:var(--amber);}
+.foot-info.danger{color:var(--red);}
+
+/* Upload */
+.upload-strip{
+  flex-shrink:0;padding:9px 14px;
+  border-top:1px solid var(--border);background:var(--bg-panel);
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  transition:background var(--ease);
+}
+.upload-strip:hover{background:var(--blue-dim);}
+.upload-strip:hover .us-name{color:var(--blue-3);}
+.us-ic{
+  width:28px;height:28px;border-radius:var(--r);
+  background:var(--bg-inset);border:1px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  flex-shrink:0;transition:transform var(--ease);
+}
+.upload-strip:hover .us-ic{transform:scale(1.08);}
+.us-name{font-size:12.5px;font-weight:600;color:var(--silver-2);transition:color var(--ease);}
+.us-hint{font-size:11px;color:var(--silver);margin-top:1px;}
+.us-tag{
+  margin-left:auto;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.5px;
+  color:var(--blue-3);background:var(--blue-dim);
+  border:1px solid var(--blue-brd);padding:2px 7px;border-radius:3px;
+}
+/* IHC #2: estado de upload em progresso */
+.upload-strip.uploading{pointer-events:none;opacity:.7;}
+.upload-progress-bar{
+  position:absolute;bottom:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--blue),var(--blue-3));
+  border-radius:0 2px 2px 0;
+  width:0;transition:width .3s ease;
+}
+input[type="file"]{display:none;}
+
+/* ─── AI PANEL COL 40% ────────────────────────────────── */
+.ai-col{
+  flex:0 0 40%;display:flex;flex-direction:column;
+  min-height:0;background:var(--bg-panel);
+}
+.panel-head{
+  flex-shrink:0;display:flex;
+  border-bottom:1px solid var(--border-2);background:var(--bg-2);
+}
+/* IHC #5: tab ativo = amarelo — consistente com nav */
+.ptab{
+  flex:1;padding:9px 6px;
+  font-size:11.5px;font-weight:600;color:var(--silver);
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  cursor:pointer;transition:all var(--ease);
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.ptab:hover{color:var(--white);}
+.ptab.active{color:var(--yellow);border-bottom-color:var(--yellow);background:var(--yellow-g);}
+/* IHC #2: badge de contagem com cor semântica */
+.pbadge{
+  min-width:15px;height:15px;border-radius:99px;padding:0 4px;
+  font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.pbadge.red  {background:var(--status-error);color:#fff;}
+.pbadge.amber{background:var(--status-warn);color:#fff;}
+.pbadge.muted{background:var(--bg-card);color:var(--silver);border:1px solid var(--border-2);}
+
+.panel-scroll{flex:1;overflow-y:auto;}
+.tab-pane{display:none;flex-direction:column;gap:12px;padding:14px;}
+.tab-pane.active{display:flex;}
+
+/* ─── SCORE ───────────────────────────────────────────── */
+.score-card{
+  display:flex;align-items:center;gap:14px;
+  padding:14px;border-radius:var(--r3);
+  background:var(--bg-card);border:1px solid var(--border-2);
+}
+.gw{position:relative;width:108px;height:108px;flex-shrink:0;}
+.gsv{width:100%;height:100%;transform:rotate(-90deg);}
+.g-tr{fill:none;stroke:rgba(255,255,255,.05);stroke-width:9;stroke-linecap:round;}
+.g-fi{
+  fill:none;stroke-width:9;stroke-linecap:round;
+  stroke-dasharray:283;stroke-dashoffset:283;
+  transition:stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1),stroke .4s;
+}
+.g-fi.green{stroke:#22c55e;filter:drop-shadow(0 0 7px rgba(34,197,94,.5));}
+.g-fi.amber{stroke:#f59e0b;filter:drop-shadow(0 0 7px rgba(245,158,11,.5));}
+.g-fi.red  {stroke:#ef4444;filter:drop-shadow(0 0 7px rgba(239,68,68,.5));}
+.gi{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.g-num{font-size:23px;font-weight:700;color:var(--white);line-height:1;font-variant-numeric:tabular-nums;}
+.g-lbl{font-family:var(--mono);font-size:9px;color:var(--silver);margin-top:3px;text-transform:uppercase;letter-spacing:.8px;}
+.srows{flex:1;display:flex;flex-direction:column;}
+.srow{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;
+}
+.srow:last-child{border-bottom:none;padding-bottom:0;}
+.srow>span{color:var(--silver);}
+/* IHC #5: chips com semântica de cor consistente */
+.chip{padding:2px 8px;border-radius:3px;font-size:10.5px;font-weight:700;font-family:var(--mono);}
+.cg{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.22);}
+.ca{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.22);}
+.cr{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.22);}
+.cb{background:var(--blue-dim);color:var(--blue-3);border:1px solid var(--blue-brd);}
+
+.dist-card{
+  padding:12px 14px;border-radius:var(--r2);
+  background:var(--bg-card);border:1px solid var(--border);
+}
+.dist-hd{
+  font-family:var(--mono);font-size:9.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:1px;color:var(--silver);margin-bottom:10px;
+}
+.drow{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.drow:last-child{margin-bottom:0;}
+.dlbl{font-size:11px;color:var(--silver);width:68px;flex-shrink:0;}
+.dtrk{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.05);overflow:hidden;}
+.dfil{height:100%;border-radius:99px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.dfg{background:var(--green);}.dfa{background:var(--amber);}.dfr{background:var(--red);}
+.dval{font-family:var(--mono);font-size:10.5px;color:var(--white);font-weight:600;width:30px;text-align:right;}
+
+/* IHC #6: Panel skeleton */
+.panel-skeleton{display:flex;flex-direction:column;gap:10px;padding:14px;}
+.sk-gauge{width:108px;height:108px;border-radius:50%;flex-shrink:0;}
+.sk-row{height:28px;border-radius:6px;width:100%;}
+.sk-score-wrap{display:flex;align-items:center;gap:14px;}
+.sk-score-rows{flex:1;display:flex;flex-direction:column;gap:8px;}
+
+/* IHC: Empty state claro */
+.empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:44px 20px;text-align:center;opacity:.4;
+}
+.empty-ic{font-size:34px;}
+.empty p{font-size:12px;color:var(--silver);line-height:1.6;max-width:200px;}
+
+/* ─── DETECTIONS ──────────────────────────────────────── */
+.det-list-wrap{display:flex;flex-direction:column;gap:8px;}
+.det{
+  border-radius:var(--r2);border:1px solid;overflow:hidden;
+  cursor:pointer;transition:all var(--ease);
+}
+.det.red  {border-color:rgba(239,68,68,.22);background:rgba(239,68,68,.03);}
+.det.amber{border-color:rgba(245,158,11,.18);background:rgba(245,158,11,.03);}
+.det:hover{transform:translateX(2px);}
+.det.red:hover  {border-color:rgba(239,68,68,.5);box-shadow:0 3px 12px rgba(239,68,68,.09);}
+.det.amber:hover{border-color:rgba(245,158,11,.45);box-shadow:0 3px 12px rgba(245,158,11,.07);}
+/* IHC #2: feedback de foco do card selecionado */
+.det.focused{box-shadow:0 0 0 2px var(--yellow) !important;border-color:var(--yellow) !important;}
+
+.det-top{padding:10px 12px;display:flex;align-items:flex-start;gap:8px;}
+.det-badge{
+  flex-shrink:0;font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-top:1px;
+}
+.red  .det-badge{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.28);}
+.amber .det-badge{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.28);}
+.det-txt{font-size:12px;color:var(--white);line-height:1.5;flex:1;}
+.det-pct{flex-shrink:0;font-family:var(--mono);font-size:13px;font-weight:700;margin-left:6px;}
+.red  .det-pct{color:var(--red);}
+.amber .det-pct{color:var(--amber);}
+
+/* IHC #2: indicador de "clique para expandir" */
+.det-toggle{
+  flex-shrink:0;width:18px;height:18px;border-radius:4px;
+  background:var(--bg-inset);border:1px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--silver);transition:transform var(--ease);
+}
+.det.open .det-toggle{transform:rotate(90deg);color:var(--yellow);border-color:rgba(245,197,24,.3);}
+
+.det-body{display:none;border-top:1px solid;animation:sdown .2s ease;}
+.det.red  .det-body{border-top-color:rgba(239,68,68,.12);}
+.det.amber .det-body{border-top-color:rgba(245,158,11,.1);}
+.det.open .det-body{display:block;}
+@keyframes sdown{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;}
+.cbox{border-radius:var(--r);padding:8px 10px;font-size:11.5px;line-height:1.6;}
+.cbox.stu{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16);}
+.cbox.ori{background:var(--blue-dim);border:1px solid var(--blue-brd);}
+.clbl{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;display:block;
+}
+.cbox.stu .clbl{color:var(--red);}
+.cbox.ori .clbl{color:var(--blue-3);}
+.ctxt{color:var(--silver-2);}
+.src-a{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;color:var(--blue-3);margin-top:6px;
+  border-bottom:1px dashed rgba(96,165,250,.3);padding-bottom:1px;
+}
+
+/* ─── ORIENTAÇÕES (ABNT) ──────────────────────────────── */
+.tip-blk{
+  border-radius:var(--r2);overflow:hidden;
+  border:1px solid var(--border-2);background:var(--bg-card);
+}
+.tip-hd{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+}
+.tip-bar{width:3px;height:30px;border-radius:2px;flex-shrink:0;}
+.tip-hd h4{font-size:13px;font-weight:700;color:var(--white);}
+.tip-hd p{font-size:11px;color:var(--silver);margin-top:1px;}
+.tip-bd{padding:11px 14px;font-size:12.5px;color:var(--silver-2);line-height:1.7;}
+.code-blk{
+  margin-top:8px;padding:9px 12px;border-radius:var(--r);
+  background:var(--bg-inset);border:1px solid var(--border-2);
+  font-family:var(--mono);font-size:11px;color:var(--blue-3);line-height:1.7;
+}
+.rule-blk{
+  margin-top:8px;padding:8px 12px;border-radius:var(--r);
+  background:var(--green-dim);border:1px solid rgba(34,197,94,.18);
+  font-size:11.5px;color:var(--green);font-family:var(--mono);
+}
+
+/* ─── IHC #2: TOAST NOTIFICATIONS ────────────────────── */
+#toast-container{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  display:flex;flex-direction:column-reverse;gap:10px;
+  pointer-events:none;
+}
+.toast{
+  pointer-events:all;padding:12px 16px;border-radius:10px;
+  font-family:'Sora',sans-serif;font-size:13px;
+  display:flex;align-items:center;gap:10px;max-width:340px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+  cursor:pointer;animation:toastIn .25s ease;
+}
+@keyframes toastIn {from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(8px)}}
+
+/* ─── IHC #3: CONFIRM MODAL ───────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);animation:fadeIn .2s ease;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{
+  background:#111926;border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:28px 32px;max-width:420px;width:90%;
+  box-shadow:0 24px 64px rgba(0,0,0,.8);animation:modalIn .25s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-size:17px;font-weight:700;color:var(--white);margin-bottom:10px;}
+.modal-msg{font-size:13.5px;color:var(--silver);line-height:1.7;margin-bottom:24px;}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end;}
+.modal-cancel{
+  padding:8px 20px;border-radius:8px;
+  border:1px solid var(--border-2);background:transparent;
+  color:var(--silver);font-family:'Sora',sans-serif;font-size:13px;cursor:pointer;
+  transition:all var(--ease);
+}
+.modal-cancel:hover{border-color:var(--silver);color:var(--white);}
+.modal-ok-danger{
+  padding:8px 20px;border-radius:8px;cursor:pointer;
+  background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);
+  color:#fca5a5;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;
+  transition:all var(--ease);
+}
+.modal-ok-danger:hover{background:rgba(239,68,68,.25);}
+
+/* IHC #7: Keyboard shortcut overlay */
+.shortcut-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9998;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);animation:fadeIn .2s ease;
+}
+.shortcut-box{
+  background:#111926;border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:24px 32px;max-width:480px;width:90%;
+  box-shadow:0 24px 64px rgba(0,0,0,.8);
+}
+.shortcut-box h3{
+  font-size:15px;font-weight:700;color:var(--white);
+  margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border-2);
+}
+.sk-row-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px;
+}
+.sk-row-item:last-child{border-bottom:none;}
+.sk-desc{color:var(--silver-2);}
+.sk-keys{display:flex;align-items:center;gap:4px;}
+
+@keyframes fR{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes fL{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.editor-col{animation:fR .4s .05s ease both;}
+.ai-col    {animation:fL .4s .1s  ease both;}
+
+@media(max-width:860px){
+  body{overflow:auto;height:auto;}
+  .workspace{flex-direction:column;}
+  .editor-col{flex:none;height:60vh;border-right:none;border-bottom:1px solid var(--border-2);}
+  .ai-col{flex:none;height:500px;}
+  .shortcut-hint{display:none;}
+}
+  </style>
+</head>
+<body>
+
+<!-- IHC #7: Skip link acessibilidade -->
+<a href="#editor" class="skip-link">Pular para o editor</a>
+
+<!-- Toast container (IHC #2) -->
+<div id="toast-container" role="status" aria-live="polite"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="/index.html">
+    <div class="brand-mark">🧠</div>
+    <div class="brand-texts">
+      <span class="brand-name">Plágio</span>
+      <span class="brand-sub">Nao Copie Essa Ideia</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="/index.html">Catalogo</a>
+    <a href="/sala-virtual.html" id="link-sala" hidden>Sala Virtual</a>
+    <a href="/verificador.html" class="active" id="link-verificador">Verificador com IA</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar tema">
+      <span class="icon-moon">🌙</span>
+      <span class="icon-sun">☀️</span>
+    </button>
+    <div class="nav-bell" title="Notificações" aria-label="Notificações">🔔</div>
+    <div class="avatar" id="avatar">AT</div>
+    <a href="/login.html" class="btn btn-ghost" id="link-login">Entrar</a>
+    <button class="btn-exit" id="btn-logout" hidden>Sair</button>
+  </div>
+</nav>
+
+<nav aria-label="Trilha de navegação" class="breadcrumb">
+  <ol class="bc-list">
+    <li><a href="/index.html">Catálogo</a></li>
+    <li aria-current="page">Verificador com IA</li>
+  </ol>
+</nav>
+
+<!-- TOPBAR -->
+<div class="topbar" role="toolbar" aria-label="Barra de ferramentas do verificador com IA">
+  <div class="topbar-l">
+    <span class="pg-label" aria-label="Página atual: verificador com IA">/ verificador com ia</span>
+    <div class="tsep" aria-hidden="true"></div>
+    <!-- IHC #2: Status sempre visível -->
+    <div class="status-row" role="status" aria-live="polite" aria-atomic="true">
+      <div class="sdot idle" id="sdot" aria-hidden="true"></div>
+      <span id="stxt">Pronto para analisar</span>
+    </div>
+    <div class="tsep" aria-hidden="true"></div>
+    <!-- IHC #7: hint de atalho para usuários experientes -->
+    <div class="shortcut-hint" aria-label="Dica: pressione ? para ver atalhos de teclado">
+      <kbd>?</kbd> atalhos &nbsp;·&nbsp; <kbd>Ctrl</kbd><kbd>↵</kbd> analisar
+    </div>
+  </div>
+  <div class="topbar-r">
+    <span class="wc-badge" id="wcBadge" aria-live="polite">0 palavras</span>
+    <button class="btn btn-o" id="btnClear" aria-label="Limpar o editor (Ctrl+Del)">Limpar</button>
+    <button class="btn btn-y" id="btnExport" disabled aria-label="Exportar relatório de análise">↓ Exportar</button>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<main class="workspace" id="main-content">
+
+  <!-- EDITOR COL -->
+  <section class="editor-col" aria-label="Editor de texto para verificação">
+
+    <!-- Toolbar -->
+    <div class="ed-bar" role="toolbar" aria-label="Formatação de texto">
+      <button class="tb" id="tbBold"  aria-label="Negrito (Ctrl+B)" title="Negrito"><b>B</b></button>
+      <button class="tb" id="tbItal"  aria-label="Itálico (Ctrl+I)" title="Itálico"><i style="font-style:italic">I</i></button>
+      <button class="tb" id="tbUnder" aria-label="Sublinhado (Ctrl+U)" title="Sublinhado"><u>U</u></button>
+      <div class="tbsep" aria-hidden="true"></div>
+      <button class="tb" id="tbUndo" aria-label="Desfazer (Ctrl+Z)" title="Desfazer">↩</button>
+      <button class="tb" id="tbRedo" aria-label="Refazer (Ctrl+Y)" title="Refazer">↪</button>
+      <div class="tspace" aria-hidden="true"></div>
+      <!-- IHC #2 + #3: Botão de análise com estado loading, tooltip e atalho -->
+      <button class="analyze-btn" id="btnAnalyze"
+        aria-label="Analisar originalidade do texto (Ctrl+Enter)"
+        title="Ctrl + Enter">
+        <span class="a-icon" aria-hidden="true">⚡</span>
+        <div class="spinner" aria-hidden="true"></div>
+        <span id="analyzeLabel">Analisar texto</span>
+      </button>
+    </div>
+
+    <!-- Editor wrap -->
+    <div class="ed-wrap">
+      <!-- IHC #6: Skeleton loader -->
+      <div class="ed-skeleton" id="edSkeleton" aria-hidden="true" role="presentation">
+        <div class="sk sk-line w80"></div>
+        <div class="sk sk-line"></div>
+        <div class="sk sk-line w60"></div>
+        <div class="sk sk-line"></div>
+        <div class="sk sk-line w45"></div>
+        <div class="sk sk-line w80"></div>
+        <div class="sk sk-line"></div>
+      </div>
+      <div class="hl-layer" id="hlLayer" aria-hidden="true"></div>
+      <textarea
+        class="ed-ta" id="editor"
+        aria-label="Área de texto para verificação de originalidade"
+        aria-describedby="editorHint"
+        maxlength="15000"
+        spellcheck="true"
+        placeholder="Cole aqui o texto para verificação — introdução do TCC, artigo, resenha, monografia...
+
+A análise semântica (MiniLM + similaridade cosseno) detecta semelhança de ideia, mesmo quando as palavras são diferentes das fontes originais.
+
+Análise automática após 2 segundos de pausa · ou pressione Ctrl+Enter."
+      ></textarea>
+    </div>
+
+    <!-- IHC #2: footer com feedback de contagem e dica de atalho -->
+    <div class="ed-foot" role="status" aria-live="polite">
+      <span class="foot-info" id="footInfo" aria-label="Contagem de palavras e caracteres">0 palavras · 0 / 15.000 caracteres</span>
+      <span class="foot-info" id="editorHint" aria-live="off">Debounce 2s · MiniLM · FastAPI :8000</span>
+    </div>
+
+    <!-- Upload -->
+    <div class="upload-strip" id="uploadStrip"
+      role="button" tabindex="0"
+      aria-label="Anexar documento PDF, DOCX ou TXT para extração automática de texto">
+      <input type="file" id="fileInput" accept=".pdf,.docx,.txt" aria-hidden="true">
+      <div class="us-ic" aria-hidden="true">📎</div>
+      <div>
+        <div class="us-name" id="usName">Anexar documento</div>
+        <div class="us-hint">PDF, DOCX ou TXT — extração automática via Python</div>
+      </div>
+      <span class="us-tag" aria-hidden="true">FastAPI / Python</span>
+    </div>
+  </section>
+
+  <!-- AI PANEL COL -->
+  <aside class="ai-col" aria-label="Painel de análise de IA">
+
+    <!-- IHC #1: Tabs com rótulos claros e atalhos numéricos -->
+    <div class="panel-head" role="tablist" aria-label="Seções do painel de IA">
+      <button class="ptab active" data-tab="score" role="tab"
+        aria-selected="true" aria-controls="pane-score" id="tab-score"
+        title="Alt+1" aria-label="Abrir aba Score (Alt+1)">
+        📊 Score
+      </button>
+      <button class="ptab" data-tab="detect" role="tab"
+        aria-selected="false" aria-controls="pane-detect" id="tab-detect"
+        title="Alt+2" aria-label="Abrir aba Detecções (Alt+2)">
+        Detecções <span class="pbadge muted" id="detBadge" aria-label="0 detecções">0</span>
+      </button>
+      <button class="ptab" data-tab="tips" role="tab"
+        aria-selected="false" aria-controls="pane-tips" id="tab-tips"
+        title="Alt+3" aria-label="Abrir aba ABNT (Alt+3)">
+        💡 ABNT
+      </button>
+    </div>
+
+    <div class="panel-scroll">
+
+      <!-- SCORE PANE -->
+      <div class="tab-pane active" id="pane-score" role="tabpanel" aria-labelledby="tab-score">
+        <!-- IHC #6: Skeleton do painel -->
+        <div class="panel-skeleton" id="scoreSkeleton" style="display:none;" aria-hidden="true">
+          <div class="sk-score-wrap">
+            <div class="sk sk-gauge"></div>
+            <div class="sk-score-rows">
+              <div class="sk sk-row"></div>
+              <div class="sk sk-row"></div>
+              <div class="sk sk-row"></div>
+            </div>
+          </div>
+          <div class="sk sk-row" style="height:80px;border-radius:10px;"></div>
+        </div>
+
+        <div class="empty" id="scoreEmpty" aria-label="Aguardando análise">
+          <div class="empty-ic" aria-hidden="true">📄</div>
+          <p>Analise um texto para ver o índice de originalidade</p>
+        </div>
+
+        <div id="scoreContent" style="display:none;flex-direction:column;gap:12px;">
+          <div class="score-card" aria-label="Resultado da análise semântica">
+            <div class="gw" role="img" aria-labelledby="gNumLabel">
+              <svg class="gsv" viewBox="0 0 100 100" aria-hidden="true">
+                <defs>
+                  <linearGradient id="gG" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#22c55e"/><stop offset="100%" stop-color="#86efac"/>
+                  </linearGradient>
+                </defs>
+                <circle class="g-tr" cx="50" cy="50" r="42"/>
+                <circle class="g-fi green" id="gFill" cx="50" cy="50" r="42"/>
+              </svg>
+              <div class="gi">
+                <span class="g-num" id="gNum" aria-label="Porcentagem de originalidade">--%</span>
+                <span class="g-lbl" id="gLbl">—</span>
+              </div>
+            </div>
+            <div class="srows">
+              <div class="srow"><span>Originalidade</span><span class="chip cb" id="sO" aria-live="polite">--%</span></div>
+              <div class="srow"><span>Plágio direto</span><span class="chip cr" id="sP" aria-live="polite">--%</span></div>
+              <div class="srow"><span>Paráfrases</span><span class="chip ca" id="sA" aria-live="polite">--%</span></div>
+              <div class="srow"><span>Veredito</span><span class="chip" id="sV" aria-live="polite">—</span></div>
+            </div>
+          </div>
+          <div class="dist-card" aria-label="Distribuição por segmento do texto">
+            <div class="dist-hd">Distribuição por segmento</div>
+            <div class="drow">
+              <span class="dlbl">Original</span>
+              <div class="dtrk" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="dfil dfg" id="dO"></div>
+              </div>
+              <span class="dval" id="dvO">--%</span>
+            </div>
+            <div class="drow">
+              <span class="dlbl">Paráfrase</span>
+              <div class="dtrk" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="dfil dfa" id="dA"></div>
+              </div>
+              <span class="dval" id="dvA">--%</span>
+            </div>
+            <div class="drow">
+              <span class="dlbl">Alta simil.</span>
+              <div class="dtrk" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="dfil dfr" id="dP"></div>
+              </div>
+              <span class="dval" id="dvP">--%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETECT PANE -->
+      <div class="tab-pane" id="pane-detect" role="tabpanel" aria-labelledby="tab-detect">
+        <div class="empty" id="detEmpty">
+          <div class="empty-ic" aria-hidden="true">✅</div>
+          <p>Nenhuma detecção ainda. Analise um texto para ver os resultados.</p>
+        </div>
+        <div id="detList" class="det-list-wrap" style="display:none;" role="list"></div>
+      </div>
+
+      <!-- TIPS PANE -->
+      <div class="tab-pane" id="pane-tips" role="tabpanel" aria-labelledby="tab-tips">
+        <div class="tip-blk">
+          <div class="tip-hd">
+            <div class="tip-bar" style="background:var(--yellow);" aria-hidden="true"></div>
+            <div><h4>Citação Direta</h4><p>ABNT NBR 10520 — reprodução literal</p></div>
+          </div>
+          <div class="tip-bd">
+            Até 3 linhas: aspas duplas inline. Mais de 3 linhas: bloco recuado 4 cm, sem aspas.
+            <div class="code-blk">(SOBRENOME, Ano, p. XX)<br>Ex: (FREIRE, 1996, p. 25)</div>
+          </div>
+        </div>
+        <div class="tip-blk">
+          <div class="tip-hd">
+            <div class="tip-bar" style="background:var(--blue-3);" aria-hidden="true"></div>
+            <div><h4>Citação Indireta</h4><p>Paráfrase legítima com atribuição</p></div>
+          </div>
+          <div class="tip-bd">
+            Reescreva com estrutura e vocabulário próprios — mas sempre referencie.
+            <div class="code-blk">Segundo Freire (1996), a educação...<br>A pedagogia crítica... (FREIRE, 1996).</div>
+          </div>
+        </div>
+        <div class="tip-blk">
+          <div class="tip-hd">
+            <div class="tip-bar" style="background:var(--green);" aria-hidden="true"></div>
+            <div><h4>Como a IA detecta</h4><p>Similaridade semântica via MiniLM</p></div>
+          </div>
+          <div class="tip-bd">
+            Frases → embeddings → cosseno. Detecta semelhança de <em>ideia</em>, não de palavras.
+            <div class="rule-blk">≥ 80% → Vermelho · 60–79% → Âmbar · &lt;60% → Original</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-scroll -->
+  </aside>
+</main>
+
+<!-- ─── IHC #7: SHORTCUT OVERLAY ──────────────────────── -->
+<div id="shortcutOverlay" class="shortcut-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Atalhos de teclado">
+  <div class="shortcut-box">
+    <h3>⌨️ Atalhos de teclado <span style="font-size:11px;font-weight:400;color:var(--silver);margin-left:8px;">Pressione Esc para fechar</span></h3>
+    <div class="sk-row-item"><span class="sk-desc">Analisar texto</span><div class="sk-keys"><kbd>Ctrl</kbd><kbd>↵</kbd></div></div>
+    <div class="sk-row-item"><span class="sk-desc">Limpar editor</span><div class="sk-keys"><kbd>Ctrl</kbd><kbd>Del</kbd></div></div>
+    <div class="sk-row-item"><span class="sk-desc">Ir para Score</span><div class="sk-keys"><kbd>Alt</kbd><kbd>1</kbd></div></div>
+    <div class="sk-row-item"><span class="sk-desc">Ir para Detecções</span><div class="sk-keys"><kbd>Alt</kbd><kbd>2</kbd></div></div>
+    <div class="sk-row-item"><span class="sk-desc">Ir para ABNT</span><div class="sk-keys"><kbd>Alt</kbd><kbd>3</kbd></div></div>
+    <div class="sk-row-item"><span class="sk-desc">Alternar tema</span><div class="sk-keys"><kbd>Alt</kbd><kbd>T</kbd></div></div>
+    <div class="sk-row-item"><span class="sk-desc">Abrir atalhos</span><div class="sk-keys"><kbd>?</kbd></div></div>
+    <div class="sk-row-item"><span class="sk-desc">Fechar / Cancelar</span><div class="sk-keys"><kbd>Esc</kbd></div></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════
+   IHC #2 — TOAST SYSTEM
+   Feedback visual para todas as ações assíncronas.
+   Uso: toast.success('msg') | toast.error('msg') | toast.warn('msg') | toast.info('msg')
+   ══════════════════════════════════════════════════════ */
+const toast = (() => {
+  const container = document.getElementById('toast-container');
+  const STYLES = {
+    success:{ bg:'rgba(34,197,94,.12)',  brd:'rgba(34,197,94,.35)',  icon:'✅', color:'#86efac' },
+    error:  { bg:'rgba(239,68,68,.12)',  brd:'rgba(239,68,68,.4)',   icon:'❌', color:'#fca5a5' },
+    warn:   { bg:'rgba(245,158,11,.1)',  brd:'rgba(245,158,11,.35)', icon:'⚠️', color:'#fde68a' },
+    info:   { bg:'rgba(59,130,246,.1)',  brd:'rgba(59,130,246,.3)',  icon:'ℹ️', color:'#93c5fd' },
+  };
+  function show(msg, type='info', dur=4200) {
+    const s = STYLES[type] || STYLES.info;
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.setAttribute('role','alert');
+    el.style.cssText = `background:${s.bg};border:1px solid ${s.brd};color:${s.color};`;
+    el.innerHTML = `<span aria-hidden="true">${s.icon}</span><span>${msg}</span>`;
+    el.addEventListener('click', () => dismiss(el));
+    container.appendChild(el);
+    setTimeout(() => dismiss(el), dur);
+  }
+  function dismiss(el) {
+    el.style.animation = 'toastOut .2s ease forwards';
+    setTimeout(() => el.remove(), 220);
+  }
+  return {
+    success:(m,d)=>show(m,'success',d), error:(m,d)=>show(m,'error',d),
+    warn:(m,d)=>show(m,'warn',d),       info:(m,d)=>show(m,'info',d),
+  };
+})();
+
+/* ══════════════════════════════════════════════════════
+   IHC #3 — CONFIRM MODAL
+   Substitui window.confirm() por modal acessível.
+   ══════════════════════════════════════════════════════ */
+function confirmar({ titulo, mensagem, labelOk='Confirmar', tipo='danger' }) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-labelledby','modal-title');
+    overlay.innerHTML = `
+      <div class="modal-box">
+        <div class="modal-title" id="modal-title">${titulo}</div>
+        <div class="modal-msg">${mensagem}</div>
+        <div class="modal-btns">
+          <button class="modal-cancel" id="mCancel" aria-label="Cancelar ação">Cancelar</button>
+          <button class="modal-ok-danger" id="mOk" aria-label="Confirmar ação">${labelOk}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    // IHC #7: autofocus no botão OK para fluxo rápido de teclado
+    overlay.querySelector('#mCancel').focus();
+    overlay.querySelector('#mOk').addEventListener('click', () => { overlay.remove(); resolve(true); });
+    overlay.querySelector('#mCancel').addEventListener('click', () => { overlay.remove(); resolve(false); });
+    // IHC #3: Esc = saída de emergência
+    overlay.addEventListener('keydown', e => { if(e.key==='Escape'){ overlay.remove(); resolve(false); } });
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   IHC #3 — DOUBLE-SUBMIT GUARD
+   Desabilita botão durante operação assíncrona.
+   ══════════════════════════════════════════════════════ */
+function withLoading(btn, labelEl, loadingLabel, handler) {
+  return async (...args) => {
+    if (btn.disabled) return;          // bloqueia duplo clique
+    const orig = labelEl.textContent;
+    btn.disabled = true;
+    btn.classList.add('loading');
+    labelEl.textContent = loadingLabel;
+    try { await handler(...args); }
+    finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      labelEl.textContent = orig;
+    }
+  };
+}
+
+/* ══════════════════════════════════════════════════════
+   IHC #4 — MENSAGENS DE ERRO HUMANIZADAS
+   Nunca expor código técnico ao usuário.
+   ══════════════════════════════════════════════════════ */
+const ERROS = {
+  offline:     'Sem conexão. Verifique sua internet e tente novamente.',
+  timeout:     'O servidor demorou mais que o esperado. Tente novamente em instantes.',
+  too_long:    'O texto é muito longo. Use até 15.000 caracteres por análise.',
+  too_short:   'O texto é curto demais para análise. Insira pelo menos 50 caracteres.',
+  upload_type: 'Tipo de arquivo não suportado. Use PDF, DOCX ou TXT.',
+  upload_size: 'O arquivo é muito grande. O limite é de 10 MB.',
+  server:      'Algo deu errado no servidor. Nossa equipe foi notificada.',
+  session:     'Sua sessão expirou. Faça login novamente.',
+};
+
+/* ══════════════════════════════════════════════════════
+   IHC #6 — SKELETON HELPERS
+   ══════════════════════════════════════════════════════ */
+function showSkeleton() {
+  document.getElementById('edSkeleton').classList.add('visible');
+  document.getElementById('scoreSkeleton').style.display = 'flex';
+  document.getElementById('scoreEmpty').style.display = 'none';
+  document.getElementById('scoreContent').style.display = 'none';
+}
+function hideSkeleton() {
+  document.getElementById('edSkeleton').classList.remove('visible');
+  document.getElementById('scoreSkeleton').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════════════════
+   STATUS BAR (IHC #2)
+   ══════════════════════════════════════════════════════ */
+function setStatus(type, txt) {
+  const dot = document.getElementById('sdot');
+  const label = document.getElementById('stxt');
+  dot.className = 'sdot ' + type;
+  label.textContent = txt;
+}
+
+/* ══════════════════════════════════════════════════════
+   THEME TOGGLE
+   ══════════════════════════════════════════════════════ */
+const body = document.body;
+const STORE = 'autoria-theme';
+function applyTheme(m) {
+  body.classList.toggle('light-mode', m==='light');
+  localStorage.setItem(STORE, m);
+}
+const savedTheme = localStorage.getItem(STORE) ||
+  (window.matchMedia('(prefers-color-scheme:light)').matches ? 'light':'dark');
+applyTheme(savedTheme);
+const themeBtn = document.getElementById('theme-toggle') || document.getElementById('themeToggle');
+themeBtn.addEventListener('click',
+  () => applyTheme(body.classList.contains('light-mode')?'dark':'light'));
+
+/* ══════════════════════════════════════════════════════
+   TABS (IHC #1 + #5: padrão consistente)
+   ══════════════════════════════════════════════════════ */
+function switchTab(tabName) {
+  document.querySelectorAll('.ptab').forEach(b => {
+    const isActive = b.dataset.tab === tabName;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-selected', isActive);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-' + tabName).classList.add('active');
+}
+document.querySelectorAll('.ptab').forEach(btn =>
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+/* ══════════════════════════════════════════════════════
+   EDITOR — WORD COUNT + CHAR LIMIT (IHC #2)
+   ══════════════════════════════════════════════════════ */
+const editor    = document.getElementById('editor');
+const wcBadge   = document.getElementById('wcBadge');
+const footInfo  = document.getElementById('footInfo');
+const MAX_CHARS = 15000;
+
+function updateCount() {
+  const txt   = editor.value.trim();
+  const words = txt ? txt.split(/\s+/).length : 0;
+  const chars = editor.value.length;
+  const pct   = chars / MAX_CHARS;
+
+  wcBadge.textContent = words + ' palavras';
+  wcBadge.classList.toggle('has-text', words > 0);
+  footInfo.textContent = `${words} palavras · ${chars.toLocaleString('pt-BR')} / ${MAX_CHARS.toLocaleString('pt-BR')} caracteres`;
+
+  // IHC #2: feedback cromático de proximidade do limite
+  footInfo.className = 'foot-info' + (pct > .9 ? ' danger' : pct > .75 ? ' warn' : '');
+  editor.className   = 'ed-ta' + (pct > .9 ? ' at-limit' : pct > .75 ? ' near-limit' : '');
+}
+editor.addEventListener('input', updateCount);
+
+/* ══════════════════════════════════════════════════════
+   ANÁLISE — DEBOUNCE AUTOMÁTICO (IHC #2)
+   ══════════════════════════════════════════════════════ */
+let debounceTimer;
+editor.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  if (editor.value.trim().length > 80) {
+    setStatus('idle', 'Aguardando pausa...');
+    debounceTimer = setTimeout(() => runAnalysis(), 2200);
+  }
+});
+
+/* ══════════════════════════════════════════════════════
+   BOTÃO ANALISAR — com double-submit guard (IHC #3)
+   ══════════════════════════════════════════════════════ */
+const btnAnalyze  = document.getElementById('btnAnalyze');
+const analyzeLabel = document.getElementById('analyzeLabel');
+const guardedAnalyze = withLoading(btnAnalyze, analyzeLabel, 'Analisando...', async () => {
+  await runAnalysis();
+});
+btnAnalyze.addEventListener('click', guardedAnalyze);
+
+/* ══════════════════════════════════════════════════════
+   LIMPAR — com confirmação (IHC #3)
+   ══════════════════════════════════════════════════════ */
+document.getElementById('btnClear').addEventListener('click', async () => {
+  if (!editor.value.trim()) return;
+  const ok = await confirmar({
+    titulo: 'Limpar o editor?',
+    mensagem: 'O texto e todos os resultados de análise serão removidos. Tem certeza?',
+    labelOk: 'Sim, limpar tudo',
+    tipo: 'danger',
+  });
+  if (!ok) return;
+  editor.value = '';
+  document.getElementById('hlLayer').innerHTML = '';
+  updateCount();
+  resetPanel();
+  toast.info('Editor limpo.');
+});
+
+/* ══════════════════════════════════════════════════════
+   SAIR — com confirmação (IHC #3)
+   ══════════════════════════════════════════════════════ */
+const btnSair = document.getElementById('btn-logout') || document.getElementById('btnSair');
+btnSair.addEventListener('click', async () => {
+  const ok = await confirmar({
+    titulo: 'Sair da plataforma?',
+    mensagem: 'Você será desconectado. Análises não salvas serão perdidas.',
+    labelOk: 'Sim, sair',
+    tipo: 'danger',
+  });
+  if (ok) {
+    toast.info('Até mais! Redirecionando...');
+    setTimeout(() => location.href = '/login.html', 1500);
+  }
+});
+
+/* ══════════════════════════════════════════════════════
+   UPLOAD — com feedback de progresso (IHC #2)
+   ══════════════════════════════════════════════════════ */
+const uploadStrip = document.getElementById('uploadStrip');
+const fileInput   = document.getElementById('fileInput');
+
+function handleUploadTrigger() { fileInput.click(); }
+uploadStrip.addEventListener('click', handleUploadTrigger);
+uploadStrip.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') handleUploadTrigger(); });
+
+fileInput.addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if (!f) return;
+
+  // IHC #4: validação de tipo e tamanho com mensagem humanizada
+  const EXT_OK = ['.pdf','.docx','.txt'];
+  const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
+  if (!EXT_OK.includes(ext)) { toast.error(ERROS.upload_type); return; }
+  if (f.size > 10 * 1024 * 1024) { toast.error(ERROS.upload_size); return; }
+
+  document.getElementById('usName').textContent = '📄 ' + f.name;
+  uploadStrip.classList.add('uploading');
+  toast.info(`Extraindo texto de "${f.name}"...`);
+
+  // IHC #2: simula progresso (produção: usar XHR com .upload.progress)
+  // const xhr = new XMLHttpRequest(); xhr.upload.addEventListener('progress', ...)
+  await new Promise(r => setTimeout(r, 900));
+  uploadStrip.classList.remove('uploading');
+
+  editor.value = `[Texto extraído de "${f.name}" pelo script Python (POST /api/extract) apareceria aqui.\n\nO backend FastAPI converte o arquivo, limpa o texto e retorna o conteúdo puro para análise.]`;
+  updateCount();
+  toast.success('Texto extraído com sucesso! Pronto para análise.');
+  fileInput.value = '';
+});
+
+/* ══════════════════════════════════════════════════════
+   MOCK DATA (substituir por fetch('/api/analyze', ...))
+   ══════════════════════════════════════════════════════ */
+const DETS = [
+  { id:'d1', lvl:'red', sim:94,
+    txt:'A educação é um processo de humanização que visa a plena realização do ser humano em sociedade',
+    stu:'A educação é um processo de humanização que visa a plena realização do ser humano em sociedade.',
+    ori:'Education is a process of humanization aiming at the full realization of the human being in society.',
+    src:'Freire, P. — Pedagogia do Oprimido (1968)', url:'#' },
+  { id:'d2', lvl:'red', sim:87,
+    txt:'plágio consiste na apresentação como sua de obra intelectual produzida por terceiro',
+    stu:'plágio consiste na apresentação como sua de obra intelectual produzida por terceiro.',
+    ori:"Plagiarism consists of presenting as one's own an intellectual work produced by another.",
+    src:'Lei 9.610/98 — Direitos Autorais', url:'#' },
+  { id:'d3', lvl:'amber', sim:71,
+    txt:'pesquisadores buscam ampliar os limites do conhecimento científico por investigação sistemática',
+    stu:'pesquisadores buscam ampliar os limites do conhecimento científico por investigação sistemática',
+    ori:'researchers seek to expand scientific knowledge boundaries through systematic investigation.',
+    src:'Lakatos & Marconi — Metodologia Científica (2003)', url:'#' },
+];
+
+/* ══════════════════════════════════════════════════════
+   RESET PANEL
+   ══════════════════════════════════════════════════════ */
+function resetPanel() {
+  document.getElementById('scoreEmpty').style.display = 'flex';
+  document.getElementById('scoreContent').style.display = 'none';
+  document.getElementById('detEmpty').style.display = 'flex';
+  const dl = document.getElementById('detList');
+  dl.style.display = 'none'; dl.innerHTML = '';
+  document.getElementById('detBadge').textContent = '0';
+  document.getElementById('detBadge').className = 'pbadge muted';
+  document.getElementById('btnExport').disabled = true;
+  setStatus('idle', 'Pronto para analisar');
+}
+
+/* ══════════════════════════════════════════════════════
+   ANÁLISE PRINCIPAL
+   ══════════════════════════════════════════════════════ */
+async function runAnalysis() {
+  const txt = editor.value.trim();
+
+  // IHC #4: validações com mensagens humanizadas ANTES da requisição
+  if (!txt) return;
+  if (txt.length < 50) { toast.warn(ERROS.too_short); return; }
+  if (editor.value.length > MAX_CHARS) { toast.warn(ERROS.too_long); return; }
+
+  setStatus('busy', 'Analisando…');
+  showSkeleton();
+
+  try {
+    // ── PRODUÇÃO: substituir por chamada real ──────────────────
+    // const res = await fetch('/api/analyze', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json',
+    //              'Authorization': `Bearer ${localStorage.getItem('autoria-token')}` },
+    //   body: JSON.stringify({ text: txt })
+    // });
+    // if (!res.ok) throw new Error(res.status === 401 ? 'session' : 'server');
+    // const data = await res.json();
+    // ─────────────────────────────────────────────────────────
+
+    await new Promise(r => setTimeout(r, 1800)); // mock delay
+    const data = { orig:68, plag:18, para:14, dets:DETS };
+
+    hideSkeleton();
+    renderScore(data);
+    renderDets(data.dets);
+    renderHL(data.dets);
+    document.getElementById('btnExport').disabled = false;
+    setStatus('done', 'Análise concluída');
+
+    // IHC #2: toast com resultado resumido
+    const verdict = data.orig >= 80 ? '✅ Texto aprovado!' :
+                    data.orig >= 60 ? '⚠️ Atenção: revisar trechos identificados.' :
+                                      '❌ Alto índice de similaridade detectado.';
+    toast[data.orig >= 80 ? 'success' : data.orig >= 60 ? 'warn' : 'error'](verdict);
+
+    // IHC #1: muda automaticamente para aba de detecções se houver problemas
+    if (data.dets.length > 0) {
+      setTimeout(() => {
+        switchTab('detect');
+        toast.info('Clique em um card para ver a fonte e navegar no texto.');
+      }, 1200);
+    }
+
+  } catch(err) {
+    hideSkeleton();
+    setStatus('error', 'Erro na análise');
+    // IHC #4: mensagem humanizada, nunca técnica
+    const errorKey = typeof err === 'object' && err && 'code' in err ? err.code : null;
+    const msg = (errorKey && ERROS[errorKey]) ? ERROS[errorKey] : ERROS.server;
+    toast.error(msg);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER SCORE
+   ══════════════════════════════════════════════════════ */
+function renderScore(d) {
+  document.getElementById('scoreEmpty').style.display = 'none';
+  const sc = document.getElementById('scoreContent');
+  sc.style.display = 'flex';
+  const C = 2 * Math.PI * 42;
+  const fill = document.getElementById('gFill');
+  fill.style.strokeDasharray  = C;
+  fill.style.strokeDashoffset = C - (C * d.orig / 100);
+  fill.className = 'g-fi ' + (d.orig >= 80 ? 'green' : d.orig >= 60 ? 'amber' : 'red');
+  document.getElementById('gNum').textContent = d.orig + '%';
+  document.getElementById('gLbl').textContent = d.orig >= 80 ? 'ORIGINAL' : d.orig >= 60 ? 'ATENÇÃO' : 'CRÍTICO';
+  document.getElementById('sO').textContent = d.orig + '%';
+  document.getElementById('sP').textContent = d.plag + '%';
+  document.getElementById('sA').textContent = d.para + '%';
+  const v = document.getElementById('sV');
+  v.textContent = d.orig >= 80 ? 'Aprovado' : d.orig >= 60 ? 'Revisar' : 'Reprovado';
+  v.className = 'chip ' + (d.orig >= 80 ? 'cg' : d.orig >= 60 ? 'ca' : 'cr');
+  setTimeout(() => {
+    [['O', d.orig], ['A', d.para], ['P', d.plag]].forEach(([k, val]) => {
+      const bar = document.getElementById('d'+k);
+      bar.style.width = val + '%';
+      bar.parentElement.setAttribute('aria-valuenow', val);
+      document.getElementById('dv'+k).textContent = val + '%';
+    });
+  }, 80);
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER DETECTIONS — cards clicáveis (IHC #1 + #2)
+   ══════════════════════════════════════════════════════ */
+function renderDets(dets) {
+  document.getElementById('detEmpty').style.display = 'none';
+  const list = document.getElementById('detList');
+  list.style.display = 'flex'; list.innerHTML = '';
+  const reds = dets.filter(d => d.lvl === 'red').length;
+  const badge = document.getElementById('detBadge');
+  badge.textContent = dets.length;
+  badge.setAttribute('aria-label', `${dets.length} detecções`);
+  badge.className = 'pbadge ' + (reds > 0 ? 'red' : 'amber');
+
+  dets.forEach((det, i) => {
+    const el = document.createElement('div');
+    el.className = 'det ' + det.lvl;
+    el.dataset.id = det.id;
+    el.setAttribute('role', 'listitem');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', `Detecção ${i+1}: ${det.lvl === 'red' ? 'Alta similaridade' : 'Paráfrase'} — ${det.sim}%`);
+    el.innerHTML = `
+      <div class="det-top">
+        <span class="det-badge">${det.lvl === 'red' ? 'Alta sim.' : 'Paráfrase'}</span>
+        <span class="det-txt">${det.txt}</span>
+        <span class="det-pct">${det.sim}%</span>
+        <span class="det-toggle" aria-hidden="true">›</span>
+      </div>
+      <div class="det-body" role="region" aria-label="Detalhes da detecção">
+        <div class="cmp">
+          <div class="cbox stu">
+            <span class="clbl">Seu texto</span>
+            <span class="ctxt">${det.stu}</span>
+          </div>
+          <div class="cbox ori">
+            <span class="clbl">Fonte suspeita</span>
+            <span class="ctxt">${det.ori}</span>
+            <br><a class="src-a" href="${det.url}" target="_blank" rel="noopener">🔗 ${det.src}</a>
+          </div>
+        </div>
+      </div>`;
+
+    function toggleCard() {
+      // IHC #3: toggle — clique no mesmo card fecha
+      const wasOpen = el.classList.contains('open');
+      document.querySelectorAll('.det.open').forEach(d => d.classList.remove('open'));
+      document.querySelectorAll('.det.focused').forEach(d => d.classList.remove('focused'));
+      if (!wasOpen) {
+        el.classList.add('open', 'focused');
+        scrollToSnippet(det.txt, det.id);
+      }
+    }
+
+    el.querySelector('.det-top').addEventListener('click', toggleCard);
+    // IHC #7: teclado
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); toggleCard(); } });
+    list.appendChild(el);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER HIGHLIGHTS — sublinhados dinâmicos no editor
+   ══════════════════════════════════════════════════════ */
+function renderHL(dets) {
+  const layer = document.getElementById('hlLayer');
+  let html = editor.value;
+  [...dets].sort((a,b) => b.txt.length - a.txt.length).forEach(det => {
+    const cls = det.lvl === 'red' ? 'hl-red' : 'hl-amber';
+    const esc = det.txt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    html = html.replace(new RegExp('('+esc+')', 'gi'),
+      `<mark class="${cls}" data-id="${det.id}" tabindex="0" role="button" aria-label="Trecho com ${det.lvl === 'red' ? 'alta similaridade' : 'paráfrase'}: ${det.txt.slice(0,40)}...">$1</mark>`);
+  });
+  layer.innerHTML = html.replace(/\n/g, '<br>');
+
+  // IHC #1: clicar no highlight navega para o card e muda de aba
+  layer.querySelectorAll('mark').forEach(m => {
+    function activate() {
+      switchTab('detect');
+      const card = document.querySelector(`.det[data-id="${m.dataset.id}"]`);
+      if (card) {
+        document.querySelectorAll('.det.open').forEach(d => d.classList.remove('open'));
+        document.querySelectorAll('.det.focused').forEach(d => d.classList.remove('focused'));
+        card.classList.add('open', 'focused');
+        card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      }
+    }
+    m.addEventListener('click', activate);
+    m.addEventListener('keydown', e => { if(e.key==='Enter') activate(); });
+  });
+}
+
+/* IHC #1: rola o editor para o trecho e destaca */
+function scrollToSnippet(txt, id) {
+  const idx = editor.value.toLowerCase().indexOf(txt.toLowerCase().slice(0, 30));
+  if (idx > -1) {
+    editor.focus();
+    editor.setSelectionRange(idx, idx + txt.length);
+    // Remove focus visual anterior
+    document.querySelectorAll('mark.hl-focus').forEach(m => m.classList.remove('hl-focus'));
+    document.querySelectorAll(`mark[data-id="${id}"]`).forEach(m => m.classList.add('hl-focus'));
+  }
+}
+
+/* Sync scroll do layer com o textarea */
+editor.addEventListener('scroll', () => {
+  document.getElementById('hlLayer').scrollTop = editor.scrollTop;
+});
+
+/* ══════════════════════════════════════════════════════
+   IHC #7 — ATALHOS DE TECLADO
+   Não afetam inputs/textareas.
+   ══════════════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  const inInput = ['INPUT','SELECT'].includes(e.target.tagName);
+  const mod = e.ctrlKey || e.metaKey;
+  const inEditor = e.target === editor;
+
+  // Ctrl+Enter — analisar (funciona dentro do editor também)
+  if (mod && e.key === 'Enter') {
+    e.preventDefault();
+    guardedAnalyze();
+    return;
+  }
+  // Ctrl+Delete — limpar
+  if (mod && e.key === 'Delete' && !inInput) {
+    document.getElementById('btnClear').click();
+    return;
+  }
+  // Fora do editor e inputs:
+  if (inInput || inEditor) return;
+
+  // Alt+1/2/3 — trocar aba
+  if (e.altKey && e.key === '1') { e.preventDefault(); switchTab('score'); }
+  if (e.altKey && e.key === '2') { e.preventDefault(); switchTab('detect'); }
+  if (e.altKey && e.key === '3') { e.preventDefault(); switchTab('tips'); }
+  // Alt+T — tema
+  if (e.altKey && e.key.toLowerCase() === 't') {
+    e.preventDefault();
+    (document.getElementById('theme-toggle') || document.getElementById('themeToggle')).click();
+  }
+  // ? — mostrar atalhos
+  if (e.key === '?') {
+    const ov = document.getElementById('shortcutOverlay');
+    ov.style.display = ov.style.display === 'none' ? 'flex' : 'none';
+  }
+  // Esc — fechar sobreposições
+  if (e.key === 'Escape') {
+    document.getElementById('shortcutOverlay').style.display = 'none';
+  }
+});
+
+document.getElementById('shortcutOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.style.display = 'none';
+});
+</script>
+</body>
+</html>

@@ -58,6 +58,33 @@ jobs:
             process.exit(1);
           });
           NODE
+      - name: Habilitar triggers no MySQL efêmero
+        env:
+          DB_USER: root
+          DB_PASSWORD: ${{ secrets.CI_MYSQL_ROOT_PASSWORD }}
+        run: |
+          node <<'NODE'
+          const mysql = require('mysql2/promise');
+
+          async function configureEphemeralMySql() {
+            const connection = await mysql.createConnection({
+              host: process.env.DB_HOST,
+              port: Number(process.env.DB_PORT),
+              user: process.env.DB_USER,
+              password: process.env.DB_PASSWORD
+            });
+            try {
+              await connection.query('SET GLOBAL log_bin_trust_function_creators = 1');
+            } finally {
+              await connection.end();
+            }
+          }
+
+          configureEphemeralMySql().catch((error) => {
+            console.error(`Falha ao preparar MySQL efêmero: ${error.code || 'UNEXPECTED_ERROR'}`);
+            process.exit(1);
+          });
+          NODE
       - name: Verificar sintaxe JavaScript
         run: find . -path './node_modules' -prune -o -path './coverage' -prune -o -name '*.js' -type f -print0 | xargs -0 -n1 node --experimental-default-type=module --check
       - name: Recriar banco descartável e aplicar schema canônico

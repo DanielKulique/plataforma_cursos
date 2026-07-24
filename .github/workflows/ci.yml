@@ -14,9 +14,6 @@ jobs:
           MYSQL_USER: appuser
           MYSQL_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
         ports: ['3306:3306']
-        options: >-
-          --health-cmd='mysqladmin ping -h 127.0.0.1 -uroot --password="$MYSQL_ROOT_PASSWORD"'
-          --health-interval=10s --health-timeout=5s --health-retries=10
     env:
       NODE_ENV: test
       DB_HOST: 127.0.0.1
@@ -31,6 +28,36 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: npm }
       - run: npm ci
+      - name: Aguardar MySQL
+        run: |
+          node <<'NODE'
+          const mysql = require('mysql2/promise');
+
+          async function waitForMySql() {
+            for (let attempt = 1; attempt <= 30; attempt += 1) {
+              try {
+                const connection = await mysql.createConnection({
+                  host: process.env.DB_HOST,
+                  port: Number(process.env.DB_PORT),
+                  user: process.env.DB_USER,
+                  password: process.env.DB_PASSWORD
+                });
+                await connection.end();
+                return;
+              } catch (error) {
+                if (attempt === 30) {
+                  throw error;
+                }
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+              }
+            }
+          }
+
+          waitForMySql().catch((error) => {
+            console.error(`MySQL não ficou disponível: ${error.code || 'UNEXPECTED_ERROR'}`);
+            process.exit(1);
+          });
+          NODE
       - name: Verificar sintaxe JavaScript
         run: find . -path './node_modules' -prune -o -path './coverage' -prune -o -name '*.js' -type f -print0 | xargs -0 -n1 node --experimental-default-type=module --check
       - name: Recriar banco descartável e aplicar schema canônico

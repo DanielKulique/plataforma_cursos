@@ -71,12 +71,12 @@ describe('Cursos Controller', () => {
         });
 
         it('deve retornar erro 404 quando curso não for encontrado', async () => {
-            cursosModel.buscarCursoPorId.mockRejectedValue(new Error('Curso não encontrado!'));
+            cursosModel.buscarCursoPorId.mockRejectedValue(Object.assign(new Error('Curso não encontrado.'), { status: 404 }));
 
             const response = await request(app).get('/api/cursos/999');
 
             expect(response.status).toBe(404);
-            expect(response.body).toHaveProperty('message', 'Curso não encontrado!');
+            expect(response.body).toHaveProperty('message', 'Curso não encontrado.');
         });
     });
 
@@ -116,7 +116,12 @@ describe('Cursos Controller', () => {
 
     describe('PUT /api/cursos/:id', () => {
         it('deve atualizar curso com sucesso', async () => {
-            cursosModel.atualizarCurso.mockResolvedValue(undefined);
+            cursosModel.atualizarCurso.mockResolvedValue({
+                id_curso: 1,
+                nome_curso: 'Curso Atualizado',
+                descricao: null,
+                carga_horaria: 50
+            });
 
             const response = await request(app)
                 .put('/api/cursos/1')
@@ -126,20 +131,23 @@ describe('Cursos Controller', () => {
                 });
 
             expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('id_curso', '1');
+            expect(response.body).toHaveProperty('id_curso', 1);
         });
 
-        it('deve retornar erro 400 quando curso não for encontrado para atualizar', async () => {
-            // O controller retorna 400 para curso não encontrado em alguns casos
-            cursosModel.atualizarCurso.mockRejectedValue(new Error('Curso não encontrado para atualizar!'));
+        it('deve retornar erro 404 quando curso não for encontrado para atualizar', async () => {
+            cursosModel.atualizarCurso.mockRejectedValue(
+                Object.assign(new Error('Curso não encontrado.'), { status: 404 })
+            );
 
             const response = await request(app)
                 .put('/api/cursos/999')
                 .send({
-                    nome_curso: 'Curso Inexistente'
+                    nome_curso: 'Curso Inexistente',
+                    descricao: 'Não existe',
+                    carga_horaria: 10
                 });
 
-            expect([400, 404]).toContain(response.status);
+            expect(response.status).toBe(404);
         });
     });
 
@@ -153,7 +161,7 @@ describe('Cursos Controller', () => {
         });
 
         it('deve retornar erro 404 quando curso não for encontrado para deletar', async () => {
-            cursosModel.deletarCurso.mockRejectedValue(new Error('Curso não encontrado para deletar!'));
+            cursosModel.deletarCurso.mockRejectedValue(Object.assign(new Error('Curso não encontrado.'), { status: 404 }));
 
             const response = await request(app).delete('/api/cursos/999');
 

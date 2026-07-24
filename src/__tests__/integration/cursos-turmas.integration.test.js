@@ -12,8 +12,9 @@
  */
 
 const request = require('supertest');
-const { initTestPool, clearDatabase, seedBasicData, closeTestPool } = require('./setup');
+const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword } = require('./setup');
 const { app } = require('../../../index');
+const applicationDb = require('../../config/database');
 
 let adminToken = null;
 let professorToken = null;
@@ -21,7 +22,7 @@ let alunoToken = null;
 let testUsers = null;
 let cursoId = null;
 let turmaId = null;
-let server = null;
+const testPassword = getTestPassword();
 
 describe('Testes de Integração - Cursos e Turmas', () => {
     beforeAll(async () => {
@@ -29,36 +30,30 @@ describe('Testes de Integração - Cursos e Turmas', () => {
         await clearDatabase();
         testUsers = await seedBasicData();
 
-        // Inicia servidor de teste
-        const PORT = process.env.PORT || 3001;
-        server = app.listen(PORT, () => {
-            console.log(`Servidor de teste na porta ${PORT}`);
-        });
-
         // Faz login como ADMIN
-        const adminLogin = await request(server)
+        const adminLogin = await request(app)
             .post('/api/auth/login')
             .send({
                 email: 'admin@teste.com',
-                senha: 'Teste@123'
+                senha: testPassword
             });
         adminToken = adminLogin.body.token;
 
         // Faz login como PROFESSOR
-        const profLogin = await request(server)
+        const profLogin = await request(app)
             .post('/api/auth/login')
             .send({
                 email: 'professor@teste.com',
-                senha: 'Teste@123'
+                senha: testPassword
             });
         professorToken = profLogin.body.token;
 
         // Faz login como ALUNO
-        const alunoLogin = await request(server)
+        const alunoLogin = await request(app)
             .post('/api/auth/login')
             .send({
                 email: 'aluno@teste.com',
-                senha: 'Teste@123'
+                senha: testPassword
             });
         alunoToken = alunoLogin.body.token;
     });
@@ -71,10 +66,8 @@ describe('Testes de Integração - Cursos e Turmas', () => {
     });
 
     afterAll(async () => {
-        if (server) {
-            await new Promise(resolve => server.close(resolve));
-        }
         await closeTestPool();
+        await applicationDb.end();
     });
 
     describe('CRUD de Cursos', () => {
@@ -86,7 +79,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
                     carga_horaria: 40
                 };
 
-                const response = await request(server)
+                const response = await request(app)
                     .post('/api/cursos')
                     .set('Authorization', `Bearer ${adminToken}`)
                     .send(cursoData);
@@ -100,7 +93,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve retornar 401 sem autenticação', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .post('/api/cursos')
                     .send({
                         nome_curso: 'Curso Teste',
@@ -111,7 +104,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve retornar 403 para usuário não ADMIN', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .post('/api/cursos')
                     .set('Authorization', `Bearer ${alunoToken}`)
                     .send({
@@ -119,14 +112,14 @@ describe('Testes de Integração - Cursos e Turmas', () => {
                         carga_horaria: 20
                     });
 
-                expect([401, 403]).toContain(response.status);
+                expect(response.status).toBe(403);
             });
         });
 
         describe('GET /api/cursos', () => {
             beforeEach(async () => {
                 // Cria um curso para teste
-                const createResponse = await request(server)
+                const createResponse = await request(app)
                     .post('/api/cursos')
                     .set('Authorization', `Bearer ${adminToken}`)
                     .send({
@@ -138,7 +131,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve listar todos os cursos (público)', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .get('/api/cursos');
 
                 expect(response.status).toBe(200);
@@ -147,7 +140,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve buscar curso por ID', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .get(`/api/cursos/${cursoId}`);
 
                 expect(response.status).toBe(200);
@@ -156,7 +149,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve retornar 404 para curso inexistente', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .get('/api/cursos/99999');
 
                 expect(response.status).toBe(404);
@@ -165,7 +158,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
 
         describe('PUT /api/cursos/:id', () => {
             beforeEach(async () => {
-                const createResponse = await request(server)
+                const createResponse = await request(app)
                     .post('/api/cursos')
                     .set('Authorization', `Bearer ${adminToken}`)
                     .send({
@@ -183,22 +176,19 @@ describe('Testes de Integração - Cursos e Turmas', () => {
                     carga_horaria: 50
                 };
 
-                const response = await request(server)
+                const response = await request(app)
                     .put(`/api/cursos/${cursoId}`)
                     .set('Authorization', `Bearer ${adminToken}`)
                     .send(updateData);
 
-                expect([200, 400]).toContain(response.status);
-                
-                if (response.status === 200) {
-                    expect(response.body).toHaveProperty('id_curso');
-                }
+                expect(response.status).toBe(200);
+                expect(response.body).toHaveProperty('id_curso');
             });
         });
 
         describe('DELETE /api/cursos/:id', () => {
             beforeEach(async () => {
-                const createResponse = await request(server)
+                const createResponse = await request(app)
                     .post('/api/cursos')
                     .set('Authorization', `Bearer ${adminToken}`)
                     .send({
@@ -210,11 +200,11 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve deletar curso com sucesso (ADMIN)', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .delete(`/api/cursos/${cursoId}`)
                     .set('Authorization', `Bearer ${adminToken}`);
 
-                expect([200, 204, 404]).toContain(response.status);
+                expect(response.status).toBe(204);
             });
         });
     });
@@ -222,7 +212,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
     describe('CRUD de Turmas', () => {
         beforeEach(async () => {
             // Cria um curso primeiro
-            const cursoResponse = await request(server)
+            const cursoResponse = await request(app)
                 .post('/api/cursos')
                 .set('Authorization', `Bearer ${adminToken}`)
                 .send({
@@ -240,10 +230,10 @@ describe('Testes de Integração - Cursos e Turmas', () => {
                     id_professor: testUsers.professor.id_usuario,
                     nome_turma: 'Turma Teste 2026',
                     data_inicio: '2026-03-01',
-                    status: 'INSCRIÇÕES ABERTAS'
+                    status: 'ABERTA'
                 };
 
-                const response = await request(server)
+                const response = await request(app)
                     .post('/api/turmas')
                     .set('Authorization', `Bearer ${adminToken}`)
                     .send(turmaData);
@@ -256,7 +246,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve retornar 401 sem autenticação', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .post('/api/turmas')
                     .send({
                         id_curso: cursoId,
@@ -271,7 +261,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
         describe('GET /api/turmas', () => {
             beforeEach(async () => {
                 // Cria uma turma
-                const createResponse = await request(server)
+                const createResponse = await request(app)
                     .post('/api/turmas')
                     .set('Authorization', `Bearer ${adminToken}`)
                     .send({
@@ -284,7 +274,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve listar todas as turmas (público)', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .get('/api/turmas');
 
                 expect(response.status).toBe(200);
@@ -292,7 +282,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
             });
 
             it('deve buscar turma por ID', async () => {
-                const response = await request(server)
+                const response = await request(app)
                     .get(`/api/turmas/${turmaId}`);
 
                 expect(response.status).toBe(200);

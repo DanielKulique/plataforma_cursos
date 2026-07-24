@@ -1,3 +1,5 @@
+jest.mock('../utils/logger', () => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn() }));
+const logger = require('../utils/logger');
 const { enviarCodigoVerificacaoEmail } = require('../services/email.service');
 
 // Mock do Resend
@@ -25,9 +27,6 @@ describe('Email Service', () => {
         it('deve retornar modo debug quando RESEND_API_KEY não estiver configurada', async () => {
             delete process.env.RESEND_API_KEY;
 
-            const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-            const consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation();
-
             const result = await enviarCodigoVerificacaoEmail({
                 to: 'test@example.com',
                 codigo: '123456',
@@ -39,12 +38,10 @@ describe('Email Service', () => {
                 modo: 'debug'
             });
 
-            expect(consoleWarnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('RESEND_API_KEY não configurada')
-            );
-
-            consoleWarnSpy.mockRestore();
-            consoleInfoSpy.mockRestore();
+            expect(logger.warn).toHaveBeenCalledWith('email.verificacao.nao_enviado', { reason: 'RESEND_NOT_CONFIGURED' });
+            const logs = JSON.stringify(logger.warn.mock.calls);
+            expect(logs).not.toContain('test@example.com');
+            expect(logs).not.toContain('123456');
         });
 
         it('deve usar valores padrão quando MAIL_FROM e APP_NAME não estiverem configurados', async () => {
@@ -52,17 +49,13 @@ describe('Email Service', () => {
             delete process.env.MAIL_FROM;
             delete process.env.APP_NAME;
 
-            const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
             await enviarCodigoVerificacaoEmail({
                 to: 'test@example.com',
                 codigo: '123456',
                 expiraEm: '10 minutos'
             });
 
-            expect(consoleWarnSpy).toHaveBeenCalled();
-
-            consoleWarnSpy.mockRestore();
+            expect(logger.warn).toHaveBeenCalled();
         });
 
         it('deve enviar e-mail via Resend quando API key estiver configurada', async () => {

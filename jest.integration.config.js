@@ -9,18 +9,5 @@ module.exports = {
   collectCoverage: false,
   
   // Configurações específicas para testes de integração
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/integration/setup.js'],
-  
-  // Variáveis de ambiente para testes
-  testEnvironmentOptions: {
-    env: {
-      NODE_ENV: 'test',
-      DB_HOST: 'localhost',
-      DB_USER: 'appuser',
-      DB_PASSWORD: 'tPJ"~s04_4K5',
-      DB_NAME: 'site_cursos_test', // Banco de dados de teste
-      JWT_SECRET: 'test_jwt_secret_key_for_integration_tests_only',
-      PORT: '3001' // Porta diferente para não conflitar
-    }
-  }
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/integration/setup.js']
 };

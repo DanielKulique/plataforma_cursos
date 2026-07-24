@@ -9,13 +9,10 @@
  * - Aluno visualiza suas matrículas
  */
 
-// Carrega .env.test ANTES de qualquer outra coisa
-require('dotenv').config({ path: '.env.test' });
-process.env.NODE_ENV = 'test';
-
 const request = require('supertest');
-const { initTestPool, clearDatabase, seedBasicData, closeTestPool } = require('./setup');
+const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword } = require('./setup');
 const { app } = require('../../../index');
+const applicationDb = require('../../config/database');
 
 let adminToken = null;
 let professorToken = null;
@@ -24,7 +21,8 @@ let testUsers = null;
 let cursoId = null;
 let turmaId = null;
 let matriculaId = null;
-let server = null;
+const server = app;
+const testPassword = getTestPassword();
 
 /**
  * Cria curso e turma para os testes
@@ -48,7 +46,7 @@ async function criarCursoETurma() {
             id_professor: testUsers.professor.id_usuario,
             nome_turma: 'Turma para Teste de Matrícula',
             data_inicio: '2026-03-01',
-            status: 'INSCRIÇÕES ABERTAS'
+            status: 'ABERTA'
         });
     turmaId = turmaResponse.body.id_turma;
 }
@@ -59,61 +57,37 @@ describe('Testes de Integração - Matrículas', () => {
         await clearDatabase();
         testUsers = await seedBasicData();
 
-        // Inicia servidor de teste
-        const PORT = process.env.PORT || 3001;
-        server = app.listen(PORT, () => {
-            console.log(`Servidor de teste na porta ${PORT}`);
-        });
-
         // Login ADMIN
         const adminLogin = await request(server)
             .post('/api/auth/login')
-            .send({ email: 'admin@teste.com', senha: 'Teste@123' });
+            .send({ email: 'admin@teste.com', senha: testPassword });
         adminToken = adminLogin.body.token;
 
         // Login PROFESSOR
         const profLogin = await request(server)
             .post('/api/auth/login')
-            .send({ email: 'professor@teste.com', senha: 'Teste@123' });
+            .send({ email: 'professor@teste.com', senha: testPassword });
         professorToken = profLogin.body.token;
 
         // Login ALUNO
         const alunoLogin = await request(server)
             .post('/api/auth/login')
-            .send({ email: 'aluno@teste.com', senha: 'Teste@123' });
+            .send({ email: 'aluno@teste.com', senha: testPassword });
         alunoToken = alunoLogin.body.token;
     });
 
-    // Antes de CADA teste: limpa banco, recria seed, recria curso/turma, refaz login
+    // Antes de CADA teste: limpa o banco descartável, recria IDs estáveis e os dados do cenário.
     beforeEach(async () => {
         await clearDatabase();
         testUsers = await seedBasicData();
         matriculaId = null;
 
-        // Refaz login para obter tokens válidos para os novos usuários
-        const adminLogin = await request(server)
-            .post('/api/auth/login')
-            .send({ email: 'admin@teste.com', senha: 'Teste@123' });
-        adminToken = adminLogin.body.token;
-
-        const profLogin = await request(server)
-            .post('/api/auth/login')
-            .send({ email: 'professor@teste.com', senha: 'Teste@123' });
-        professorToken = profLogin.body.token;
-
-        const alunoLogin = await request(server)
-            .post('/api/auth/login')
-            .send({ email: 'aluno@teste.com', senha: 'Teste@123' });
-        alunoToken = alunoLogin.body.token;
-
         await criarCursoETurma();
     });
 
     afterAll(async () => {
-        if (server) {
-            await new Promise(resolve => server.close(resolve));
-        }
         await closeTestPool();
+        await applicationDb.end();
     });
 
     describe('POST /api/matriculas', () => {
@@ -157,6 +131,147 @@ describe('Testes de Integração - Matrículas', () => {
 
             expect(response.status).toBe(401);
         });
+
+        it('deve retornar 403 quando o usuário autenticado não é ALUNO', async () => {
+            const response = await request(server)
+                .post('/api/matriculas')
+                .set('Authorization', `Bearer ${professorToken}`)
+                .send({ id_turma: turmaId });
+
+            expect(response.status).toBe(403);
+        });
+
+        it('deve retornar 403 quando o usuário autenticado é ADMIN', async () => {
+            const response = await request(server)
+                .post('/api/matriculas')
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({ id_turma: turmaId });
+
+            expect(response.status).toBe(403);
+        });
+
+        it.each([
+            {},
+            { id_turma: 0 },
+            { id_turma: 'invalida' }
+        ])('deve retornar 400 para payload inválido: %j', async (payload) => {
+            const response = await request(server)
+                .post('/api/matriculas')
+                .set('Authorization', `Bearer ${alunoToken}`)
+                .send(payload);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('deve retornar 404 para turma inexistente', async () => {
+            const response = await request(server)
+                .post('/api/matriculas')
+                .set('Authorization', `Bearer ${alunoToken}`)
+                .send({ id_turma: 999999 });
+
+            expect(response.status).toBe(404);
+            expect(response.body.code).toBe('TURMA_NAO_ENCONTRADA');
+        });
+
+        it.each(['FECHADA', 'ENCERRADA'])('deve retornar 403 para turma %s', async (status) => {
+            const turmaResponse = await request(server)
+                .post('/api/turmas')
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    id_curso: cursoId,
+                    id_professor: testUsers.professor.id_usuario,
+                    nome_turma: `Turma ${status}`,
+                    data_inicio: '2026-03-01',
+                    status
+                });
+
+            const response = await request(server)
+                .post('/api/matriculas')
+                .set('Authorization', `Bearer ${alunoToken}`)
+                .send({ id_turma: turmaResponse.body.id_turma });
+
+            expect(response.status).toBe(403);
+            expect(response.body.code).toBe('TURMA_NAO_ABERTA');
+        });
+
+        it('deve reativar matrícula cancelada e reiniciar nota e progresso', async () => {
+            const created = await request(server)
+                .post('/api/matriculas')
+                .set('Authorization', `Bearer ${alunoToken}`)
+                .send({ id_turma: turmaId });
+            const id = created.body.matricula.id_matricula;
+            const pool = await initTestPool();
+            await pool.query(
+                "UPDATE Matriculas SET data_matricula = '2020-01-01 00:00:00' WHERE id_matricula = ?",
+                [id]
+            );
+            const [content] = await pool.query(
+                `INSERT INTO Conteudos (id_turma, titulo, tipo, ordem)
+                 VALUES (?, 'Conteúdo concluído antes do cancelamento', 'TEXTO', 1)`,
+                [turmaId]
+            );
+            await pool.query(
+                `INSERT INTO ConteudosProgresso (id_aluno, id_conteudo, status, iniciado_em, concluido_em)
+                 VALUES (?, ?, 'CONCLUIDO', NOW(), NOW())`,
+                [testUsers.aluno.id_usuario, content.insertId]
+            );
+
+            await request(server)
+                .patch(`/api/matriculas/${id}`)
+                .set('Authorization', `Bearer ${professorToken}`)
+                .send({ nota_final: 8.5, progresso_percentual: 70 });
+            await request(server)
+                .delete(`/api/matriculas/${id}`)
+                .set('Authorization', `Bearer ${alunoToken}`);
+
+            const response = await request(server)
+                .post('/api/matriculas')
+                .set('Authorization', `Bearer ${alunoToken}`)
+                .send({ id_turma: turmaId });
+
+            expect(response.status).toBe(200);
+            expect(response.body.matricula).toMatchObject({
+                id_matricula: id,
+                status_aprovacao: 'CURSANDO',
+                progresso_percentual: 0,
+                nota_final: null,
+                reativada: true
+            });
+            const [rows] = await pool.query(
+                `SELECT status_aprovacao, progresso_percentual, nota_final,
+                        data_matricula > '2020-01-01 00:00:00' AS data_atualizada
+                 FROM Matriculas WHERE id_matricula = ?`,
+                [id]
+            );
+            expect(rows[0]).toMatchObject({
+                status_aprovacao: 'CURSANDO',
+                progresso_percentual: 0,
+                nota_final: null,
+                data_atualizada: 1
+            });
+            const [progressRows] = await pool.query(
+                'SELECT COUNT(*) AS total FROM ConteudosProgresso WHERE id_aluno = ? AND id_conteudo = ?',
+                [testUsers.aluno.id_usuario, content.insertId]
+            );
+            expect(Number(progressRows[0].total)).toBe(0);
+        });
+
+        it('deve manter uma única matrícula sob duas requisições concorrentes', async () => {
+            const requests = [1, 2].map(() => request(server)
+                .post('/api/matriculas')
+                .set('Authorization', `Bearer ${alunoToken}`)
+                .send({ id_turma: turmaId }));
+
+            const responses = await Promise.all(requests);
+            expect(responses.map((response) => response.status).sort()).toEqual([201, 409]);
+
+            const pool = await initTestPool();
+            const [rows] = await pool.query(
+                'SELECT COUNT(*) AS total FROM Matriculas WHERE id_aluno = ? AND id_turma = ?',
+                [testUsers.aluno.id_usuario, turmaId]
+            );
+            expect(Number(rows[0].total)).toBe(1);
+        });
     });
 
     describe('GET /api/matriculas/aluno/:id', () => {
@@ -177,14 +292,16 @@ describe('Testes de Integração - Matrículas', () => {
             expect(response.status).toBe(200);
             expect(Array.isArray(response.body)).toBe(true);
             expect(response.body.length).toBeGreaterThan(0);
+            expect(response.body[0]).toHaveProperty('id_turma', turmaId);
         });
 
-        it('deve retornar 404 para aluno sem matrículas', async () => {
+        it('deve retornar coleção vazia com 200 para aluno sem matrículas', async () => {
             const response = await request(server)
                 .get('/api/matriculas/aluno/99999')
                 .set('Authorization', `Bearer ${adminToken}`);
 
-            expect([404, 200]).toContain(response.status);
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual([]);
         });
     });
 
@@ -204,6 +321,10 @@ describe('Testes de Integração - Matrículas', () => {
 
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('matriculas');
+            expect(response.body.matriculas[0]).toMatchObject({
+                id_aluno: testUsers.aluno.id_usuario,
+                id_turma: turmaId
+            });
         });
 
         it('deve listar matrículas da turma (ADMIN)', async () => {

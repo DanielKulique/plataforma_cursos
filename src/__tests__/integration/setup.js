@@ -9,14 +9,16 @@
  */
 
 const mysql = require('mysql2/promise');
-require('dotenv').config({ path: '.env.test' });
+const { assertTestDatabaseIsDisposable } = require('../../../scripts/test_database_safety');
+const { loadEnvironment } = require('../../config/loadEnvironment');
+loadEnvironment('test');
 
 // Configuração do banco de dados de teste
 const testDbConfig = {
     host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'appuser',
-    password: process.env.DB_PASSWORD || 'tPJ"~s04_4K5',
-    database: process.env.DB_NAME || 'site_cursos_test',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     waitForConnections: true,
     connectionLimit: 5,
     queueLimit: 0
@@ -30,6 +32,7 @@ let testPool = null;
  */
 async function initTestPool() {
     if (!testPool) {
+        assertTestDatabaseIsDisposable(process.env);
         testPool = mysql.createPool(testDbConfig);
         
         // Testa conexão
@@ -53,17 +56,23 @@ async function initTestPool() {
  */
 async function clearDatabase() {
     const pool = await initTestPool();
+    assertTestDatabaseIsDisposable(process.env);
+    const connection = await pool.getConnection();
     
     try {
         // Desabilita checks de chave estrangeira temporariamente
-        await pool.query('SET FOREIGN_KEY_CHECKS = 0');
+        await connection.query('SET FOREIGN_KEY_CHECKS = 0');
         
         // Limpa tabelas na ordem correta (ignora se não existir)
-        const tables = ['Matriculas', 'Turmas', 'Cursos', 'Usuarios', 'verificacao_email'];
+        const tables = [
+            'AnalisesPlagio', 'ConteudosProgresso', 'ProgressoAluno', 'Conteudos', 'Modulos',
+            'Q_Respostas', 'Q_Tentativas', 'Q_Opcoes', 'Q_Perguntas', 'Questionarios',
+            'Matriculas', 'Turmas', 'Cursos', 'EmailVerificacoes', 'Usuarios'
+        ];
         
         for (const table of tables) {
             try {
-                await pool.query(`DELETE FROM ${table}`);
+                await connection.query(`TRUNCATE TABLE ${table}`);
             } catch (err) {
                 // Ignora erro de tabela inexistente
                 if (err.code !== 'ER_NO_SUCH_TABLE') {
@@ -72,13 +81,13 @@ async function clearDatabase() {
             }
         }
         
-        // Reseta auto-increment
-        await pool.query('SET FOREIGN_KEY_CHECKS = 1');
-        
         console.log('✓ Banco de dados limpo');
     } catch (error) {
         console.error('✗ Erro ao limpar banco:', error.message);
         throw error;
+    } finally {
+        await connection.query('SET FOREIGN_KEY_CHECKS = 1').catch(() => undefined);
+        connection.release();
     }
 }
 
@@ -89,13 +98,14 @@ async function clearDatabase() {
 async function seedBasicData() {
     const pool = await initTestPool();
     const bcrypt = require('bcrypt');
+    const testPassword = String(process.env.TEST_SEED_PASSWORD || '');
+
+    if (testPassword.length < 8) {
+        throw new Error('TEST_SEED_PASSWORD deve conter ao menos 8 caracteres para o seed descartável.');
+    }
 
     try {
-        // Remove usuários e verificações existentes
-        await pool.query("DELETE FROM Usuarios WHERE email IN ('admin@teste.com', 'professor@teste.com', 'aluno@teste.com')");
-        await pool.query("DELETE FROM EmailVerificacoes WHERE email IN ('admin@teste.com', 'professor@teste.com', 'aluno@teste.com')");
-        
-        const senhaHash = await bcrypt.hash('Teste@123', 10);
+        const senhaHash = await bcrypt.hash(testPassword, 10);
 
         // Cria usuários de teste
         await pool.query(`
@@ -151,5 +161,10 @@ module.exports = {
     clearDatabase,
     seedBasicData,
     closeTestPool,
-    testDbConfig
+    testDbConfig,
+    getTestPassword: () => {
+        const password = String(process.env.TEST_SEED_PASSWORD || '');
+        if (password.length < 8) throw new Error('TEST_SEED_PASSWORD não configurada.');
+        return password;
+    }
 };

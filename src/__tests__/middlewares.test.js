@@ -1,9 +1,11 @@
 const jwt = require('jsonwebtoken');
+const authModel = require('../api/models/auth.models');
 const checkAuth = require('../middlewares/checkAuth.middleware');
 const checkRole = require('../middlewares/checkRole.middleware');
 const checkUserPermission = require('../middlewares/checkUserPermission.middleware');
 
 jest.mock('jsonwebtoken');
+jest.mock('../api/models/auth.models');
 
 describe('Middlewares de Autenticação', () => {
     let req, res, next;
@@ -22,47 +24,85 @@ describe('Middlewares de Autenticação', () => {
     });
 
     describe('checkAuth', () => {
-        it('deve chamar next() quando token for válido', () => {
-            const mockUser = { id_usuario: 1, tipo: 'ALUNO' };
-            jwt.verify.mockReturnValue(mockUser);
+        it('deve chamar next() com existência e papel atuais confirmados no banco', async () => {
+            const tokenUser = { id_usuario: 1, tipo: 'ALUNO' };
+            const currentUser = { id_usuario: 1, nome_completo: 'Usuário Atual', tipo: 'PROFESSOR' };
+            jwt.verify.mockReturnValue(tokenUser);
+            authModel.buscarUsuarioPorId.mockResolvedValue(currentUser);
 
             req.headers['authorization'] = 'Bearer valid-token';
 
-            checkAuth(req, res, next);
+            await checkAuth(req, res, next);
 
             expect(jwt.verify).toHaveBeenCalledWith('valid-token', process.env.JWT_SECRET);
-            expect(req.user).toEqual(mockUser);
+            expect(authModel.buscarUsuarioPorId).toHaveBeenCalledWith(1);
+            expect(req.user).toEqual(currentUser);
             expect(next).toHaveBeenCalled();
         });
 
-        it('deve retornar 401 quando token não for fornecido', () => {
-            checkAuth(req, res, next);
+        it('deve retornar 401 quando token não for fornecido', async () => {
+            await checkAuth(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.json).toHaveBeenCalledWith({ mensagem: 'Token não fornecido' });
             expect(next).not.toHaveBeenCalled();
         });
 
-        it('deve retornar 401 quando token for inválido', () => {
+        it('deve retornar 401 quando token for inválido', async () => {
             jwt.verify.mockImplementation(() => {
                 throw new Error('Token inválido');
             });
 
             req.headers['authorization'] = 'Bearer invalid-token';
 
-            checkAuth(req, res, next);
+            await checkAuth(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.json).toHaveBeenCalledWith({ mensagem: 'Token inválido' });
             expect(next).not.toHaveBeenCalled();
         });
 
-        it('deve retornar 401 quando token não tiver prefixo Bearer', () => {
+        it('deve retornar 401 quando token não tiver prefixo Bearer', async () => {
             req.headers['authorization'] = 'invalid-token';
 
-            checkAuth(req, res, next);
+            await checkAuth(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(401);
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('deve retornar 401 quando o token não identificar um usuário', async () => {
+            jwt.verify.mockReturnValue({ tipo: 'ALUNO' });
+            req.headers['authorization'] = 'Bearer valid-token';
+
+            await checkAuth(req, res, next);
+
+            expect(res.status).toHaveBeenCalledWith(401);
+            expect(authModel.buscarUsuarioPorId).not.toHaveBeenCalled();
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('deve invalidar a sessão quando o usuário não existir mais', async () => {
+            jwt.verify.mockReturnValue({ id_usuario: 99, tipo: 'ADMIN' });
+            authModel.buscarUsuarioPorId.mockRejectedValue(new Error('Usuário não encontrado'));
+            req.headers['authorization'] = 'Bearer valid-token';
+
+            await checkAuth(req, res, next);
+
+            expect(res.status).toHaveBeenCalledWith(401);
+            expect(res.json).toHaveBeenCalledWith({ mensagem: 'Sessão inválida' });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('deve responder 500 sem detalhes quando a consulta de sessão falhar', async () => {
+            jwt.verify.mockReturnValue({ id_usuario: 1, tipo: 'ALUNO' });
+            authModel.buscarUsuarioPorId.mockRejectedValue(new Error('falha SQL sensível'));
+            req.headers['authorization'] = 'Bearer valid-token';
+
+            await checkAuth(req, res, next);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({ mensagem: 'Não foi possível validar a sessão.' });
             expect(next).not.toHaveBeenCalled();
         });
     });

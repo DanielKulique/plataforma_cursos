@@ -25,16 +25,17 @@ app.use('/api/matriculas', matriculaRoutes);
 describe('Matricula Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        matriculaModel.turmaExiste.mockResolvedValue(true);
     });
 
     describe('POST /api/matriculas', () => {
         it('deve criar matrícula com sucesso', async () => {
-            matriculaModel.verificarMatriculaDuplicada.mockResolvedValue(false);
-            matriculaModel.criarMatricula.mockResolvedValue({
+            matriculaModel.matricularAluno.mockResolvedValue({
                 id_matricula: 1,
                 id_aluno: 1,
                 id_turma: 5,
-                status_aprovacao: 'CURSANDO'
+                status_aprovacao: 'CURSANDO',
+                reativada: false
             });
 
             const response = await request(app)
@@ -48,7 +49,10 @@ describe('Matricula Controller', () => {
         });
 
         it('deve retornar erro 409 quando aluno já estiver matriculado', async () => {
-            matriculaModel.verificarMatriculaDuplicada.mockResolvedValue(true);
+            const error = new Error('Você já está matriculado nesta turma.');
+            error.status = 409;
+            error.code = 'MATRICULA_DUPLICADA';
+            matriculaModel.matricularAluno.mockRejectedValue(error);
 
             const response = await request(app)
                 .post('/api/matriculas')
@@ -57,7 +61,50 @@ describe('Matricula Controller', () => {
                 });
 
             expect(response.status).toBe(409);
-            expect(response.body).toHaveProperty('message', 'Você já está matriculado nesta turma!');
+            expect(response.body).toMatchObject({
+                message: 'Você já está matriculado nesta turma.',
+                code: 'MATRICULA_DUPLICADA'
+            });
+        });
+
+        it('deve reativar matrícula cancelada e retornar 200', async () => {
+            matriculaModel.matricularAluno.mockResolvedValue({
+                id_matricula: 8,
+                id_aluno: 1,
+                id_turma: 5,
+                status_aprovacao: 'CURSANDO',
+                progresso_percentual: 0,
+                nota_final: null,
+                reativada: true
+            });
+
+            const response = await request(app).post('/api/matriculas').send({ id_turma: 5 });
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toContain('reativada');
+            expect(response.body.matricula).toMatchObject({ progresso_percentual: 0, nota_final: null });
+        });
+
+        it.each([
+            [404, 'TURMA_NAO_ENCONTRADA', 'Turma não encontrada.'],
+            [403, 'TURMA_NAO_ABERTA', 'Esta turma não está aberta para matrículas.']
+        ])('preserva o status HTTP de domínio %i', async (status, code, message) => {
+            const error = new Error(message);
+            error.status = status;
+            error.code = code;
+            matriculaModel.matricularAluno.mockRejectedValue(error);
+
+            const response = await request(app).post('/api/matriculas').send({ id_turma: 5 });
+
+            expect(response.status).toBe(status);
+            expect(response.body).toEqual({ message, code });
+        });
+
+        it('deve retornar 400 para id de turma inválido', async () => {
+            const response = await request(app).post('/api/matriculas').send({ id_turma: 0 });
+
+            expect(response.status).toBe(400);
+            expect(matriculaModel.matricularAluno).not.toHaveBeenCalled();
         });
     });
 
@@ -81,13 +128,13 @@ describe('Matricula Controller', () => {
             expect(response.body).toEqual(matriculasMock);
         });
 
-        it('deve retornar erro 404 quando não houver matrículas', async () => {
+        it('deve retornar coleção vazia com 200 quando não houver matrículas', async () => {
             matriculaModel.buscarMatriculaPorAluno.mockResolvedValue([]);
 
             const response = await request(app).get('/api/matriculas/aluno/1');
 
-            expect(response.status).toBe(404);
-            expect(response.body).toHaveProperty('message', 'Nenhuma matrícula encontrada para este aluno.');
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual([]);
         });
     });
 
@@ -136,12 +183,22 @@ describe('Matricula Controller', () => {
             expect(response.body).toHaveProperty('matriculas');
         });
 
-        it('deve retornar erro 404 quando não houver matrículas na turma', async () => {
+        it('deve retornar coleção vazia com 200 quando não houver matrículas na turma', async () => {
             matriculaModel.buscarMatriculaPorTurma.mockResolvedValue([]);
 
             const response = await request(app).get('/api/matriculas/turma/5');
 
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual({ matriculas: [] });
+        });
+
+        it('deve retornar 404 quando a turma não existir', async () => {
+            matriculaModel.turmaExiste.mockResolvedValue(false);
+
+            const response = await request(app).get('/api/matriculas/turma/999');
+
             expect(response.status).toBe(404);
+            expect(response.body).toEqual({ message: 'Turma não encontrada.' });
         });
     });
 
@@ -195,6 +252,15 @@ describe('Matricula Controller', () => {
                 });
 
             expect(response.status).toBe(400);
+        });
+
+        it.each([-0.1, 10.1, 11])('deve rejeitar nota fora da faixa: %s', async (nota) => {
+            const response = await request(app)
+                .patch('/api/matriculas/1')
+                .send({ nota_final: nota });
+
+            expect(response.status).toBe(400);
+            expect(matriculaModel.atualizarMatricula).not.toHaveBeenCalled();
         });
 
         it('deve retornar erro 404 quando matrícula não for encontrada', async () => {

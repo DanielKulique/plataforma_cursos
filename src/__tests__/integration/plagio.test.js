@@ -13,10 +13,12 @@ jest.mock('../../api/services/plagio.service', () => ({
 
 const request = require('supertest');
 const plagioService = require('../../api/services/plagio.service');
-const { initTestPool, clearDatabase, seedBasicData, closeTestPool } = require('./setup');
+const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword } = require('./setup');
 const { app } = require('../../../index');
+const applicationDb = require('../../config/database');
 
-let server = null;
+const server = app;
+const testPassword = getTestPassword();
 let alunoToken = null;
 
 describe('Testes de Integração - Plágio', () => {
@@ -25,14 +27,11 @@ describe('Testes de Integração - Plágio', () => {
         await clearDatabase();
         await seedBasicData();
 
-        const PORT = process.env.PORT || 3001;
-        server = app.listen(PORT);
-
         const login = await request(server)
             .post('/api/auth/login')
             .send({
                 email: 'aluno@teste.com',
-                senha: 'Teste@123'
+                senha: testPassword
             });
 
         alunoToken = login.body.token;
@@ -43,10 +42,8 @@ describe('Testes de Integração - Plágio', () => {
     });
 
     afterAll(async () => {
-        if (server) {
-            await new Promise(resolve => server.close(resolve));
-        }
         await closeTestPool();
+        await applicationDb.end();
     });
 
     it('deve analisar texto e retornar score com id do registro', async () => {
@@ -61,13 +58,17 @@ describe('Testes de Integração - Plágio', () => {
             .post('/api/plagio/analisar')
             .set('Authorization', `Bearer ${alunoToken}`)
             .send({
-                texto: 'Este texto de exemplo possui conteúdo suficiente para validação.'
+                texto_original: 'Este é o texto original usado como referência na comparação.',
+                texto_suspeito: 'Este texto de exemplo possui conteúdo suficiente para validação.'
             });
 
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty('id_registro');
         expect(response.body.resultado).toHaveProperty('score_similaridade', 85);
-        expect(plagioService.enviarParaAnaliseIA).toHaveBeenCalledTimes(1);
+        expect(plagioService.enviarParaAnaliseIA).toHaveBeenCalledWith(
+            'Este é o texto original usado como referência na comparação.',
+            'Este texto de exemplo possui conteúdo suficiente para validação.'
+        );
     });
 
     it('deve retornar 503 quando serviço de IA falhar', async () => {
@@ -79,10 +80,11 @@ describe('Testes de Integração - Plágio', () => {
             .post('/api/plagio/analisar')
             .set('Authorization', `Bearer ${alunoToken}`)
             .send({
-                texto: 'Texto válido para simular erro de indisponibilidade no backend.'
+                texto_original: 'Texto original válido para simular indisponibilidade no backend.',
+                texto_suspeito: 'Texto válido para simular erro de indisponibilidade no backend.'
             });
 
         expect(response.status).toBe(503);
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty('mensagem');
     });
 });

@@ -5,13 +5,20 @@ const authRoutes = require('../api/routes/auth.routes');
 const authModel = require('../api/models/auth.models');
 const jwt = require('jsonwebtoken');
 const checkAuth = require('../middlewares/checkAuth.middleware');
+const { enviarCodigoVerificacaoEmail } = require('../services/email.service');
 
 // Mock dos módulos
 jest.mock('../api/models/auth.models');
 jest.mock('../services/email.service');
 jest.mock('jsonwebtoken');
 jest.mock('../middlewares/checkAuth.middleware', () => (req, res, next) => {
-    req.user = { id_usuario: 1, tipo: 'ALUNO' };
+    req.user = {
+        id_usuario: 1,
+        nome_completo: 'Test User',
+        email: 'test@example.com',
+        telefone: '11999999999',
+        tipo: 'ALUNO'
+    };
     next();
 });
 
@@ -76,46 +83,39 @@ describe('Auth Controller', () => {
                 tipo: 'ALUNO'
             };
 
-            authModel.buscarUsuarioPorId.mockResolvedValue(usuarioMock);
-
             const response = await request(app)
                 .get('/api/auth/me')
                 .set('Authorization', 'Bearer valid-token');
 
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('usuario');
-            expect(authModel.buscarUsuarioPorId).toHaveBeenCalled();
+            expect(response.body.usuario).toEqual(expect.objectContaining(usuarioMock));
+            expect(authModel.buscarUsuarioPorId).not.toHaveBeenCalled();
         });
 
-        it('deve retornar 404 quando usuário não for encontrado', async () => {
-            authModel.buscarUsuarioPorId.mockRejectedValue({
-                message: 'Usuário não encontrado',
-                status: 404
-            });
+        it('deve responder com os dados autoritativos fornecidos pelo middleware', async () => {
+            const response = await request(app).get('/api/auth/me');
 
-            const response = await request(app)
-                .get('/api/auth/me')
-                .set('Authorization', 'Bearer valid-token');
-
-            expect(response.status).toBe(404);
+            expect(response.status).toBe(200);
+            expect(response.body.usuario.tipo).toBe('ALUNO');
+            expect(response.body.usuario.nome_completo).toBe('Test User');
         });
     });
 
-    describe('POST /api/auth/verificar-email', () => {
+    describe('POST /api/auth/verificar-codigo-email', () => {
         it('deve retornar sucesso quando código for válido', async () => {
             authModel.verificarCodigoEmail.mockResolvedValue({
                 jaVerificado: false
             });
 
             const response = await request(app)
-                .post('/api/auth/verificar-email')
+                .post('/api/auth/verificar-codigo-email')
                 .send({
                     email: 'test@example.com',
                     codigo: '123456'
                 });
 
-            // Aceita 200 ou 404 dependendo da implementação da rota
-            expect([200, 404]).toContain(response.status);
+            expect(response.status).toBe(200);
         });
 
         it('deve retornar erro quando código for inválido', async () => {
@@ -125,14 +125,33 @@ describe('Auth Controller', () => {
             });
 
             const response = await request(app)
-                .post('/api/auth/verificar-email')
+                .post('/api/auth/verificar-codigo-email')
                 .send({
                     email: 'test@example.com',
                     codigo: 'codigoerrado'
                 });
 
-            // Aceita 400 ou 404 dependendo da implementação da rota
-            expect([400, 404]).toContain(response.status);
+            expect(response.status).toBe(400);
+        });
+    });
+
+    describe('POST /api/auth/enviar-codigo-verificacao', () => {
+        it('não expõe o código quando o envio está em modo debug', async () => {
+            authModel.enviarCodigoVerificacaoPorEmail.mockResolvedValue({
+                email: 'test@example.com',
+                codigo: '123456',
+                expira_em: new Date('2026-07-22T12:00:00Z')
+            });
+            enviarCodigoVerificacaoEmail.mockResolvedValue({ enviado: false, modo: 'debug' });
+
+            const response = await request(app)
+                .post('/api/auth/enviar-codigo-verificacao')
+                .send({ email: 'test@example.com' });
+
+            expect(response.status).toBe(200);
+            expect(response.body).not.toHaveProperty('codigo');
+            expect(response.body).not.toHaveProperty('codigo_debug');
+            expect(JSON.stringify(response.body)).not.toContain('123456');
         });
     });
 });

@@ -1,15 +1,15 @@
 /**
  * Script para criar usuários de teste com SENHA FORTE
- * 
+ *
  * Requisitos de senha forte:
  * - Mínimo 8 caracteres
  * - 1 letra maiúscula
  * - 1 letra minúscula
  * - 1 número
  * - 1 símbolo especial
- * 
+ *
  * Senha carregada de CANONICAL_SEED_PASSWORD, sem fallback.
- * 
+ *
  * Uso: node scripts/seed_usuarios_teste.js
  */
 
@@ -72,7 +72,7 @@ async function limparUsuariosTeste() {
             'DELETE FROM Usuarios WHERE email IN (?)',
             [emailsDeTeste]
         );
-        
+
         if (result.affectedRows > 0) {
             log(cores.verde, `✓ ${result.affectedRows} usuários de teste limpos`);
         } else {

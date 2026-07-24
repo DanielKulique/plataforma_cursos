@@ -433,6 +433,21 @@ export function confirmDanger(title, message) {
 }
 
 /**
+ * Modal de confirmação para ação positiva (matrícula, sucesso, etc)
+ * @param {string} title - Título do modal
+ * @param {string} message - Mensagem do modal
+ * @param {string} confirmText - Texto do botão de confirmação
+ * @returns {Promise<boolean>}
+ */
+export function confirmSuccess(title, message, confirmText = 'Confirmar') {
+    return confirm(title, message, {
+        type: 'success',
+        confirmText: confirmText,
+        cancelText: 'Cancelar'
+    });
+}
+
+/**
  * Modal de sucesso
  * @param {string} title - Título do modal
  * @param {string} message - Mensagem do modal

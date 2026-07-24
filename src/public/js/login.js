@@ -2,6 +2,32 @@ import { login, setToken, getCurrentUser, getRedirectByRole } from './auth.js';
 
 const form = document.getElementById('form-login');
 const mensagem = document.getElementById('mensagem-login');
+const submitButton = form?.querySelector('button[type="submit"]');
+let submitting = false;
+
+function exibirMensagem(texto, tipo = 'info') {
+    if (!mensagem) return;
+
+    mensagem.textContent = texto;
+    mensagem.classList.remove('is-info', 'is-success', 'is-error');
+    mensagem.classList.add(`is-${tipo}`);
+
+    const isError = tipo === 'error';
+    mensagem.setAttribute('role', isError ? 'alert' : 'status');
+    mensagem.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+}
+
+function setFormBusy(isBusy) {
+    submitting = isBusy;
+    form?.setAttribute('aria-busy', String(isBusy));
+
+    if (!submitButton) return;
+    submitButton.disabled = isBusy;
+    submitButton.setAttribute('aria-busy', String(isBusy));
+    submitButton.textContent = isBusy
+        ? 'Entrando...'
+        : submitButton.dataset.idleLabel || 'Entrar';
+}
 
 function mostrarMensagemPorMotivo() {
     if (!mensagem) return;
@@ -10,12 +36,12 @@ function mostrarMensagemPorMotivo() {
     const motivo = params.get('motivo');
 
     if (motivo === 'auth') {
-        mensagem.textContent = 'Faça login para continuar.';
+        exibirMensagem('Faça login para continuar.', 'info');
         return;
     }
 
     if (motivo === 'nao_autorizado') {
-        mensagem.textContent = 'Você não tem permissão para acessar esta área.';
+        exibirMensagem('Você não tem permissão para acessar esta área.', 'error');
     }
 }
 
@@ -33,21 +59,31 @@ async function redirecionarSeJaLogado() {
 if (form) {
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
+        if (submitting) return;
 
         const email = form.email.value.trim();
         const senha = form.senha.value;
+        let completed = false;
 
-        mensagem.textContent = 'Autenticando...';
+        form.email.removeAttribute('aria-invalid');
+        form.senha.removeAttribute('aria-invalid');
+        setFormBusy(true);
+        exibirMensagem('Autenticando...', 'info');
 
         try {
             const payload = await login(email, senha);
             setToken(payload.token);
-            mensagem.textContent = 'Login realizado com sucesso! Redirecionando...';
+            exibirMensagem('Login realizado com sucesso! Redirecionando...', 'success');
 
             const tipo = payload?.usuario?.tipo;
+            completed = true;
             window.location.href = getRedirectByRole(tipo);
         } catch (error) {
-            mensagem.textContent = error.message || 'Não foi possível realizar login.';
+            form.email.setAttribute('aria-invalid', 'true');
+            form.senha.setAttribute('aria-invalid', 'true');
+            exibirMensagem(error.message || 'Não foi possível realizar login.', 'error');
+        } finally {
+            if (!completed) setFormBusy(false);
         }
     });
 }

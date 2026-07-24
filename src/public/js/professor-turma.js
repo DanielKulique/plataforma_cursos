@@ -1,42 +1,70 @@
-import { clearToken, getCurrentUser, getToken } from './auth.js';
+import { clearToken, getToken } from './auth.js';
+import { initSessionUI } from './session-ui.js';
+import { createAcademicDialog } from './academic-dialog.js';
+import {
+    createAcademicState,
+    formatAcademicDate,
+    setAcademicBusy,
+    setAcademicMessage
+} from './academic-ui.js';
 
-const statusUsuario = document.getElementById('status-usuario');
-const mensagemTurma = document.getElementById('mensagem-turma');
-const turmaTitle = document.getElementById('turma-title');
-const tituloAlunos = document.getElementById('titulo-alunos');
-const subtituloAlunos = document.getElementById('subtitulo-alunos');
-const listaAlunosTurma = document.getElementById('lista-alunos-turma');
-const btnLogout = document.getElementById('btn-logout');
-
-// Elementos do modal
-const modalEdicao = document.getElementById('modal-edicao');
-const formEdicaoMatricula = document.getElementById('form-edicao-matricula');
-const notaFinalInput = document.getElementById('nota-final');
-const statusAprovacaoInput = document.getElementById('status-aprovacao');
-const progressoInput = document.getElementById('progresso');
-const fecharModal = document.getElementById('fechar-modal');
-const cancelarModal = document.getElementById('cancelar-modal');
-
-const params = new URLSearchParams(window.location.search);
-const idTurma = Number(params.get('id_turma'));
-
-// Variáveis para armazenar dados da matrícula sendo editada
+const $ = (id) => document.getElementById(id);
+const idTurma = Number(new URLSearchParams(window.location.search).get('id_turma'));
+const modalEdicao = $('modal-edicao');
+const formEdicaoMatricula = $('form-edicao-matricula');
+const notaFinalInput = $('nota-final');
+const statusAprovacaoInput = $('status-aprovacao');
+const progressoInput = $('progresso');
+const erroModal = $('erro-modal-edicao');
+const salvarButton = $('salvar-matricula');
 let matriculaEditando = null;
+let usuarioAtual = null;
+let salvandoMatricula = false;
+
+const dialogController = createAcademicDialog(modalEdicao, {
+    initialFocus: () => notaFinalInput
+});
 
 function formatarStatusAprovacao(status) {
-    const texto = String(status || '').trim();
-    const upper = texto.toUpperCase();
-
-    if (upper.includes('APROVADO')) return 'badge badge--success';
-    if (upper.includes('CURSANDO')) return 'badge badge--warning';
-    if (upper.includes('REPROVADO') || upper.includes('CANCELADO')) return 'badge badge--danger';
+    const valor = String(status || '').toUpperCase();
+    if (valor === 'APROVADO') return 'badge badge--success';
+    if (valor === 'CURSANDO') return 'badge badge--warning';
+    if (['REPROVADO', 'CANCELADO'].includes(valor)) return 'badge badge--danger';
     return 'badge badge--neutral';
+}
+
+function rotularStatusAprovacao(status) {
+    const valor = String(status || '').toUpperCase();
+    const labels = {
+        APROVADO: 'Aprovado',
+        CURSANDO: 'Cursando',
+        REPROVADO: 'Reprovado',
+        CANCELADO: 'Cancelado'
+    };
+    return labels[valor] || status || 'Não informado';
+}
+
+function formatarStatusTurma(status) {
+    const valor = String(status || '').toUpperCase();
+    if (valor === 'ABERTA') return 'badge badge--success';
+    if (valor === 'FECHADA') return 'badge badge--warning';
+    if (valor === 'ENCERRADA') return 'badge badge--danger';
+    return 'badge badge--neutral';
+}
+
+function rotularStatusTurma(status) {
+    const valor = String(status || '').toUpperCase();
+    const labels = {
+        ABERTA: 'Inscrições abertas',
+        FECHADA: 'Inscrições fechadas',
+        ENCERRADA: 'Turma encerrada'
+    };
+    return labels[valor] || status || 'Não informado';
 }
 
 function formatarProgresso(progresso) {
     const valor = Number(progresso);
-    if (isNaN(valor)) return '0%';
-    
+    if (!Number.isFinite(valor)) return '0%';
     if (valor >= 100) return 'Concluído';
     if (valor >= 75) return 'Avançado';
     if (valor >= 50) return 'Intermediário';
@@ -44,276 +72,291 @@ function formatarProgresso(progresso) {
     return 'Iniciante';
 }
 
-function configurarLogout() {
-    if (!btnLogout) return;
-
-    btnLogout.addEventListener('click', () => {
-        clearToken();
-        window.location.href = '/login.html';
-    });
-}
-
-function abrirModal(matricula) {
+function abrirModal(matricula, trigger) {
     matriculaEditando = matricula;
-    
-    // Preencher o formulário com os dados atuais
-    notaFinalInput.value = matricula.nota_final || '';
+    notaFinalInput.value = matricula.nota_final ?? '';
     statusAprovacaoInput.value = matricula.status_aprovacao || 'CURSANDO';
-    progressoInput.value = matricula.progresso_percentual || '';
-    
-    // Exibir o modal
-    modalEdicao.style.display = 'block';
+    progressoInput.value = matricula.progresso_percentual ?? '';
+    notaFinalInput.removeAttribute('aria-invalid');
+    setAcademicMessage(erroModal, '', 'error');
+    dialogController.open(trigger);
 }
 
-function fecharModalHandler() {
-    modalEdicao.style.display = 'none';
-    matriculaEditando = null;
+function fecharModal(options) {
+    dialogController.close(options);
 }
 
-function renderizarAlunos(alunos = []) {
-    if (!listaAlunosTurma) return;
+function celulaTexto(valor, className = '') {
+    const cell = document.createElement('td');
+    if (className) cell.className = className;
+    cell.textContent = String(valor ?? '');
+    return cell;
+}
 
-    listaAlunosTurma.innerHTML = '';
+function renderizarEstadoTabela(valor, type = 'empty') {
+    const linha = document.createElement('tr');
+    const celula = celulaTexto(valor, `table-empty ${type === 'error' ? 'error-state' : ''}`);
+    celula.colSpan = 6;
+    celula.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    linha.append(celula);
+    $('lista-alunos-turma').replaceChildren(linha);
+    setAcademicBusy($('lista-alunos-turma'), false);
+}
 
-    if (alunos.length === 0) {
-        listaAlunosTurma.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty-state">Nenhum aluno matriculado nesta turma.</td>
-            </tr>
-        `;
+function renderizarAlunos(alunos) {
+    const lista = $('lista-alunos-turma');
+    lista.replaceChildren();
+    setAcademicBusy(lista, false);
+
+    if (!alunos.length) {
+        renderizarEstadoTabela('Nenhum aluno matriculado nesta turma.');
         return;
     }
 
     alunos.forEach((aluno) => {
-        const row = document.createElement('tr');
-        
-        row.innerHTML = `
-            <td>${aluno.nome_completo || 'Nome não informado'}</td>
-            <td>${aluno.email || 'Email não informado'}</td>
-            <td>
-                <div class="progress-cell">
-                    <span class="progress-value">${aluno.progresso_percentual || 0}%</span>
-                    <span class="progress-label">${formatarProgresso(aluno.progresso_percentual)}</span>
-                </div>
-            </td>
-            <td>${aluno.nota_final !== null ? aluno.nota_final.toFixed(1) : 'N/A'}</td>
-            <td><span class="${formatarStatusAprovacao(aluno.status_aprovacao)}">${aluno.status_aprovacao || 'N/A'}</span></td>
-            <td>
-                <button class="action-button action-button--small" onclick="abrirModal(${JSON.stringify(aluno).replace(/"/g, '"')})">
-                    Editar
-                </button>
-            </td>
-        `;
+        const linha = document.createElement('tr');
+        const progressoCelula = document.createElement('td');
+        const progresso = document.createElement('div');
+        progresso.className = 'progress-cell';
+        const valor = document.createElement('span');
+        valor.className = 'progress-value';
+        valor.textContent = `${Number(aluno.progresso_percentual) || 0}%`;
+        const rotulo = document.createElement('span');
+        rotulo.className = 'progress-label';
+        rotulo.textContent = formatarProgresso(aluno.progresso_percentual);
+        progresso.append(valor, rotulo);
+        progressoCelula.append(progresso);
 
-        listaAlunosTurma.appendChild(row);
+        const statusCelula = document.createElement('td');
+        const status = document.createElement('span');
+        status.className = formatarStatusAprovacao(aluno.status_aprovacao);
+        status.textContent = rotularStatusAprovacao(aluno.status_aprovacao);
+        statusCelula.append(status);
+
+        const acoes = document.createElement('td');
+        const editar = document.createElement('button');
+        editar.type = 'button';
+        editar.className = 'action-button action-button--small';
+        editar.textContent = 'Editar dados';
+        editar.dataset.matriculaId = String(aluno.id_matricula);
+        editar.setAttribute(
+            'aria-label',
+            `Editar nota, progresso e status de ${aluno.nome_completo || 'aluno'}`
+        );
+        editar.addEventListener('click', () => abrirModal(aluno, editar));
+        acoes.append(editar);
+
+        const nota = aluno.nota_final !== null && Number.isFinite(Number(aluno.nota_final))
+            ? Number(aluno.nota_final).toFixed(1)
+            : 'N/A';
+        linha.append(
+            celulaTexto(aluno.nome_completo || 'Nome não informado'),
+            celulaTexto(aluno.email || 'E-mail não informado'),
+            progressoCelula,
+            celulaTexto(nota),
+            statusCelula,
+            acoes
+        );
+        lista.appendChild(linha);
     });
 }
 
-async function atualizarMatricula(matriculaId, dadosAtualizacao) {
-    const token = getToken();
-    
-    try {
-        const response = await fetch(`/api/matriculas/${matriculaId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(dadosAtualizacao)
-        });
-
-        if (response.status === 401) {
-            clearToken();
-            window.location.href = '/login.html?motivo=auth';
-            return null;
-        }
-
-        if (response.status === 403) {
-            throw new Error('Você não tem permissão para atualizar esta matrícula.');
-        }
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.mensagem || 'Erro ao atualizar matrícula.');
-        }
-
-        const result = await response.json();
-        return result;
-    } catch (error) {
-        console.error('Erro ao atualizar matrícula:', error);
-        throw error;
-    }
-}
-
-async function carregarAlunosTurma() {
-    const token = getToken();
-    if (!token) {
-        window.location.href = '/login.html?motivo=auth';
+function renderizarListaSimples(idLista, itens, criarItem, mensagemVazia) {
+    const lista = $(idLista);
+    lista.replaceChildren();
+    setAcademicBusy(lista, false);
+    if (!itens.length) {
+        lista.appendChild(createAcademicState(mensagemVazia, 'empty'));
         return;
     }
+    itens.forEach((item) => lista.appendChild(criarItem(item)));
+}
 
+function renderizarConteudos(conteudos) {
+    renderizarListaSimples('lista-conteudos-professor', conteudos, (conteudo) => {
+        const item = document.createElement('li');
+        item.className = 'module-item module-item--static';
+        const titulo = document.createElement('h3');
+        titulo.textContent = conteudo.titulo;
+        const descricao = document.createElement('p');
+        descricao.textContent = [conteudo.tipo, conteudo.descricao].filter(Boolean).join(' · ');
+        item.append(titulo, descricao);
+        return item;
+    }, 'Nenhum conteúdo cadastrado nesta turma.');
+}
+
+function renderizarQuestionarios(questionarios) {
+    renderizarListaSimples('lista-questionarios-professor', questionarios, (questionario) => {
+        const item = document.createElement('li');
+        item.className = 'module-item module-item--static';
+        const titulo = document.createElement('h3');
+        titulo.textContent = questionario.titulo;
+        const descricao = document.createElement('p');
+        descricao.textContent = `${questionario.tipo} · ${questionario.total_perguntas} pergunta(s) · ${questionario.ativo ? 'Ativo' : 'Inativo'}`;
+        item.append(titulo, descricao);
+        return item;
+    }, 'Nenhum questionário cadastrado nesta turma.');
+}
+
+async function requisitarJson(url, options = {}) {
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            ...(options.headers || {}),
+            Authorization: `Bearer ${getToken()}`
+        }
+    });
+    const body = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+        clearToken();
+        window.location.href = '/login.html?motivo=auth';
+        throw new Error('Sessão inválida.');
+    }
+    if (response.status === 403) {
+        throw new Error('Você não tem permissão para acessar esta turma.');
+    }
+    if (!response.ok) {
+        throw new Error(body.mensagem || body.message || 'Não foi possível carregar o recurso.');
+    }
+    return body;
+}
+
+async function atualizarMatricula(matriculaId, dadosAtualizacao) {
+    return requisitarJson(`/api/matriculas/${matriculaId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dadosAtualizacao)
+    });
+}
+
+async function carregarTurma() {
     if (!Number.isInteger(idTurma) || idTurma <= 0) {
         window.location.href = '/professor.html?motivo=turma_invalida';
         return;
     }
 
     try {
-        const usuario = await getCurrentUser();
+        setAcademicBusy($('lista-alunos-turma'), true);
+        setAcademicBusy($('lista-conteudos-professor'), true);
+        setAcademicBusy($('lista-questionarios-professor'), true);
+        $('status-usuario').textContent = `Professor logado: ${usuarioAtual.nome_completo}`;
 
-        if (!usuario) {
-            window.location.href = '/login.html?motivo=auth';
-            return;
-        }
+        const [alunosBody, conteudosBody, questionariosBody] = await Promise.all([
+            requisitarJson(`/api/matriculas/turma/${idTurma}`),
+            requisitarJson(`/api/turmas/${idTurma}/conteudos`),
+            requisitarJson(`/api/turmas/${idTurma}/questionarios`)
+        ]);
+        const turma = await requisitarJson(`/api/turmas/${idTurma}`);
+        const alunos = Array.isArray(alunosBody.matriculas) ? alunosBody.matriculas : [];
 
-        // Verificar se o usuário é professor
-        if (String(usuario.tipo || '').toUpperCase() !== 'PROFESSOR') {
-            window.location.href = '/index.html?motivo=nao_autorizado';
-            return;
-        }
+        $('turma-title').textContent = turma.nome_turma || 'Turma';
+        $('titulo-alunos').textContent = `Alunos matriculados em ${turma.nome_turma}`;
+        $('subtitulo-alunos').textContent = `Lista de alunos e seu desempenho na turma ${turma.nome_turma}.`;
+        $('resumo-curso').textContent = turma.nome_curso || 'Não informado';
+        $('resumo-status').className = formatarStatusTurma(turma.status);
+        $('resumo-status').textContent = rotularStatusTurma(turma.status);
+        $('resumo-periodo').textContent = [turma.data_inicio, turma.data_fim]
+            .filter(Boolean)
+            .map(formatAcademicDate)
+            .join(' — ') || 'Não informado';
+        $('resumo-alunos').textContent = String(alunos.length);
 
-        if (statusUsuario) {
-            statusUsuario.textContent = `Professor logado: ${usuario.nome_completo}`;
-        }
-
-        // Carregar informações da turma
-        const turmaResponse = await fetch(`/api/turmas/${idTurma}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (turmaResponse.status === 401) {
-            clearToken();
-            window.location.href = '/login.html?motivo=auth';
-            return;
-        }
-
-        if (!turmaResponse.ok) {
-            throw new Error('Não foi possível carregar os dados da turma.');
-        }
-
-        const turmaData = await turmaResponse.json();
-        
-        if (turmaTitle) {
-            turmaTitle.textContent = turmaData.nome_turma || 'Turma';
-        }
-        
-        if (tituloAlunos) {
-            tituloAlunos.textContent = `Alunos Matriculados em ${turmaData.nome_turma}`;
-        }
-        
-        if (subtituloAlunos) {
-            subtituloAlunos.textContent = `Lista de alunos e seu desempenho na turma ${turmaData.nome_turma}.`;
-        }
-
-        // Carregar alunos matriculados na turma
-        const alunosResponse = await fetch(`/api/matriculas/turma/${idTurma}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (alunosResponse.status === 401) {
-            clearToken();
-            window.location.href = '/login.html?motivo=auth';
-            return;
-        }
-
-        if (alunosResponse.status === 403) {
-            window.location.href = '/index.html?motivo=nao_autorizado';
-            return;
-        }
-
-        if (!alunosResponse.ok) {
-            throw new Error('Não foi possível carregar os alunos da turma.');
-        }
-
-        const alunosData = await alunosResponse.json();
-        renderizarAlunos(Array.isArray(alunosData.matriculas) ? alunosData.matriculas : []);
-
-        if (mensagemTurma) {
-            const total = Array.isArray(alunosData.matriculas) ? alunosData.matriculas.length : 0;
-            mensagemTurma.textContent = total > 0 
-                ? `Esta turma tem ${total} aluno(s) matriculado(s).`
-                : 'Esta turma não tem alunos matriculados no momento.';
-        }
+        renderizarAlunos(alunos);
+        renderizarConteudos(Array.isArray(conteudosBody.conteudos) ? conteudosBody.conteudos : []);
+        renderizarQuestionarios(
+            Array.isArray(questionariosBody.questionarios) ? questionariosBody.questionarios : []
+        );
+        setAcademicMessage(
+            $('mensagem-turma'),
+            alunos.length
+                ? `Esta turma tem ${alunos.length} aluno(s) matriculado(s).`
+                : 'Esta turma não tem alunos matriculados no momento.',
+            'info'
+        );
     } catch (error) {
-        console.error('Erro ao carregar turma e alunos:', error);
-        if (mensagemTurma) {
-            mensagemTurma.textContent = error.message || 'Erro ao carregar dados da turma.';
-        }
-        if (listaAlunosTurma) {
-            listaAlunosTurma.innerHTML = `
-                <tr>
-                    <td colspan="6" class="error-state">Erro ao carregar alunos da turma.</td>
-                </tr>
-            `;
-        }
+        setAcademicMessage($('mensagem-turma'), error.message, 'error');
+        renderizarEstadoTabela('Erro ao carregar alunos da turma.', 'error');
+        $('lista-conteudos-professor').replaceChildren(
+            createAcademicState('Erro ao carregar conteúdos da turma.', 'error')
+        );
+        $('lista-questionarios-professor').replaceChildren(
+            createAcademicState('Erro ao carregar questionários da turma.', 'error')
+        );
+        setAcademicBusy($('lista-conteudos-professor'), false);
+        setAcademicBusy($('lista-questionarios-professor'), false);
     }
 }
 
-// Event listeners para o modal
-function setupModalEventListeners() {
-    if (fecharModal) {
-        fecharModal.onclick = fecharModalHandler;
-    }
-    
-    if (cancelarModal) {
-        cancelarModal.onclick = fecharModalHandler;
-    }
-    
-    if (formEdicaoMatricula) {
-        formEdicaoMatricula.onsubmit = async (event) => {
-            event.preventDefault();
-            
-            if (!matriculaEditando) {
-                alert('Nenhuma matrícula selecionada para edição.');
-                return;
-            }
-            
-            const dadosAtualizacao = {};
-            
-            if (notaFinalInput.value !== '') {
-                dadosAtualizacao.nota_final = parseFloat(notaFinalInput.value);
-            }
-            
-            if (statusAprovacaoInput.value) {
-                dadosAtualizacao.status_aprovacao = statusAprovacaoInput.value;
-            }
-            
-            if (progressoInput.value !== '') {
-                dadosAtualizacao.progresso_percentual = parseInt(progressoInput.value);
-            }
-            
-            try {
-                const result = await atualizarMatricula(matriculaEditando.id_matricula, dadosAtualizacao);
-                
-                if (result) {
-                    alert('Matrícula atualizada com sucesso!');
-                    
-                    // Fechar modal e recarregar a lista de alunos
-                    fecharModalHandler();
-                    carregarAlunosTurma();
-                }
-            } catch (error) {
-                alert('Erro ao atualizar matrícula: ' + error.message);
-            }
-        };
-    }
-    
-    // Fechar modal ao clicar fora dele
-    window.onclick = (event) => {
-        if (event.target === modalEdicao) {
-            fecharModalHandler();
+$('fechar-modal').addEventListener('click', () => fecharModal());
+$('cancelar-modal').addEventListener('click', () => fecharModal());
+modalEdicao.addEventListener('click', (event) => {
+    if (event.target === modalEdicao) fecharModal();
+});
+modalEdicao.addEventListener('close', () => {
+    matriculaEditando = null;
+    salvandoMatricula = false;
+    setAcademicBusy(formEdicaoMatricula, false);
+    salvarButton.disabled = false;
+    salvarButton.setAttribute('aria-busy', 'false');
+    salvarButton.textContent = salvarButton.dataset.idleLabel || 'Atualizar';
+});
+
+formEdicaoMatricula.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!matriculaEditando || salvandoMatricula) return;
+
+    const dados = {};
+    notaFinalInput.removeAttribute('aria-invalid');
+    setAcademicMessage(erroModal, '', 'error');
+    if (notaFinalInput.value !== '') {
+        const nota = Number(notaFinalInput.value);
+        if (!Number.isFinite(nota) || nota < 0 || nota > 10) {
+            notaFinalInput.setAttribute('aria-invalid', 'true');
+            setAcademicMessage(erroModal, 'A nota deve estar entre 0 e 10.', 'error');
+            notaFinalInput.focus();
+            return;
         }
-    };
-}
+        dados.nota_final = nota;
+    }
+    if (statusAprovacaoInput.value) dados.status_aprovacao = statusAprovacaoInput.value;
+    if (progressoInput.value !== '') dados.progresso_percentual = Number(progressoInput.value);
 
-// Função global para abrir o modal (necessária para onclick no HTML)
-window.abrirModal = abrirModal;
+    salvandoMatricula = true;
+    setAcademicBusy(formEdicaoMatricula, true);
+    salvarButton.disabled = true;
+    salvarButton.setAttribute('aria-busy', 'true');
+    salvarButton.textContent = 'Atualizando...';
+    const matriculaId = matriculaEditando.id_matricula;
 
-window.addEventListener('load', () => {
-    configurarLogout();
-    setupModalEventListeners();
-    carregarAlunosTurma();
+    try {
+        await atualizarMatricula(matriculaId, dados);
+        fecharModal({ shouldRestoreFocus: false });
+        await carregarTurma();
+        setAcademicMessage(
+            $('mensagem-turma'),
+            'Matrícula atualizada e dados recarregados do banco.',
+            'success'
+        );
+        [...document.querySelectorAll('[data-matricula-id]')]
+            .find((button) => button.dataset.matriculaId === String(matriculaId))
+            ?.focus();
+    } catch (error) {
+        salvandoMatricula = false;
+        setAcademicBusy(formEdicaoMatricula, false);
+        salvarButton.disabled = false;
+        salvarButton.setAttribute('aria-busy', 'false');
+        salvarButton.textContent = salvarButton.dataset.idleLabel || 'Atualizar';
+        setAcademicMessage(
+            erroModal,
+            `Erro ao atualizar matrícula: ${error.message}`,
+            'error'
+        );
+    }
+});
+
+window.addEventListener('load', async () => {
+    const session = await initSessionUI({ requiredRoles: ['PROFESSOR'] });
+    if (session.state !== 'authenticated') return;
+    usuarioAtual = session.user;
+    await carregarTurma();
 });

@@ -4,21 +4,53 @@
 
 const formVerificacao = document.getElementById('form-verificar-email');
 const mensagem = document.getElementById('mensagem-verificacao-email');
+const submitButton = formVerificacao?.querySelector('button[type="submit"]');
+let submitting = false;
+let completed = false;
 
 function exibirMensagem(texto, tipo = 'info') {
     if (!mensagem) return;
 
     mensagem.textContent = texto;
+    mensagem.classList.remove('is-error', 'is-success', 'is-info');
+    mensagem.classList.add(`is-${tipo}`);
 
-    mensagem.classList.remove('mensagem-erro', 'mensagem-sucesso', 'mensagem-info');
+    const isError = tipo === 'error';
+    mensagem.setAttribute('role', isError ? 'alert' : 'status');
+    mensagem.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+}
 
-    if (tipo === 'erro') {
-        mensagem.classList.add('mensagem-erro');
-    } else if (tipo === 'sucesso') {
-        mensagem.classList.add('mensagem-sucesso');
-    } else {
-        mensagem.classList.add('mensagem-info');
-    }
+function setFormBusy(isBusy) {
+    submitting = isBusy;
+    formVerificacao?.setAttribute('aria-busy', String(isBusy));
+
+    if (!submitButton) return;
+    submitButton.disabled = isBusy;
+    submitButton.setAttribute('aria-busy', String(isBusy));
+    submitButton.textContent = isBusy
+        ? 'Validando código...'
+        : submitButton.dataset.idleLabel || 'Confirmar e-mail';
+}
+
+function setFormCompleted() {
+    submitting = false;
+    formVerificacao?.setAttribute('aria-busy', 'false');
+    if (!submitButton) return;
+    submitButton.disabled = true;
+    submitButton.setAttribute('aria-busy', 'false');
+    submitButton.textContent = 'E-mail confirmado';
+}
+
+function clearFieldErrors() {
+    formVerificacao?.email?.removeAttribute('aria-invalid');
+    formVerificacao?.codigo?.removeAttribute('aria-invalid');
+}
+
+function markFieldError(fieldName) {
+    const field = formVerificacao?.[fieldName];
+    if (!field) return;
+    field.setAttribute('aria-invalid', 'true');
+    field.focus();
 }
 
 function limparCodigo(codigo) {
@@ -56,31 +88,43 @@ async function verificarCodigo(email, codigo) {
 
 async function onSubmit(event) {
     event.preventDefault();
+    if (submitting || completed) return;
 
     const email = formVerificacao.email.value.trim();
     const codigo = limparCodigo(formVerificacao.codigo.value);
+    clearFieldErrors();
 
     if (!email) {
-        exibirMensagem('Informe um e-mail.', 'erro');
+        markFieldError('email');
+        exibirMensagem('Informe um e-mail.', 'error');
         return;
     }
 
     if (codigo.length !== 6) {
-        exibirMensagem('O código deve ter 6 dígitos.', 'erro');
+        markFieldError('codigo');
+        exibirMensagem('O código deve ter 6 dígitos.', 'error');
         return;
     }
 
+    setFormBusy(true);
     exibirMensagem('Validando código...', 'info');
 
     try {
         await verificarCodigo(email, codigo);
-        exibirMensagem('E-mail confirmado com sucesso! Redirecionando para login...', 'sucesso');
+        completed = true;
+        exibirMensagem('E-mail confirmado com sucesso! Redirecionando para login...', 'success');
 
         setTimeout(() => {
             window.location.href = '/login.html';
         }, 1200);
     } catch (error) {
-        exibirMensagem(error.message || 'Falha ao verificar código.', 'erro');
+        exibirMensagem(error.message || 'Falha ao verificar código.', 'error');
+    } finally {
+        if (completed) {
+            setFormCompleted();
+        } else {
+            setFormBusy(false);
+        }
     }
 }
 

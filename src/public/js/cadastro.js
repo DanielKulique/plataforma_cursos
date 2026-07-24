@@ -6,26 +6,59 @@ const formCadastro = document.getElementById('form-cadastro');
 const mensagemCadastro = document.getElementById('mensagem-cadastro');
 const blocoPosCadastro = document.getElementById('bloco-pos-cadastro');
 const linkConfirmarEmail = document.getElementById('link-confirmar-email');
+const submitButton = formCadastro?.querySelector('button[type="submit"]');
+let submitting = false;
+let completed = false;
 
 /**
  * Exibe mensagens de feedback para o usuário.
  * @param {string} texto
- * @param {'sucesso'|'erro'|'info'} tipo
+ * @param {'success'|'error'|'info'} tipo
  */
 function exibirMensagem(texto, tipo = 'info') {
     if (!mensagemCadastro) return;
 
     mensagemCadastro.textContent = texto;
+    mensagemCadastro.classList.remove('is-error', 'is-success', 'is-info');
+    mensagemCadastro.classList.add(`is-${tipo}`);
 
-    mensagemCadastro.classList.remove('mensagem-erro', 'mensagem-sucesso', 'mensagem-info');
+    const isError = tipo === 'error';
+    mensagemCadastro.setAttribute('role', isError ? 'alert' : 'status');
+    mensagemCadastro.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+}
 
-    if (tipo === 'erro') {
-        mensagemCadastro.classList.add('mensagem-erro');
-    } else if (tipo === 'sucesso') {
-        mensagemCadastro.classList.add('mensagem-sucesso');
-    } else {
-        mensagemCadastro.classList.add('mensagem-info');
-    }
+function setFormBusy(isBusy) {
+    submitting = isBusy;
+    formCadastro?.setAttribute('aria-busy', String(isBusy));
+
+    if (!submitButton) return;
+    submitButton.disabled = isBusy;
+    submitButton.setAttribute('aria-busy', String(isBusy));
+    submitButton.textContent = isBusy
+        ? 'Criando conta...'
+        : submitButton.dataset.idleLabel || 'Cadastrar';
+}
+
+function setFormCompleted() {
+    submitting = false;
+    formCadastro?.setAttribute('aria-busy', 'false');
+    if (!submitButton) return;
+    submitButton.disabled = true;
+    submitButton.setAttribute('aria-busy', 'false');
+    submitButton.textContent = 'Cadastro concluído';
+}
+
+function clearFieldErrors() {
+    ['nome_completo', 'cpf', 'email', 'senha', 'confirmar_senha'].forEach((fieldName) => {
+        formCadastro?.[fieldName]?.removeAttribute('aria-invalid');
+    });
+}
+
+function markFieldError(fieldName) {
+    const field = formCadastro?.[fieldName];
+    if (!field) return;
+    field.setAttribute('aria-invalid', 'true');
+    field.focus();
 }
 
 /**
@@ -53,23 +86,35 @@ function senhaEhForte(senha) {
  */
 function validarFormulario(dados) {
     if (!dados.nome_completo || dados.nome_completo.trim().length < 3) {
-        return 'Informe um nome completo com pelo menos 3 caracteres.';
+        return {
+            message: 'Informe um nome completo com pelo menos 3 caracteres.',
+            field: 'nome_completo'
+        };
     }
 
     if (!dados.cpf || dados.cpf.length !== 11) {
-        return 'CPF inválido. Digite exatamente 11 números.';
+        return {
+            message: 'CPF inválido. Digite exatamente 11 números.',
+            field: 'cpf'
+        };
     }
 
     if (!dados.email || !dados.email.includes('@')) {
-        return 'E-mail inválido.';
+        return { message: 'E-mail inválido.', field: 'email' };
     }
 
     if (!dados.senha || !senhaEhForte(dados.senha)) {
-        return 'Senha fraca. Use 8+ caracteres com maiúscula, minúscula, número e símbolo.';
+        return {
+            message: 'Senha fraca. Use 8+ caracteres com maiúscula, minúscula, número e símbolo.',
+            field: 'senha'
+        };
     }
 
     if (dados.senha !== dados.confirmar_senha) {
-        return 'As senhas não coincidem. Confira e tente novamente.';
+        return {
+            message: 'As senhas não coincidem. Confira e tente novamente.',
+            field: 'confirmar_senha'
+        };
     }
 
     return null;
@@ -171,15 +216,19 @@ function obterDadosDoFormulario() {
  */
 async function onSubmitCadastro(event) {
     event.preventDefault();
+    if (submitting || completed) return;
 
     const dados = obterDadosDoFormulario();
     const erroValidacao = validarFormulario(dados);
+    clearFieldErrors();
 
     if (erroValidacao) {
-        exibirMensagem(erroValidacao, 'erro');
+        markFieldError(erroValidacao.field);
+        exibirMensagem(erroValidacao.message, 'error');
         return;
     }
 
+    setFormBusy(true);
     exibirMensagem('Criando conta...', 'info');
 
     try {
@@ -187,12 +236,14 @@ async function onSubmitCadastro(event) {
         try {
             const disponibilidade = await verificarDisponibilidadeCadastro(dados.email, dados.cpf);
             if (!disponibilidade?.email_disponivel) {
-                exibirMensagem('Este e-mail já está cadastrado. Tente fazer login.', 'erro');
+                markFieldError('email');
+                exibirMensagem('Este e-mail já está cadastrado. Tente fazer login.', 'error');
                 return;
             }
 
             if (!disponibilidade?.cpf_disponivel) {
-                exibirMensagem('Este CPF já está cadastrado.', 'erro');
+                markFieldError('cpf');
+                exibirMensagem('Este CPF já está cadastrado.', 'error');
                 return;
             }
         } catch (erroPreCheck) {
@@ -202,7 +253,8 @@ async function onSubmitCadastro(event) {
         await cadastrarUsuario(dados);
         await solicitarCodigoVerificacao(dados.email);
 
-        exibirMensagem('Cadastro realizado! Código enviado para seu e-mail.', 'sucesso');
+        completed = true;
+        exibirMensagem('Cadastro realizado! Código enviado para seu e-mail.', 'success');
 
         if (blocoPosCadastro) {
             blocoPosCadastro.hidden = false;
@@ -213,7 +265,13 @@ async function onSubmitCadastro(event) {
             linkConfirmarEmail.href = `/verificar-email.html?email=${emailParam}`;
         }
     } catch (error) {
-        exibirMensagem(error.message || 'Erro ao cadastrar usuário.', 'erro');
+        exibirMensagem(error.message || 'Erro ao cadastrar usuário.', 'error');
+    } finally {
+        if (completed) {
+            setFormCompleted();
+        } else {
+            setFormBusy(false);
+        }
     }
 }
 

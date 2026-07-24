@@ -5,6 +5,16 @@ const { body, param } = require('express-validator');
 const checkAuth = require('../../middlewares/checkAuth.middleware');
 const checkRole = require('../../middlewares/checkRole.middleware');
 
+function apenasCamposPermitidos(campos) {
+    return body().custom((payload) => {
+        const desconhecidos = Object.keys(payload || {}).filter((campo) => !campos.includes(campo));
+        if (desconhecidos.length > 0) {
+            throw new Error(`Campos não permitidos: ${desconhecidos.join(', ')}.`);
+        }
+        return true;
+    });
+}
+
 /**
  * Rotas administrativas para gerenciamento de usuários
  * Todas requerem autenticação e papel ADMIN
@@ -14,6 +24,7 @@ const checkRole = require('../../middlewares/checkRole.middleware');
 router.post('/usuarios',
     checkAuth,
     checkRole('ADMIN'),
+    apenasCamposPermitidos(['nome_completo', 'cpf', 'email', 'telefone', 'senha', 'tipo']),
     body('email').isEmail().withMessage('O e-mail fornecido não é válido.'),
     body('senha')
         .isLength({ min: 8 }).withMessage('A senha precisa ter no mínimo 8 caracteres')
@@ -22,14 +33,9 @@ router.post('/usuarios',
         .matches(/\d/).withMessage('A senha precisa ter pelo menos um número')
         .matches(/[^A-Za-z0-9]/).withMessage('A senha precisa ter pelo menos um símbolo'),
     body('cpf').isLength({ min: 11, max: 11 }).withMessage('O CPF deve ter exatamente 11 dígitos').isNumeric().withMessage('O CPF deve conter apenas números.'),
-    body('nome_completo').notEmpty().withMessage('O nome completo é obrigatório.'),
+    body('nome_completo').isString().trim().isLength({ min: 2, max: 255 }).withMessage('O nome completo deve ter entre 2 e 255 caracteres.'),
     body('tipo').isIn(['ALUNO', 'PROFESSOR', 'ADMIN']).withMessage('Tipo inválido. Aceitos: ALUNO, PROFESSOR, ADMIN.'),
-    body('telefone').optional().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres.'),
-    (req, res, next) => {
-        console.log('>>> Rota admin/usuarios chamada!');
-        console.log('>>> Body:', req.body);
-        next();
-    },
+    body('telefone').optional({ nullable: true, checkFalsy: true }).isString().matches(/^[0-9()+\-\s]{8,20}$/).withMessage('Telefone deve ter entre 8 e 20 caracteres válidos.'),
     usuariosController.criarUsuarioAdmin
 );
 
@@ -44,7 +50,7 @@ router.get('/usuarios',
 router.get('/usuarios/:id',
     checkAuth,
     checkRole('ADMIN'),
-    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
+    param('id').isInt({ min: 1 }).withMessage('O ID deve ser um número inteiro positivo.'),
     usuariosController.buscarUsuarioPorId
 );
 
@@ -52,27 +58,21 @@ router.get('/usuarios/:id',
 router.patch('/usuarios/:id',
     checkAuth,
     checkRole('ADMIN'),
-    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
+    param('id').isInt({ min: 1 }).withMessage('O ID deve ser um número inteiro positivo.'),
+    apenasCamposPermitidos(['nome_completo', 'cpf', 'email', 'telefone', 'tipo']),
     body('email').optional().isEmail().withMessage('O e-mail fornecido não é válido.'),
-    body('senha')
-        .optional()
-        .isLength({ min: 8 }).withMessage('A senha precisa ter no mínimo 8 caracteres')
-        .matches(/[A-Z]/).withMessage('A senha precisa ter pelo menos uma letra maiúscula')
-        .matches(/[a-z]/).withMessage('A senha precisa ter pelo menos uma letra minúscula')
-        .matches(/\d/).withMessage('A senha precisa ter pelo menos um número')
-        .matches(/[^A-Za-z0-9]/).withMessage('A senha precisa ter pelo menos um símbolo'),
     body('cpf').optional().isLength({ min: 11, max: 11 }).withMessage('O CPF deve ter exatamente 11 dígitos').isNumeric().withMessage('O CPF deve conter apenas números.'),
-    body('nome_completo').optional().notEmpty().withMessage('O nome completo é obrigatório.'),
+    body('nome_completo').optional().isString().trim().isLength({ min: 2, max: 255 }).withMessage('O nome completo deve ter entre 2 e 255 caracteres.'),
     body('tipo').optional().isIn(['ALUNO', 'PROFESSOR', 'ADMIN']).withMessage('Tipo inválido. Aceitos: ALUNO, PROFESSOR, ADMIN.'),
-    body('telefone').optional().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres.'),
-    usuariosController.atualizarUsuario
+    body('telefone').optional({ nullable: true, checkFalsy: true }).isString().matches(/^[0-9()+\-\s]{8,20}$/).withMessage('Telefone deve ter entre 8 e 20 caracteres válidos.'),
+    usuariosController.atualizarUsuarioAdmin
 );
 
 // DELETE /api/admin/usuarios/:id - Deletar usuário
 router.delete('/usuarios/:id',
     checkAuth,
     checkRole('ADMIN'),
-    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
+    param('id').isInt({ min: 1 }).withMessage('O ID deve ser um número inteiro positivo.'),
     usuariosController.deletarUsuario
 );
 

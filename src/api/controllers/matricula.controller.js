@@ -1,5 +1,6 @@
 const matriculaModel = require('../models/matricula.models');
 const { validationResult } = require('express-validator');
+const logger = require('../../utils/logger');
 
 // Criar nova matrícula (aluno entra em nova turma)
 async function criarMatricula(req, res) {
@@ -12,24 +13,19 @@ async function criarMatricula(req, res) {
         const { id_turma } = req.body;
         const id_aluno = req.user.id_usuario;
 
-        const jaMatriculado = await matriculaModel.verificarMatriculaDuplicada(id_aluno, id_turma);
-        if (jaMatriculado) {
-            return res.status(409).json({
-                message: 'Você já está matriculado nesta turma!'
-            });
-        }
+        const novaMatricula = await matriculaModel.matricularAluno(id_aluno, id_turma);
 
-        const novaMatricula = await matriculaModel.criarMatricula({
-            id_aluno,
-            id_turma
-        });
-
-        return res.status(201).json({
-            message: 'Matrícula realizada com sucesso!',
+        return res.status(novaMatricula.reativada ? 200 : 201).json({
+            message: novaMatricula.reativada
+                ? 'Matrícula reativada com sucesso! Nota e progresso foram reiniciados.'
+                : 'Matrícula realizada com sucesso!',
             matricula: novaMatricula
         });
     } catch (error) {
-        console.error('Erro ao criar matrícula:', error);
+        if (error.status && error.status < 500) {
+            return res.status(error.status).json({ message: error.message, code: error.code });
+        }
+        logger.error('matricula.criacao.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
         return res.status(500).json({
             message: 'Ocorreu um erro no servidor ao criar a matrícula.'
         });
@@ -42,15 +38,9 @@ async function buscarMatriculasDoAluno(req, res) {
     try {
         const matriculas = await matriculaModel.buscarMatriculaPorAluno(id_aluno);
 
-        if (matriculas.length === 0) {
-            return res.status(404).json({
-                message: 'Nenhuma matrícula encontrada para este aluno.'
-            });
-        }
-
         return res.status(200).json(matriculas);
     } catch (error) {
-        console.error('Erro ao buscar matrículas do aluno:', error);
+        logger.error('matricula.aluno_lista.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
         return res.status(500).json({
             message: 'Ocorreu um erro no servidor.'
         });
@@ -68,7 +58,7 @@ async function buscarMinhaSalaVirtual(req, res) {
             turmas: salas
         });
     } catch (error) {
-        console.error('Erro ao buscar sala virtual do aluno:', error);
+        logger.error('matricula.sala_virtual.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
         return res.status(500).json({
             message: 'Ocorreu um erro no servidor.'
         });
@@ -82,17 +72,14 @@ async function buscarMatriculasDaTurma(req, res) {
     try {
         // O middleware checkProfessorTurmaPermission já garantiu que o professor
         // tem permissão para acessar esta turma
-        const matriculas = await matriculaModel.buscarMatriculaPorTurma(id_turma);
-
-        if (matriculas.length === 0) {
-            return res.status(404).json({
-                message: 'Nenhuma matrícula encontrada para esta turma.'
-            });
+        if (!await matriculaModel.turmaExiste(id_turma)) {
+            return res.status(404).json({ message: 'Turma não encontrada.' });
         }
+        const matriculas = await matriculaModel.buscarMatriculaPorTurma(id_turma);
 
         return res.status(200).json({ matriculas });
     } catch (error) {
-        console.error('Erro ao buscar matrículas da turma:', error);
+        logger.error('matricula.turma_lista.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
         return res.status(500).json({
             message: 'Ocorreu um erro no servidor.'
         });
@@ -107,7 +94,7 @@ async function buscarMatriculaPorId(req, res) {
         const matricula = await matriculaModel.buscarMatriculaPorId(id);
         return res.status(200).json(matricula);
     } catch (error) {
-        console.error('Erro ao buscar matrícula:', error);
+        logger.error('matricula.consulta.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
         if (error.message === 'Matrícula não encontrada!') {
             return res.status(404).json({ message: error.message });
         }
@@ -140,7 +127,7 @@ async function atualizarMatricula(req, res) {
             message: 'Matrícula atualizada com sucesso!'
         });
     } catch (error) {
-        console.error('Erro ao atualizar matrícula:', error);
+        logger.error('matricula.atualizacao.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
         if (error.message === 'Nenhum campo válido para atualizar.') {
             return res.status(400).json({ message: error.message });
         }
@@ -164,7 +151,7 @@ async function cancelarMatricula(req, res) {
             message: 'Matrícula cancelada com sucesso!'
         });
     } catch (error) {
-        console.error('Erro ao cancelar matrícula:', error);
+        logger.error('matricula.cancelamento.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
         if (
             error.message === 'Matrícula não encontrada para cancelar!' ||
             error.message === 'Matrícula não encontrada!'

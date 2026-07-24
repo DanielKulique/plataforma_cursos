@@ -5,6 +5,12 @@
 
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { assertDevelopmentDatabase } = require('./test_database_safety');
+assertDevelopmentDatabase(process.env);
+const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
+if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
+    throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
+}
 
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
@@ -64,7 +70,7 @@ async function seed() {
 
         // 2. Criar Professores
         console.log('\nInserindo professores...');
-        const senhaHash = await bcrypt.hash('123456', 10);
+        const senhaHash = await bcrypt.hash(TEST_ACCOUNT_PASSWORD, 10);
 
         const professores = [
             {
@@ -97,7 +103,7 @@ async function seed() {
                 [prof.nome_completo, prof.cpf, prof.email, senhaHash, prof.telefone, prof.tipo]
             );
             profIds.push(result.insertId);
-            console.log(`  + ${prof.nome_completo} (ID: ${result.insertId})`);
+            console.log(`  + Professor criado (ID: ${result.insertId})`);
         }
 
         // 3. Criar Alunos
@@ -117,10 +123,10 @@ async function seed() {
                 [aluno.nome_completo, aluno.cpf, aluno.email, senhaHash, aluno.telefone, 'aluno']
             );
             alunoIds.push(result.insertId);
-            console.log(`  + ${aluno.nome_completo} (ID: ${result.insertId})`);
+            console.log(`  + Aluno criado (ID: ${result.insertId})`);
         }
 
-        // 4. Criar Turmas (status: ABERTA, EM ANDAMENTO, ENCERRADA, CANCELADA)
+        // 4. Criar Turmas (status canônicos: ABERTA, FECHADA, ENCERRADA)
         console.log('\nInserindo turmas...');
         const turmas = [
             {
@@ -129,7 +135,7 @@ async function seed() {
                 id_professor: profIds[0],
                 data_inicio: '2024-03-01',
                 data_fim: '2024-07-30',
-                status: 'EM ANDAMENTO'
+                status: 'FECHADA'
             },
             {
                 nome_turma: 'Web Full Stack - Turma 2024.2',
@@ -145,7 +151,7 @@ async function seed() {
                 id_professor: profIds[1],
                 data_inicio: '2024-04-15',
                 data_fim: '2024-08-15',
-                status: 'EM ANDAMENTO'
+                status: 'FECHADA'
             },
             {
                 nome_turma: 'UX/UI Design - Intensivo',
@@ -198,7 +204,7 @@ async function seed() {
 
         for (const mat of matriculas) {
             await pool.query(
-                'INSERT INTO Matriculas (id_usuario, id_turma, progresso_percentual, nota_final, status_aprovacao) VALUES (?, ?, ?, ?, ?)',
+                'INSERT INTO Matriculas (id_aluno, id_turma, progresso_percentual, nota_final, status_aprovacao) VALUES (?, ?, ?, ?, ?)',
                 [mat.id_usuario, mat.id_turma, mat.progresso, mat.nota, mat.status || 'CURSANDO']
             );
         }
@@ -213,11 +219,7 @@ async function seed() {
         console.log(`Alunos: ${alunos.length}`);
         console.log(`Turmas: ${turmas.length}`);
         console.log(`Matrículas: ${matriculas.length}`);
-        console.log('\nCredenciais de acesso (senha: 123456):');
-        console.log('  - carlos.silva@plataforma.com (professor)');
-        console.log('  - ana.costa@plataforma.com (professor)');
-        console.log('  - joao@email.com (aluno)');
-        console.log('  - maria@email.com (aluno)');
+        console.log('\nCredenciais e dados pessoais não são exibidos nos logs.');
         console.log('========================================\n');
 
     } catch (error) {

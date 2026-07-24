@@ -5,13 +5,18 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "test": "jest --coverage --detectOpenHandles",
+    "test": "jest --coverage --detectOpenHandles --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --detectOpenHandles",
-    "test:integration": "jest --config=jest.integration.config.js --runInBand",
+    "test:security": "jest --runInBand --runTestsByPath src/__tests__/frontend.security.test.js src/__tests__/admin.routes.security.test.js src/__tests__/conteudos.routes.security.test.js src/__tests__/logger.test.js src/__tests__/session.frontend.test.js src/__tests__/test_database_safety.test.js",
+    "test:integration": "jest --config=jest.integration.config.js --runInBand --detectOpenHandles",
     "test:integration:watch": "jest --config=jest.integration.config.js --watch",
-    "db:test:setup": "node scripts/setup_test_database.js",
-    "db:test:seed": "node scripts/seed_test_database.js",
+    "db:dev:setup": "node scripts/setup_database.js dev",
+    "db:dev:seed": "node scripts/seed_database.js dev",
+    "db:test:setup": "node scripts/setup_database.js test",
+    "db:test:seed": "node scripts/seed_database.js test",
+    "db:legacy:fingerprint": "node scripts/fingerprint_legacy_database.js",
+    "admin:bootstrap": "node scripts/seed_admin_inicial.js",
     "test:all": "npm run test && npm run test:integration"
   },
   "keywords": [],
@@ -20,9 +25,12 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.5.2",
     "express-validator": "^7.2.1",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.2",
     "resend": "^6.9.2"
@@ -36,7 +44,8 @@
     "coverageDirectory": "coverage",
     "collectCoverageFrom": [
       "src/**/*.js",
-      "!src/public/**/*.js"
+      "!src/public/**/*.js",
+      "!src/__tests__/integration/**"
     ],
     "coverageThreshold": {
       "global": {
@@ -47,7 +56,8 @@
       }
     },
     "testMatch": [
-      "**/__tests__/**/*.test.js"
+      "**/__tests__/**/*.test.js",
+      "!**/__tests__/integration/**/*.test.js"
     ],
     "verbose": true,
     "moduleNameMapper": {

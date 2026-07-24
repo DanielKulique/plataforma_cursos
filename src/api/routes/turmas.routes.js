@@ -7,10 +7,20 @@ const checkRole = require('../../middlewares/checkRole.middleware');
 const { checkProfessorPermission } = require('../../middlewares/checkProfessorPermission.middleware');
 
 const STATUS_TURMA = [
-    'INSCRIÇÕES ABERTAS',
-    'EM ANDAMENTO',
-    'CONCLUÍDA'
+    'ABERTA',
+    'FECHADA',
+    'ENCERRADA'
 ];
+
+function apenasCamposPermitidos(campos) {
+    return body().custom((payload) => {
+        const desconhecidos = Object.keys(payload || {}).filter((campo) => !campos.includes(campo));
+        if (desconhecidos.length > 0) {
+            throw new Error(`Campos não permitidos: ${desconhecidos.join(', ')}.`);
+        }
+        return true;
+    });
+}
 
 // GET /api/turmas - listar todas as turmas (público)
 router.get('/', turmasController.buscarTodasTurmas);
@@ -18,7 +28,7 @@ router.get('/', turmasController.buscarTodasTurmas);
 // GET /api/turmas/:id - buscar turma por ID (público)
 router.get(
     '/:id',
-    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
+    param('id').isInt({ min: 1 }).withMessage('O ID deve ser um número inteiro positivo.'),
     turmasController.buscarTurmaPorId
 );
 
@@ -27,7 +37,7 @@ router.get(
     '/professor/:id',
     checkAuth,
     checkProfessorPermission,
-    param('id').isInt().withMessage('O ID do professor deve ser um número inteiro.'),
+    param('id').isInt({ min: 1 }).withMessage('O ID do professor deve ser um número inteiro positivo.'),
     turmasController.buscarTurmasDoProfessor
 );
 
@@ -36,9 +46,10 @@ router.post(
     '/',
     checkAuth,
     checkRole('ADMIN'),
-    body('nome_turma').notEmpty().withMessage('O nome da turma é obrigatório.'),
-    body('id_curso').isInt().withMessage('O ID do curso deve ser um número inteiro.'),
-    body('id_professor').isInt().withMessage('O ID do professor deve ser um número inteiro.'),
+    apenasCamposPermitidos(['nome_turma', 'id_curso', 'id_professor', 'data_inicio', 'data_fim', 'status']),
+    body('nome_turma').isString().trim().notEmpty().withMessage('O nome da turma é obrigatório.').isLength({ max: 100 }).withMessage('O nome da turma deve ter no máximo 100 caracteres.'),
+    body('id_curso').isInt({ min: 1 }).withMessage('O ID do curso deve ser um número inteiro positivo.'),
+    body('id_professor').isInt({ min: 1 }).withMessage('O ID do professor deve ser um número inteiro positivo.'),
     body('data_inicio').isISO8601().withMessage('A data de início deve ser válida.'),
     body('data_fim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve ser válida.'),
     body('status').optional().isIn(STATUS_TURMA).withMessage('Status inválido.'),
@@ -50,10 +61,11 @@ router.patch(
     '/:id',
     checkAuth,
     checkRole('ADMIN'),
-    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
-    body('nome_turma').optional().notEmpty().withMessage('O nome da turma é obrigatório.'),
-    body('id_curso').optional().isInt().withMessage('O ID do curso deve ser um número inteiro.'),
-    body('id_professor').optional().isInt().withMessage('O ID do professor deve ser um número inteiro.'),
+    param('id').isInt({ min: 1 }).withMessage('O ID deve ser um número inteiro positivo.'),
+    apenasCamposPermitidos(['nome_turma', 'id_curso', 'id_professor', 'data_inicio', 'data_fim', 'status']),
+    body('nome_turma').optional().isString().trim().notEmpty().withMessage('O nome da turma é obrigatório.').isLength({ max: 100 }).withMessage('O nome da turma deve ter no máximo 100 caracteres.'),
+    body('id_curso').optional().isInt({ min: 1 }).withMessage('O ID do curso deve ser um número inteiro positivo.'),
+    body('id_professor').optional().isInt({ min: 1 }).withMessage('O ID do professor deve ser um número inteiro positivo.'),
     body('data_inicio').optional().isISO8601().withMessage('A data de início deve ser válida.'),
     body('data_fim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve ser válida.'),
     body('status').optional().isIn(STATUS_TURMA).withMessage('Status inválido.'),
@@ -65,7 +77,7 @@ router.delete(
     '/:id',
     checkAuth,
     checkRole('ADMIN'),
-    param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
+    param('id').isInt({ min: 1 }).withMessage('O ID deve ser um número inteiro positivo.'),
     turmasController.deletarTurma
 );
 

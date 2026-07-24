@@ -53,9 +53,9 @@ async function enviarCodigoVerificacao(req, res) {
             expira_em: resultado.expira_em
         };
 
-        // No modo debug (sem RESEND_API_KEY), mantemos o código para facilitar testes locais.
+        // O código nunca é devolvido pela API, inclusive quando o provedor de e-mail
+        // está desabilitado em desenvolvimento.
         if (envio?.modo === 'debug') {
-            payload.codigo_debug = resultado.codigo;
             payload.aviso = 'E-mail real não enviado (modo debug). Configure RESEND_API_KEY para envio real.';
         }
 
@@ -86,22 +86,14 @@ async function verificarCodigoEmail(req, res) {
 }
 
 async function me(req, res) {
-    try {
-        const usuario = await authModel.buscarUsuarioPorId(req.user.id_usuario);
-
-        return res.status(200).json({
-            mensagem: `Bem vindo, ${usuario.nome_completo}`,
-            usuario
-        });
-    } catch (error) {
-        if (error.message === 'Usuário não encontrado') {
-            return res.status(404).json({ mensagem: error.message });
-        }
-
-        return res.status(500).json({
-            mensagem: 'Ocorreu um erro no servidor.'
-        });
+    if (!req.user) {
+        return res.status(401).json({ mensagem: 'Sessão inválida' });
     }
+
+    return res.status(200).json({
+        mensagem: `Bem vindo, ${req.user.nome_completo}`,
+        usuario: req.user
+    });
 }
 
 module.exports = {

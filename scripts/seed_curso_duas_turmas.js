@@ -2,6 +2,12 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { assertDevelopmentDatabase } = require('./test_database_safety');
+assertDevelopmentDatabase(process.env);
+const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
+if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
+    throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
+}
 
 async function run() {
   const conn = await mysql.createConnection({
@@ -22,7 +28,7 @@ async function run() {
       const sufixo = Date.now();
       const cpf = String(10000000000 + (sufixo % 89999999999)).slice(0, 11);
       const email = `prof.seed.${sufixo}@example.com`;
-      const senhaHash = await bcrypt.hash('123456', 10);
+      const senhaHash = await bcrypt.hash(TEST_ACCOUNT_PASSWORD, 10);
 
       const [profResult] = await conn.query(
         'INSERT INTO Usuarios (nome_completo, cpf, email, senha, telefone, tipo) VALUES (?, ?, ?, ?, ?, ?)',
@@ -49,12 +55,12 @@ async function run() {
 
     const [turmaAberta] = await conn.query(
       'INSERT INTO Turmas (id_curso, id_professor, nome_turma, data_inicio, data_fim, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [idCurso, professor.id_usuario, 'Turma A - Aberta', '2026-02-15', '2026-03-15', 'INSCRIÇÕES ABERTAS']
+      [idCurso, professor.id_usuario, 'Turma A - Aberta', '2026-02-15', '2026-03-15', 'ABERTA']
     );
 
     const [turmaEncerrada] = await conn.query(
       'INSERT INTO Turmas (id_curso, id_professor, nome_turma, data_inicio, data_fim, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [idCurso, professor.id_usuario, 'Turma B - Encerrada', '2025-11-01', '2025-12-01', 'CONCLUÍDA']
+      [idCurso, professor.id_usuario, 'Turma B - Encerrada', '2025-11-01', '2025-12-01', 'ENCERRADA']
     );
 
     console.log(
@@ -63,8 +69,8 @@ async function run() {
           professor_utilizado: professor,
           curso_criado: { id_curso: idCurso, nome_curso: 'HTML e CSS para Catálogo de Cursos' },
           turmas_criadas: [
-            { id_turma: turmaAberta.insertId, nome_turma: 'Turma A - Aberta', status: 'INSCRIÇÕES ABERTAS' },
-            { id_turma: turmaEncerrada.insertId, nome_turma: 'Turma B - Encerrada', status: 'CONCLUÍDA' },
+            { id_turma: turmaAberta.insertId, nome_turma: 'Turma A - Aberta', status: 'ABERTA' },
+            { id_turma: turmaEncerrada.insertId, nome_turma: 'Turma B - Encerrada', status: 'ENCERRADA' },
           ],
         },
         null,

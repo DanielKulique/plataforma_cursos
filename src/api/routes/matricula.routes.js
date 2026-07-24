@@ -18,7 +18,8 @@ const STATUS_APROVACAO = ['CURSANDO', 'APROVADO', 'REPROVADO', 'CANCELADO'];
 router.post(
     '/',
     checkAuth,
-    body('id_turma').isInt().withMessage('O ID da turma deve ser um número inteiro.'),
+    checkRole('ALUNO'),
+    body('id_turma').isInt({ min: 1 }).withMessage('O ID da turma deve ser um número inteiro positivo.').toInt(),
     matriculaController.criarMatricula
 );
 
@@ -63,7 +64,7 @@ router.patch(
     checkAuth,
     checkProfessorMatriculaPermission,
     param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
-    body('nota_final').optional().isDecimal().withMessage('A nota final deve ser um número decimal.'),
+    body('nota_final').optional().isFloat({ min: 0, max: 10 }).withMessage('A nota final deve estar entre 0 e 10.').toFloat(),
     body('status_aprovacao').optional().isIn(STATUS_APROVACAO).withMessage('Status inválido.'),
     body('progresso_percentual').optional().isInt({ min: 0, max: 100 }).withMessage('O progresso deve estar entre 0 e 100.'),
     matriculaController.atualizarMatricula

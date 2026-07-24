@@ -2,52 +2,92 @@ const db = require('../../config/database');
 
 const STATUS_APROVACAO_PADRAO = 'CURSANDO';
 
-async function criarMatricula(matricula) {
-    const {
-        id_matricula,
-        id_aluno,
-        id_turma,
-        status_aprovacao,
-        progresso_percentual,
-        nota_final
-    } = matricula;
+function enrollmentError(code, status, message) {
+    const error = new Error(message);
+    error.code = code;
+    error.status = status;
+    return error;
+}
 
-    const colunas = ['id_aluno', 'id_turma'];
-    const valores = [id_aluno, id_turma];
+async function matricularAluno(id_aluno, id_turma) {
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
 
-    if (id_matricula !== undefined && id_matricula !== null) {
-        colunas.unshift('id_matricula');
-        valores.unshift(id_matricula);
-    }
-    if (status_aprovacao) {
-        colunas.push('status_aprovacao');
-        valores.push(status_aprovacao);
-    }
-    if (progresso_percentual !== undefined && progresso_percentual !== null) {
-        colunas.push('progresso_percentual');
-        valores.push(progresso_percentual);
-    }
-    if (nota_final !== undefined && nota_final !== null) {
-        colunas.push('nota_final');
-        valores.push(nota_final);
-    }
+        const [classes] = await connection.query(
+            'SELECT id_turma, status FROM Turmas WHERE id_turma = ? FOR UPDATE',
+            [id_turma]
+        );
+        if (classes.length === 0) {
+            throw enrollmentError('TURMA_NAO_ENCONTRADA', 404, 'Turma não encontrada.');
+        }
+        if (classes[0].status !== 'ABERTA') {
+            throw enrollmentError('TURMA_NAO_ABERTA', 403, 'Esta turma não está aberta para matrículas.');
+        }
 
-    const placeholders = colunas.map(() => '?').join(', ');
-    const sql = `INSERT INTO Matriculas (${colunas.join(', ')}) VALUES (${placeholders})`;
+        const [existing] = await connection.query(
+            `SELECT id_matricula, status_aprovacao
+             FROM Matriculas
+             WHERE id_aluno = ? AND id_turma = ?
+             FOR UPDATE`,
+            [id_aluno, id_turma]
+        );
 
-    const [result] = await db.query(sql, valores);
-    if (result.affectedRows === 0) {
-        throw new Error('Erro ao criar matricula');
+        if (existing.length > 0 && existing[0].status_aprovacao !== 'CANCELADO') {
+            throw enrollmentError('MATRICULA_DUPLICADA', 409, 'Você já está matriculado nesta turma.');
+        }
+
+        if (existing.length > 0) {
+            const id_matricula = existing[0].id_matricula;
+            await connection.query(
+                `DELETE progresso
+                 FROM ConteudosProgresso progresso
+                 INNER JOIN Conteudos conteudo ON conteudo.id_conteudo = progresso.id_conteudo
+                 WHERE progresso.id_aluno = ? AND conteudo.id_turma = ?`,
+                [id_aluno, id_turma]
+            );
+            await connection.query(
+                `UPDATE Matriculas
+                 SET status_aprovacao = 'CURSANDO', progresso_percentual = 0,
+                     nota_final = NULL, data_matricula = CURRENT_TIMESTAMP
+                 WHERE id_matricula = ?`,
+                [id_matricula]
+            );
+            await connection.commit();
+            return {
+                id_matricula,
+                id_aluno,
+                id_turma,
+                status_aprovacao: STATUS_APROVACAO_PADRAO,
+                progresso_percentual: 0,
+                nota_final: null,
+                reativada: true
+            };
+        }
+
+        const [result] = await connection.query(
+            'INSERT INTO Matriculas (id_aluno, id_turma) VALUES (?, ?)',
+            [id_aluno, id_turma]
+        );
+        await connection.commit();
+        return {
+            id_matricula: result.insertId,
+            id_aluno,
+            id_turma,
+            status_aprovacao: STATUS_APROVACAO_PADRAO,
+            progresso_percentual: 0,
+            nota_final: null,
+            reativada: false
+        };
+    } catch (error) {
+        await connection.rollback().catch(() => undefined);
+        if (error.code === 'ER_DUP_ENTRY') {
+            throw enrollmentError('MATRICULA_DUPLICADA', 409, 'Você já está matriculado nesta turma.');
+        }
+        throw error;
+    } finally {
+        connection.release();
     }
-
-    return {
-        id_matricula: result.insertId || id_matricula,
-        id_aluno,
-        id_turma,
-        status_aprovacao: status_aprovacao || STATUS_APROVACAO_PADRAO,
-        progresso_percentual: progresso_percentual ?? 0,
-        nota_final: nota_final ?? null
-    };
 }
 
 async function buscarMatriculaPorAluno(id_aluno) {
@@ -55,6 +95,8 @@ async function buscarMatriculaPorAluno(id_aluno) {
         `
         SELECT
             m.id_matricula,
+            m.id_aluno,
+            m.id_turma,
             m.data_matricula,
             m.status_aprovacao,
             m.nota_final,
@@ -95,7 +137,7 @@ async function buscarSalaVirtualDoAluno(id_aluno) {
         INNER JOIN Cursos c ON t.id_curso = c.id_curso
         WHERE m.id_aluno = ?
           AND m.status_aprovacao <> 'CANCELADO'
-          AND t.status IN ('INSCRIÇÕES ABERTAS', 'EM ANDAMENTO')
+          AND t.status IN ('ABERTA', 'FECHADA')
         ORDER BY m.data_matricula DESC
         `,
         [id_aluno]
@@ -110,21 +152,27 @@ async function buscarMatriculaPorTurma(id_turma) {
         `
         SELECT
             m.id_matricula,
+            m.id_aluno,
+            m.id_turma,
             m.data_matricula,
             m.status_aprovacao,
             m.nota_final,
             m.progresso_percentual,
             u.nome_completo,
-            u.email,
-            u.cpf
+            u.email
         FROM Matriculas m
         INNER JOIN Usuarios u ON m.id_aluno = u.id_usuario
-        WHERE m.id_turma = ?
+        WHERE m.id_turma = ? AND m.status_aprovacao <> 'CANCELADO'
         ORDER BY u.nome_completo
         `,
         [id_turma]
     );
     return rows;
+}
+
+async function turmaExiste(id_turma) {
+    const [rows] = await db.query('SELECT id_turma FROM Turmas WHERE id_turma = ?', [id_turma]);
+    return rows.length > 0;
 }
 
 async function buscarMatriculaPorId(id) {
@@ -174,15 +222,6 @@ async function atualizarMatricula(id, dadosParaAtualizar) {
     return { affectedRows: result.affectedRows };
 }
 
-async function verificarMatriculaDuplicada(id_aluno, id_turma) {
-    const [rows] = await db.query(
-        'SELECT id_matricula FROM Matriculas WHERE id_aluno = ? AND id_turma = ?',
-        [id_aluno, id_turma]
-    );
-
-    return rows.length > 0;
-}
-
 async function cancelarMatricula(id) {
     const [result] = await db.query(
         'UPDATE Matriculas SET status_aprovacao = ? WHERE id_matricula = ?',
@@ -229,14 +268,14 @@ async function buscarEscopoMatriculaPorId(id_matricula) {
 }
 
 module.exports = {
-    criarMatricula,
+    matricularAluno,
     buscarMatriculaPorAluno,
     buscarSalaVirtualDoAluno,
     buscarMatriculaPorTurma,
+    turmaExiste,
     buscarMatriculaPorId,
     atualizarMatricula,
     cancelarMatricula,
-    verificarMatriculaDuplicada,
     professorPodeGerenciarMatricula,
     buscarEscopoMatriculaPorId
 };

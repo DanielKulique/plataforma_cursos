@@ -1,92 +1,84 @@
 const cursosModel = require('../models/cursos.models');
 const { validationResult } = require('express-validator');
+const logger = require('../../utils/logger');
 
-//lista todos cursos
+function responderValidacao(req, res) {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) return false;
+    res.status(400).json({ message: errors.array()[0]?.msg || 'Dados inválidos.', errors: errors.array() });
+    return true;
+}
 
-async function listarTodos(req, res){
-	console.log("controller listarTodos chamado");
-	try {
-		const cursos = await cursosModel.buscarCursos();
-		res.json(cursos);
-	}catch (error){
-		console.error("Erro ao listar cursos:", error);
-		res.status(500).json({ message: "Ocorreu um erro no servidor."})
-	}
+function responderErro(res, error, mensagemPadrao) {
+    if (error?.status) {
+        return res.status(error.status).json({ message: error.message, code: error.code });
+    }
+    return res.status(500).json({ message: mensagemPadrao });
+}
+
+async function listarTodos(req, res) {
+    try {
+        const cursos = await cursosModel.buscarCursos();
+        logger.info('curso.lista.consultada', { requestId: req.id, total: cursos.length });
+        return res.status(200).json(cursos);
+    } catch (error) {
+        logger.error('curso.lista.falhou', { requestId: req.id, error });
+        return res.status(500).json({ message: 'Ocorreu um erro no servidor.' });
+    }
 }
 
 async function listarCursoPorId(req, res) {
-	console.log("controller ListarCursoPorId chamado");
-	const id = req.params.id;
-	try{
-		const curso = await cursosModel.buscarCursoPorId(id);
-		res.json(curso);
-	}catch(error){
-		console.error("Erro ao listar curso por ID:", error);
-		if (error.message === 'Curso não encontrado!') {
-			res.status(404).json({ message: error.message });
-		} else {
-			res.status(500).json({ message: "Ocorreu um erro no servidor." });
-		}
-	}
+    if (responderValidacao(req, res)) return;
+    try {
+        const curso = await cursosModel.buscarCursoPorId(req.params.id);
+        logger.info('curso.consultado', { requestId: req.id, courseId: Number(req.params.id) });
+        return res.status(200).json(curso);
+    } catch (error) {
+        logger.error('curso.consulta.falhou', { requestId: req.id, courseId: Number(req.params.id), error });
+        return responderErro(res, error, 'Ocorreu um erro no servidor.');
+    }
 }
 
 async function criarCurso(req, res) {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
-
-	try {
-		const novoCurso = await cursosModel.criarCurso(req.body);
-		res.status(201).json(novoCurso);
-	} catch (error) {
-		console.error("Erro ao criar curso:", error);
-		if (error.message === 'Erro ao criar curso') {
-			res.status(400).json({ message: error.message });
-		}
-		else {
-			res.status(500).json({ message: "Ocorreu um erro no servidor." });
-		}
-	}
+    if (responderValidacao(req, res)) return;
+    try {
+        const novoCurso = await cursosModel.criarCurso(req.body);
+        logger.info('curso.criado', { requestId: req.id, actorId: req.user?.id_usuario, courseId: novoCurso.id_curso });
+        return res.status(201).json(novoCurso);
+    } catch (error) {
+        logger.error('curso.criacao.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
+        return responderErro(res, error, 'Ocorreu um erro no servidor ao criar curso.');
+    }
 }
 
 async function atualizarCurso(req, res) {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
-	console.log("controller atualizarCurso chamado");
-	const id = req.params.id;
-	try {
-		await cursosModel.atualizarCurso(id, req.body);
-		res.json({id_curso: id, ...req.body});
-	} catch (error) {
-		console.error("Erro ao atualizar curso:", error);
-		if (error.message === 'Curso não encontrado para atualizar!') {
-			return res.status(404).json({ message: error.message });
-		}
-		res.status(500).json({ message: "Ocorreu um erro no servidor ao atualizar curso." });
-	}
+    if (responderValidacao(req, res)) return;
+    try {
+        const curso = await cursosModel.atualizarCurso(req.params.id, req.body);
+        logger.info('curso.atualizado', { requestId: req.id, actorId: req.user?.id_usuario, courseId: Number(req.params.id) });
+        return res.status(200).json(curso);
+    } catch (error) {
+        logger.error('curso.atualizacao.falhou', { requestId: req.id, courseId: Number(req.params.id), error });
+        return responderErro(res, error, 'Ocorreu um erro no servidor ao atualizar curso.');
+    }
 }
 
 async function deletarCurso(req, res) {
-	const id = req.params.id;
-	try {
-		await cursosModel.deletarCurso(id);
-		res.status(204).send(); // 204 No Content
-	}catch(error){
-		console.error("Erro ao deletar curso:", error);
-		if (error.message === 'Curso não encontrado para deletar!') {
-			return res.status(404).json({ message: error.message });
-		}
-		res.status(500).json({ message: "Ocorreu um erro no servidor ao deletar curso." });
-	}
+    if (responderValidacao(req, res)) return;
+    try {
+        await cursosModel.deletarCurso(req.params.id);
+        logger.info('curso.removido', { requestId: req.id, actorId: req.user?.id_usuario, courseId: Number(req.params.id) });
+        return res.status(204).send();
+    } catch (error) {
+        logger.error('curso.remocao.falhou', { requestId: req.id, courseId: Number(req.params.id), error });
+        return responderErro(res, error, 'Ocorreu um erro no servidor ao deletar curso.');
+    }
 }
 
 module.exports = {
-	listarTodos,
-	listarCursoPorId,
-	criarCurso,
-	atualizarCurso,
-	deletarCurso
+    listarTodos,
+    listarCursoPorId,
+    criarCurso,
+    atualizarCurso,
+    deletarCurso
 };

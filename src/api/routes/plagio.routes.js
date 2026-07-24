@@ -10,10 +10,12 @@ router.post(
     '/analisar',
     checkAuth,
     checkRole('ALUNO'),
-    body('texto')
-        .isString().withMessage('O campo texto deve ser uma string.')
+    body('texto_original')
+        .isString().withMessage('O texto original deve ser uma string.')
         .trim()
-        .isLength({ min: 10 }).withMessage('O texto deve conter ao menos 10 caracteres.'),
+        .isLength({ min: 10, max: 20000 }).withMessage('O texto original deve conter entre 10 e 20.000 caracteres.'),
+    body('texto_suspeito').isString().withMessage('O texto suspeito deve ser uma string.').trim()
+        .isLength({ min: 10, max: 20000 }).withMessage('O texto suspeito deve conter entre 10 e 20.000 caracteres.'),
     plagioController.verificarTexto
 );
 

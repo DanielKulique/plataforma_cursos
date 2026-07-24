@@ -1,26 +1,6 @@
 const db = require('../../config/database');
 
-async function garantirTabelaAnalisesPlagio() {
-    await db.query(`
-        CREATE TABLE IF NOT EXISTS AnalisesPlagio (
-            id INT NOT NULL AUTO_INCREMENT,
-            usuario_id INT NOT NULL,
-            trecho_texto TEXT NOT NULL,
-            score_similaridade DECIMAL(5,2) NOT NULL,
-            fontes_encontradas JSON NULL,
-            criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            CONSTRAINT fk_analises_plagio_usuario
-                FOREIGN KEY (usuario_id) REFERENCES Usuarios(id_usuario)
-                ON DELETE CASCADE
-                ON UPDATE CASCADE
-        ) ENGINE=InnoDB
-    `);
-}
-
 async function salvarAnalise({ usuario_id, trecho_texto, score_similaridade, fontes_encontradas }) {
-    await garantirTabelaAnalisesPlagio();
-
     const scoreNormalizado = Number(score_similaridade);
     const fontesSerializadas = fontes_encontradas === undefined || fontes_encontradas === null
         ? null
@@ -47,6 +27,5 @@ async function salvarAnalise({ usuario_id, trecho_texto, score_similaridade, fon
 }
 
 module.exports = {
-    garantirTabelaAnalisesPlagio,
     salvarAnalise
 };

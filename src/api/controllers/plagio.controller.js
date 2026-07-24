@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const plagioService = require('../services/plagio.service');
 const analiseModel = require('../models/analise.model');
+const logger = require('../../utils/logger');
 
 async function verificarTexto(req, res) {
     const errors = validationResult(req);
@@ -9,14 +10,14 @@ async function verificarTexto(req, res) {
     }
 
     try {
-        const { texto } = req.body;
+        const { texto_original, texto_suspeito } = req.body;
         const usuario_id = req.user && req.user.id_usuario;
 
         if (!usuario_id) {
             return res.status(401).json({ message: 'Usuário não autenticado.' });
         }
 
-        const resultadoIA = await plagioService.enviarParaAnaliseIA(texto);
+        const resultadoIA = await plagioService.enviarParaAnaliseIA(texto_original, texto_suspeito);
 
         const scoreSimilaridade = Number(
             resultadoIA.score_similaridade ??
@@ -33,13 +34,13 @@ async function verificarTexto(req, res) {
 
         const registro = await analiseModel.salvarAnalise({
             usuario_id,
-            trecho_texto: texto,
+            trecho_texto: texto_suspeito,
             score_similaridade: scoreSimilaridade,
             fontes_encontradas: fontesEncontradas
         });
 
         return res.status(200).json({
-            message: 'Texto analisado com sucesso.',
+            mensagem: 'Textos analisados com sucesso.',
             id_registro: registro.id,
             resultado: {
                 score_similaridade: scoreSimilaridade,
@@ -48,10 +49,10 @@ async function verificarTexto(req, res) {
             }
         });
     } catch (error) {
-        console.error('Erro ao verificar texto:', error);
+        logger.error('plagio.analise.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
 
         if (error.status) {
-            return res.status(error.status).json({ message: error.message });
+            return res.status(error.status).json({ mensagem: error.message });
         }
 
         return res.status(500).json({

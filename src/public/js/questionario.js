@@ -1,374 +1,214 @@
-import { clearToken, getCurrentUser, getToken } from './auth.js';
+import { getToken } from './auth.js';
+import { initSessionUI } from './session-ui.js';
+import {
+    createAcademicState,
+    preferredScrollBehavior,
+    setAcademicBusy,
+    setAcademicMessage
+} from './academic-ui.js';
 
-const statusUsuario = document.getElementById('status-usuario');
-const mensagemQuestionario = document.getElementById('mensagem-questionario');
-const questionarioTag = document.getElementById('questionario-tag');
-const questionarioTitle = document.getElementById('questionario-title');
-const questionarioDescription = document.getElementById('questionario-description');
-const contextoQuestionario = document.getElementById('contexto-questionario');
-const subtituloQuestionario = document.getElementById('subtitulo-questionario');
-const formQuestionario = document.getElementById('form-questionario');
-const listaQuestoes = document.getElementById('lista-questoes');
-const btnFinalizarQuestionario = document.getElementById('btn-finalizar-questionario');
-const linkVoltarSala = document.getElementById('link-voltar-sala');
-const resultadoQuestionario = document.getElementById('resultado-questionario');
-const resultadoTitulo = document.getElementById('resultado-titulo');
-const resultadoDescricao = document.getElementById('resultado-descricao');
-const btnLogout = document.getElementById('btn-logout');
-
-const params = new URLSearchParams(window.location.search);
-const tipoQuestionario = String(params.get('tipo') || '').toLowerCase().trim();
+const $ = (id) => document.getElementById(id);
+const params = new URLSearchParams(location.search);
 const idTurma = Number(params.get('id_turma'));
-const modoTeste = params.get('demo') === '1';
+const tipo = String(params.get('tipo') || 'exercicio').toLowerCase();
+let questionario = null;
+let enviando = false;
 
-const MOCK_TURMA = {
-    id_turma: 101,
-    nome_turma: 'Turma Demo Front-end',
-    nome_curso: 'Curso Demo de Interface',
-    status_turma: 'EM ANDAMENTO',
-    progresso_percentual: 45
-};
-
-const CONFIG_TIPO = {
-    prova: {
-        tag: 'Ambiente de prova',
-        titulo: 'Prova da turma',
-        descricao: 'Avaliação com questões objetivas para verificar domínio do conteúdo principal.',
-        acaoFinalizar: 'Finalizar prova',
-        tituloResultado: 'Prova finalizada'
-    },
-    exercicio: {
-        tag: 'Ambiente de exercícios',
-        titulo: 'Exercícios da turma',
-        descricao: 'Atividade prática com foco em fixação e revisão do conteúdo.',
-        acaoFinalizar: 'Finalizar exercícios',
-        tituloResultado: 'Exercícios finalizados'
-    }
-};
-
-const BANCO_QUESTOES = {
-    prova: [
-        {
-            enunciado: 'Qual é o objetivo principal da sala virtual em uma plataforma de cursos?',
-            opcoes: [
-                { valor: 'a', texto: 'Apenas mostrar dados administrativos.' },
-                { valor: 'b', texto: 'Centralizar conteúdos, progresso e avaliações da turma.', correta: true },
-                { valor: 'c', texto: 'Substituir o processo de login.' }
-            ]
-        },
-        {
-            enunciado: 'Qual parâmetro identifica a turma selecionada na URL do ambiente de aula?',
-            opcoes: [
-                { valor: 'a', texto: 'id_usuario' },
-                { valor: 'b', texto: 'id_curso' },
-                { valor: 'c', texto: 'id_turma', correta: true }
-            ]
-        },
-        {
-            enunciado: 'Qual prática melhora a manutenção do front neste projeto?',
-            opcoes: [
-                { valor: 'a', texto: 'Criar páginas duplicadas para cada tipo de questionário.' },
-                { valor: 'b', texto: 'Reutilizar uma página de questionário com parâmetro tipo.', correta: true },
-                { valor: 'c', texto: 'Remover validação de acesso por perfil.' }
-            ]
-        }
-    ],
-    exercicio: [
-        {
-            enunciado: 'Quando o usuário não possui token válido, qual deve ser o comportamento da tela protegida?',
-            opcoes: [
-                { valor: 'a', texto: 'Permitir navegação normalmente.' },
-                { valor: 'b', texto: 'Redirecionar para login com motivo de autenticação.', correta: true },
-                { valor: 'c', texto: 'Carregar apenas parte da página sem dados.' }
-            ]
-        },
-        {
-            enunciado: 'Qual abordagem foi adotada para prova e exercícios?',
-            opcoes: [
-                { valor: 'a', texto: 'Uma página única questionario.html com tipo=prova|exercicio.', correta: true },
-                { valor: 'b', texto: 'Duas APIs separadas e sem parâmetros de URL.' },
-                { valor: 'c', texto: 'Somente páginas estáticas sem JS.' }
-            ]
-        },
-        {
-            enunciado: 'Para melhorar experiência do aluno, é importante exibir:',
-            opcoes: [
-                { valor: 'a', texto: 'Apenas uma tela em branco após enviar.' },
-                { valor: 'b', texto: 'Resultado com acertos, percentual e feedback.', correta: true },
-                { valor: 'c', texto: 'Somente logs no console.' }
-            ]
-        }
-    ]
-};
-
-let questoesAtivas = [];
-
-function configurarLogout() {
-    if (!btnLogout) return;
-
-    if (modoTeste) {
-        btnLogout.textContent = 'Encerrar teste';
-    }
-
-    btnLogout.addEventListener('click', () => {
-        clearToken();
-        window.location.href = modoTeste ? '/index.html' : '/login.html';
-    });
+function mensagem(valor, erro = false) {
+    setAcademicMessage(
+        $('mensagem-questionario'),
+        valor,
+        erro ? 'error' : 'info'
+    );
 }
 
-function aplicarContextoVisual(tipo) {
-    const config = CONFIG_TIPO[tipo];
-    if (!config) return;
-
-    if (questionarioTag) questionarioTag.textContent = config.tag;
-    if (questionarioTitle) questionarioTitle.textContent = config.titulo;
-    if (questionarioDescription) questionarioDescription.textContent = config.descricao;
-    if (btnFinalizarQuestionario) btnFinalizarQuestionario.textContent = config.acaoFinalizar;
+function atualizarContador() {
+    const total = questionario?.perguntas.length || 0;
+    const marcadas = document.querySelectorAll('#lista-questoes input:checked').length;
+    $('contador-respostas').textContent = `${marcadas} de ${total} respondidas`;
+    $('btn-finalizar-questionario').disabled = enviando || marcadas !== total || total === 0;
 }
 
-function obterQuestoes(tipo) {
-    return Array.isArray(BANCO_QUESTOES[tipo]) ? BANCO_QUESTOES[tipo] : [];
-}
-
-function renderizarQuestoes(questoes) {
-    if (!listaQuestoes) return;
-
-    listaQuestoes.innerHTML = '';
-
-    if (!Array.isArray(questoes) || questoes.length === 0) {
-        listaQuestoes.innerHTML = '<li class="question-item empty-state">Nenhuma questão disponível para este questionário.</li>';
-        return;
+function renderizarQuestionario() {
+    const lista = $('lista-questoes');
+    lista.replaceChildren();
+    setAcademicBusy(lista, false);
+    if (!questionario.perguntas.length) {
+        lista.appendChild(createAcademicState(
+            'Este questionário ainda não possui perguntas.',
+            'empty'
+        ));
     }
-
-    questoes.forEach((questao, index) => {
+    questionario.perguntas.forEach((pergunta, indice) => {
         const item = document.createElement('li');
         item.className = 'question-item';
+        const fieldset = document.createElement('fieldset');
+        fieldset.className = 'question-fieldset';
+        const legend = document.createElement('legend');
+        legend.textContent = `${indice + 1}. ${pergunta.texto_pergunta}`;
+        const options = document.createElement('div');
+        options.className = 'question-options-group';
+        pergunta.opcoes.forEach((opcao) => {
+            const label = document.createElement('label');
+            label.className = 'question-option';
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.id = `opcao_${opcao.id_opcao}`;
+            input.name = `pergunta_${pergunta.id_pergunta}`;
+            input.value = opcao.id_opcao;
+            input.addEventListener('change', atualizarContador);
+            const texto = document.createElement('span');
+            texto.textContent = opcao.texto_opcao;
+            label.append(input, texto);
+            options.appendChild(label);
+        });
+        fieldset.append(legend, options);
+        item.appendChild(fieldset);
+        lista.appendChild(item);
+    });
+    $('total-questoes-info').textContent = `${questionario.perguntas.length} questões`;
+    atualizarContador();
+}
 
-        const opcoesHtml = questao.opcoes
-            .map((opcao) => `
-                <label class="question-option">
-                    <input type="radio" name="questao_${index}" value="${opcao.valor}" required>
-                    <span>${opcao.texto}</span>
-                </label>
-            `)
-            .join('');
-
-        item.innerHTML = `
-            <fieldset class="question-fieldset">
-                <legend>${index + 1}. ${questao.enunciado}</legend>
-                <div class="question-options-group">
-                    ${opcoesHtml}
-                </div>
-            </fieldset>
-        `;
-
-        listaQuestoes.appendChild(item);
+function renderizarHistorico(tentativas) {
+    const lista = $('lista-historico');
+    lista.replaceChildren();
+    setAcademicBusy(lista, false);
+    if (!tentativas.length) {
+        lista.appendChild(createAcademicState(
+            'Nenhuma tentativa registrada para este questionário.',
+            'empty'
+        ));
+        return;
+    }
+    tentativas.forEach((tentativa) => {
+        const item = document.createElement('li');
+        item.className = 'history-item';
+        const titulo = document.createElement('strong');
+        titulo.textContent = `${Number(tentativa.percentual).toFixed(2)}% — ${tentativa.acertos}/${tentativa.total_perguntas} acertos`;
+        const data = document.createElement('span');
+        data.textContent = tentativa.finalizada_em
+            ? new Date(tentativa.finalizada_em).toLocaleString('pt-BR')
+            : 'Tentativa em processamento';
+        item.append(titulo, data);
+        lista.appendChild(item);
     });
 }
 
-function exibirErro(mensagem) {
-    if (mensagemQuestionario) {
-        mensagemQuestionario.textContent = mensagem;
-    }
-
-    if (listaQuestoes) {
-        listaQuestoes.innerHTML = `<li class="question-item error-state">${mensagem}</li>`;
-    }
-
-    if (btnFinalizarQuestionario) {
-        btnFinalizarQuestionario.disabled = true;
-    }
+async function carregarHistorico() {
+    if (!questionario) return;
+    setAcademicBusy($('lista-historico'), true);
+    const response = await fetch(
+        `/api/questionarios/historico?id_questionario=${questionario.id_questionario}`,
+        { headers: { Authorization: `Bearer ${getToken()}` } }
+    );
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.mensagem || 'Não foi possível carregar o histórico.');
+    renderizarHistorico(Array.isArray(body.tentativas) ? body.tentativas : []);
 }
 
-function mensagemPorDesempenho(percentual) {
-    if (percentual >= 80) return 'Excelente desempenho! Continue assim.';
-    if (percentual >= 60) return 'Bom resultado. Revise os pontos para evoluir ainda mais.';
-    return 'Você pode melhorar: revise o conteúdo e tente novamente.';
+async function carregar() {
+    if (!Number.isInteger(idTurma) || idTurma <= 0 || !['prova', 'exercicio'].includes(tipo)) {
+        throw new Error('Turma ou tipo de questionário inválido.');
+    }
+    const response = await fetch(
+        `/api/turmas/${idTurma}/questionarios/disponivel?tipo=${tipo}`,
+        { headers: { Authorization: `Bearer ${getToken()}` } }
+    );
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.mensagem || 'Não foi possível carregar o questionário.');
+    questionario = body.questionario;
+    $('questionario-tag').textContent = tipo === 'prova' ? 'Prova' : 'Exercício';
+    $('questionario-title').textContent = questionario.titulo;
+    $('questionario-description').textContent = questionario.descricao || 'Responda todas as questões.';
+    $('contexto-questionario').textContent = questionario.titulo;
+    $('subtitulo-questionario').textContent = 'As respostas serão corrigidas e persistidas pelo servidor.';
+    renderizarQuestionario();
+    await carregarHistorico();
 }
 
-function calcularResultado(formData, questoes) {
-    let acertos = 0;
-
-    questoes.forEach((questao, index) => {
-        const resposta = formData.get(`questao_${index}`);
-        const opcaoCorreta = questao.opcoes.find((opcao) => opcao.correta);
-
-        if (opcaoCorreta && resposta === opcaoCorreta.valor) {
-            acertos += 1;
-        }
-    });
-
-    const total = questoes.length;
-    const percentual = total > 0 ? Math.round((acertos / total) * 100) : 0;
-
-    return { acertos, total, percentual };
-}
-
-function configurarSubmit() {
-    if (!formQuestionario) return;
-
-    formQuestionario.addEventListener('submit', (event) => {
-        event.preventDefault();
-
-        const dados = new FormData(formQuestionario);
-        const resultado = calcularResultado(dados, questoesAtivas);
-        const config = CONFIG_TIPO[tipoQuestionario];
-
-        if (resultadoQuestionario) {
-            resultadoQuestionario.hidden = false;
-        }
-
-        if (resultadoTitulo) {
-            resultadoTitulo.textContent = config?.tituloResultado || 'Questionário finalizado';
-        }
-
-        if (resultadoDescricao) {
-            resultadoDescricao.textContent = `Você acertou ${resultado.acertos} de ${resultado.total} questões (${resultado.percentual}%). ${mensagemPorDesempenho(resultado.percentual)}`;
-        }
-
-        if (mensagemQuestionario) {
-            mensagemQuestionario.textContent = 'Questionário concluído com sucesso.';
-        }
-
-        resultadoQuestionario?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-}
-
-async function carregarContextoTurma(token) {
-    if (modoTeste) {
-        const turmaDemo = Number.isInteger(idTurma) && idTurma > 0
-            ? { ...MOCK_TURMA, id_turma: idTurma }
-            : MOCK_TURMA;
-
-        if (contextoQuestionario) {
-            contextoQuestionario.textContent = `${turmaDemo.nome_turma} · ${turmaDemo.nome_curso}`;
-        }
-
-        if (subtituloQuestionario) {
-            subtituloQuestionario.textContent = `Turma em ${turmaDemo.status_turma} · progresso atual ${turmaDemo.progresso_percentual}%`;
-        }
-
-        if (linkVoltarSala) {
-            linkVoltarSala.href = `/sala-aula.html?id_turma=${encodeURIComponent(turmaDemo.id_turma)}&demo=1`;
-        }
-
-        return turmaDemo;
-    }
-
-    const response = await fetch('/api/matriculas/minha-sala', {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-
-    if (response.status === 401) {
-        clearToken();
-        window.location.href = '/login.html?motivo=auth';
-        return null;
-    }
-
-    if (response.status === 403) {
-        window.location.href = '/index.html?motivo=nao_autorizado';
-        return null;
-    }
-
-    if (!response.ok) {
-        throw new Error('Não foi possível validar o acesso ao questionário.');
-    }
-
-    const payload = await response.json();
-    const turmas = Array.isArray(payload.turmas) ? payload.turmas : [];
-    const turmaSelecionada = turmas.find((turma) => Number(turma.id_turma) === idTurma);
-
-    if (!turmaSelecionada) {
-        throw new Error('Você não possui acesso ativo para esta turma.');
-    }
-
-    if (contextoQuestionario) {
-        contextoQuestionario.textContent = `${turmaSelecionada.nome_turma} · ${turmaSelecionada.nome_curso}`;
-    }
-
-    if (subtituloQuestionario) {
-        subtituloQuestionario.textContent = `Turma em ${turmaSelecionada.status_turma || 'status não informado'} · progresso atual ${turmaSelecionada.progresso_percentual ?? 0}%`;
-    }
-
-    if (linkVoltarSala) {
-        linkVoltarSala.href = `/sala-aula.html?id_turma=${encodeURIComponent(turmaSelecionada.id_turma)}`;
-    }
-
-    return turmaSelecionada;
-}
-
-async function inicializarQuestionario() {
-    if (!Object.prototype.hasOwnProperty.call(CONFIG_TIPO, tipoQuestionario)) {
-        window.location.href = '/sala-virtual.html?motivo=tipo_questionario_invalido';
+$('form-questionario').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (enviando || !questionario) return;
+    const respostas = questionario.perguntas.map((pergunta) => ({
+        id_pergunta: pergunta.id_pergunta,
+        id_opcao: Number(document.querySelector(
+            `input[name="pergunta_${pergunta.id_pergunta}"]:checked`
+        )?.value)
+    }));
+    if (respostas.some((resposta) => !resposta.id_opcao)) {
+        mensagem('Responda todas as questões.', true);
         return;
     }
 
-    if (!Number.isInteger(idTurma) || idTurma <= 0) {
-        window.location.href = '/sala-virtual.html?motivo=turma_invalida';
-        return;
-    }
-
-    if (modoTeste) {
-        aplicarContextoVisual(tipoQuestionario);
-        await carregarContextoTurma(null);
-
-        questoesAtivas = obterQuestoes(tipoQuestionario);
-        renderizarQuestoes(questoesAtivas);
-
-        if (statusUsuario) {
-            statusUsuario.textContent = 'Modo teste ativo: questionário sem login.';
-        }
-
-        if (mensagemQuestionario) {
-            mensagemQuestionario.textContent = 'Demonstração ativa. Responda e finalize para validar a interface.';
-        }
-
-        return;
-    }
-
-    const token = getToken();
-
-    if (!token) {
-        window.location.href = '/login.html?motivo=auth';
-        return;
-    }
-
+    enviando = true;
+    setAcademicBusy($('form-questionario'), true);
+    const submitButton = $('btn-finalizar-questionario');
+    submitButton.setAttribute('aria-busy', 'true');
+    submitButton.textContent = 'Enviando respostas...';
+    atualizarContador();
+    mensagem('Enviando respostas…');
     try {
-        const usuario = await getCurrentUser();
-
-        if (!usuario) {
-            window.location.href = '/login.html?motivo=auth';
-            return;
-        }
-
-        if (String(usuario.tipo || '').toUpperCase() !== 'ALUNO') {
-            window.location.href = '/index.html?motivo=nao_autorizado';
-            return;
-        }
-
-        if (statusUsuario) {
-            statusUsuario.textContent = `Aluno logado: ${usuario.nome_completo}`;
-        }
-
-        aplicarContextoVisual(tipoQuestionario);
-        await carregarContextoTurma(token);
-
-        questoesAtivas = obterQuestoes(tipoQuestionario);
-        renderizarQuestoes(questoesAtivas);
-
-        if (mensagemQuestionario) {
-            mensagemQuestionario.textContent = 'Questionário pronto. Responda todas as questões para finalizar.';
-        }
+        const response = await fetch(`/api/questionarios/${questionario.id_questionario}/submissoes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({ respostas })
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.mensagem || 'Falha ao enviar respostas.');
+        $('resultado-questionario').hidden = false;
+        $('resultado-titulo').textContent = `Resultado: ${body.resultado.percentual}%`;
+        $('resultado-descricao').textContent = `Você acertou ${body.resultado.acertos} de ${body.resultado.total_perguntas} questões. Pontuação: ${body.resultado.pontuacao}.`;
+        $('form-questionario').querySelectorAll('input,button').forEach((elemento) => {
+            elemento.disabled = true;
+        });
+        await carregarHistorico();
+        setAcademicMessage(
+            $('mensagem-questionario'),
+            'Tentativa corrigida e salva.',
+            'success'
+        );
+        setAcademicBusy($('form-questionario'), false);
+        submitButton.setAttribute('aria-busy', 'false');
+        submitButton.textContent = 'Questionário finalizado';
+        $('resultado-questionario').scrollIntoView({
+            behavior: preferredScrollBehavior()
+        });
     } catch (error) {
-        console.error('Erro ao inicializar questionário:', error);
-        exibirErro(error.message || 'Erro ao carregar questionário. Tente novamente.');
+        mensagem(error.message, true);
+        enviando = false;
+        setAcademicBusy($('form-questionario'), false);
+        submitButton.setAttribute('aria-busy', 'false');
+        submitButton.textContent = submitButton.dataset.idleLabel || 'Finalizar questionário';
+        atualizarContador();
     }
-}
+});
 
-window.addEventListener('load', () => {
-    configurarLogout();
-    configurarSubmit();
-    inicializarQuestionario();
+$('link-voltar-sala').href = `/sala-aula.html?id_turma=${idTurma}`;
+$('link-voltar-sala-resultado').href = `/sala-aula.html?id_turma=${idTurma}`;
+$('link-refazer').href = location.href;
+
+window.addEventListener('load', async () => {
+    const session = await initSessionUI({ requiredRoles: ['ALUNO'] });
+    if (session.state !== 'authenticated') return;
+    try {
+        $('status-usuario').textContent = session.user.nome_completo;
+        mensagem('Carregando questionário e histórico…');
+        setAcademicBusy($('lista-questoes'), true);
+        setAcademicBusy($('lista-historico'), true);
+        await carregar();
+        mensagem('Questionário pronto.');
+    } catch (error) {
+        mensagem(error.message, true);
+        $('lista-questoes').replaceChildren(createAcademicState(error.message, 'error'));
+        $('lista-historico').replaceChildren(createAcademicState(
+            'O histórico não pôde ser carregado porque o questionário está indisponível.',
+            'error'
+        ));
+        setAcademicBusy($('lista-questoes'), false);
+        setAcademicBusy($('lista-historico'), false);
+    }
 });

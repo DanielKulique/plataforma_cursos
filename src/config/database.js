@@ -1,9 +1,15 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config();//carrega variaveis do .env
+const logger = require('../utils/logger');
+require('dotenv').config({ quiet: true });//carrega variaveis do .env
+
+if (process.env.DB_NAME === 'site_cursos') {
+	throw new Error('Configuração recusada: site_cursos é o banco legado protegido e não pode ser usado pelo runtime.');
+}
 
 //cria pool de conexoes 
 const pool = mysql.createPool({
 	host: process.env.DB_HOST,
+	port: Number(process.env.DB_PORT || 3306),
 	user: process.env.DB_USER,
 	password: process.env.DB_PASSWORD,
 	database: process.env.DB_NAME,
@@ -12,6 +18,6 @@ const pool = mysql.createPool({
 	queueLimit: 0
 });
 
-console.log('Pool de conexoes com o MySQL criado com sucesso!');
+logger.info('database.pool.created');
 
 module.exports = pool;

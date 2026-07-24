@@ -14,6 +14,20 @@ const API_BASE = '/api';
 const DEFAULT_TIMEOUT = 30000; // 30 segundos
 const MAX_RETRIES = 3;
 const RETRY_DELAY_BASE = 1000; // 1 segundo
+const RETRYABLE_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504]);
+const STATUS_MESSAGES = Object.freeze({
+    400: 'Dados inválidos na requisição.',
+    401: 'Sessão expirada. Faça login novamente.',
+    403: 'Você não tem permissão para esta ação.',
+    404: 'Recurso não encontrado.',
+    408: 'Tempo limite excedido. Tente novamente.',
+    409: 'A operação entrou em conflito com o estado atual.',
+    429: 'Muitas solicitações. Aguarde e tente novamente.',
+    500: 'O servidor não conseguiu concluir a solicitação.',
+    502: 'Serviço temporariamente indisponível.',
+    503: 'Serviço temporariamente indisponível.',
+    504: 'O servidor demorou mais que o esperado.'
+});
 
 // ============================================================
 // CLASSES DE ERRO
@@ -96,6 +110,23 @@ function extractErrorMessage(payload) {
     );
 }
 
+function getMethod(options) {
+    return String(options.method || 'GET').toUpperCase();
+}
+
+function createHttpError(status, payload) {
+    const fallback = STATUS_MESSAGES[status] || 'Erro na requisição';
+    const message = status === 401 || status === 403
+        ? fallback
+        : extractErrorMessage(payload) || fallback;
+    return new APIError(message === 'Erro na requisição' ? fallback : message, status, payload);
+}
+
+function isTransientFailure(error) {
+    if (error instanceof APIError) return RETRYABLE_STATUS_CODES.has(error.status);
+    return error?.name === 'AbortError' || error instanceof TypeError;
+}
+
 // ============================================================
 // CLIENTE HTTP
 // ============================================================
@@ -119,11 +150,13 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
         cacheDuration = 5 * 60 * 1000
     } = config;
 
+    const method = getMethod(options);
     const url = `${API_BASE}${endpoint}`;
-    const cacheKey = `api:${options.method || 'GET'}:${url}`;
+    const cacheKey = `api:${method}:${url}`;
+    const maxAttempts = method === 'GET' ? Math.max(1, Number(retries) || 1) : 1;
 
     // Verificar cache para GET requests
-    if (useCache && (!options.method || options.method === 'GET')) {
+    if (useCache && method === 'GET') {
         const cached = cacheManager.get(cacheKey);
         if (cached) {
             return cached;
@@ -141,40 +174,27 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
         headers.Authorization = `Bearer ${token}`;
     }
 
-    // Configurar timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
     let lastError;
 
     // Loop de retry
-    for (let attempt = 0; attempt < retries; attempt++) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        // Cada tentativa precisa de sinal e timeout independentes. Um sinal abortado
+        // nunca pode contaminar uma tentativa posterior.
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
         try {
             const response = await fetch(url, {
                 ...options,
+                method,
                 headers,
                 signal: controller.signal
             });
 
-            clearTimeout(timeoutId);
-
-            // Tratamento de erros HTTP
-            if (response.status === 401) {
-                clearToken();
-                throw new APIError('Sessão expirada. Faça login novamente.', 401);
-            }
-
-            if (response.status === 403) {
-                throw new APIError('Você não tem permissão para esta ação.', 403);
-            }
-
             if (!response.ok) {
                 const payload = await response.json().catch(() => ({}));
-                throw new APIError(
-                    extractErrorMessage(payload),
-                    response.status,
-                    payload
-                );
+                if (response.status === 401) clearToken();
+                throw createHttpError(response.status, payload);
             }
 
             // Resposta vazia (204 No Content)
@@ -185,31 +205,35 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
             const data = await response.json();
 
             // Armazenar em cache se configurado
-            if (useCache && (!options.method || options.method === 'GET')) {
+            if (useCache && method === 'GET') {
                 cacheManager.set(cacheKey, data, cacheDuration);
             }
 
             return data;
         } catch (error) {
-            clearTimeout(timeoutId);
-            lastError = error;
-
-            // Não fazer retry para erros de autenticação/permissão
-            if (error instanceof APIError && (error.isAuthError() || error.isPermissionError())) {
-                throw error;
-            }
-
-            // Erro de timeout
             if (error.name === 'AbortError') {
                 lastError = new APIError('Tempo limite excedido. Tente novamente.', 408);
+            } else if (error instanceof APIError) {
+                lastError = error;
+            } else {
+                lastError = new APIError(
+                    error?.message || 'Falha na conexão. Verifique sua internet.',
+                    0
+                );
             }
 
-            // Aguardar antes de tentar novamente (exceto na última tentativa)
-            if (attempt < retries - 1) {
+            const canRetry = method === 'GET'
+                && isTransientFailure(error)
+                && attempt < maxAttempts - 1;
+            if (!canRetry) throw lastError;
+
+            if (attempt < maxAttempts - 1) {
                 const delay = getRetryDelay(attempt);
                 console.warn(`Tentativa ${attempt + 1} falhou. Retry em ${delay}ms...`);
                 await sleep(delay);
             }
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 
@@ -218,10 +242,7 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
         throw lastError;
     }
 
-    throw new APIError(
-        lastError?.message || 'Falha na conexão. Verifique sua internet.',
-        0
-    );
+    throw new APIError(lastError?.message || 'Falha na conexão. Verifique sua internet.', 0);
 }
 
 // ============================================================

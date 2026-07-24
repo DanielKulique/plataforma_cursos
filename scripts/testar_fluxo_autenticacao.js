@@ -15,6 +15,12 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { assertDevelopmentDatabase } = require('./test_database_safety');
+assertDevelopmentDatabase(process.env);
+const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
+if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
+    throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
+}
 
 const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
 
@@ -78,7 +84,7 @@ async function executarSeedAdmin() {
         await conn.end();
         
         if (admins.length > 0) {
-            logTeste('Seed Admin', true, `Admin criado: ${admins[0].email}`);
+            logTeste('Seed Admin', true, `Admin disponível: ID=${admins[0].id_usuario}`);
             return true;
         } else {
             logTeste('Seed Admin', false, 'Nenhum admin encontrado após seed');
@@ -101,7 +107,7 @@ async function executarSeedAdmin() {
         await conn.end();
         
         if (admins.length > 0) {
-            logTeste('Seed Admin', true, `Admin já existe: ${admins[0].email}`);
+            logTeste('Seed Admin', true, `Admin já existe: ID=${admins[0].id_usuario}`);
             return true;
         }
         
@@ -113,8 +119,12 @@ async function executarSeedAdmin() {
 async function testarLoginAdmin() {
     log(cores.amarelo, '\n=== TESTE 1: Login do Admin ===');
     
-    const email = process.env.INITIAL_ADMIN_EMAIL || 'admin@plataforma.com';
-    const senha = process.env.INITIAL_ADMIN_PASSWORD || 'Admin@123';
+    const email = process.env.INITIAL_ADMIN_EMAIL;
+    const senha = process.env.INITIAL_ADMIN_PASSWORD;
+    if (!email || !senha) {
+        logTeste('Login Admin', false, 'Variáveis INITIAL_ADMIN_EMAIL e INITIAL_ADMIN_PASSWORD obrigatórias.');
+        return null;
+    }
     
     const { status, data, error } = await fazerRequisicao(`${BASE_URL}/auth/login`, {
         method: 'POST',
@@ -127,9 +137,7 @@ async function testarLoginAdmin() {
     }
     
     const sucesso = status === 200 && data.token;
-    logTeste('Login Admin', sucesso,
-        `Status: ${status}${sucesso ? `\nToken: ${data.token.substring(0, 50)}...` : `\nResposta: ${JSON.stringify(data)}`}`
-    );
+    logTeste('Login Admin', sucesso, `Status: ${status}`);
     
     return data.token;
 }
@@ -147,7 +155,7 @@ async function testarCriacaoProfessorPublico(token) {
             nome_completo: 'Professor Público Teste',
             cpf,
             email,
-            senha: 'SenhaForte123!',
+            senha: TEST_ACCOUNT_PASSWORD,
             tipo: 'PROFESSOR'
         })
     });
@@ -157,10 +165,10 @@ async function testarCriacaoProfessorPublico(token) {
         return false;
     }
     
-    // Esperamos 403 Forbidden
-    const sucesso = status === 403;
+    // A validação pública rejeita o papel antes de qualquer criação.
+    const sucesso = status === 400;
     logTeste('Criar PROFESSOR (público)', sucesso,
-        `Status: ${status} (esperado 403)\nResposta: ${JSON.stringify(data)}`
+        `Status: ${status} (esperado 400)`
     );
     
     return sucesso;
@@ -180,7 +188,7 @@ async function testarCriacaoProfessorAdmin(token) {
             nome_completo: 'Professor Admin Teste',
             cpf,
             email,
-            senha: 'SenhaForte123!',
+            senha: TEST_ACCOUNT_PASSWORD,
             telefone: '11999999999',
             tipo: 'PROFESSOR'
         })
@@ -193,7 +201,7 @@ async function testarCriacaoProfessorAdmin(token) {
     
     const sucesso = status === 201 && data.id_usuario;
     logTeste('Criar PROFESSOR (admin)', sucesso,
-        `Status: ${status}\nResposta: ${JSON.stringify(data, null, 2)}`
+        `Status: ${status}${sucesso ? `\nID criado: ${data.id_usuario}` : ''}`
     );
     
     return sucesso ? data : false;
@@ -212,7 +220,7 @@ async function testarCriacaoAlunoPublico() {
             nome_completo: 'Aluno Público Teste',
             cpf,
             email,
-            senha: 'SenhaForte123!',
+            senha: TEST_ACCOUNT_PASSWORD,
             telefone: '11988888888'
         })
     });
@@ -224,7 +232,7 @@ async function testarCriacaoAlunoPublico() {
     
     const sucesso = status === 201 && data.id_usuario && data.tipo === 'ALUNO';
     logTeste('Criar ALUNO (público)', sucesso,
-        `Status: ${status}\nResposta: ${JSON.stringify(data, null, 2)}`
+        `Status: ${status}${sucesso ? `\nID criado: ${data.id_usuario}` : ''}`
     );
     
     return sucesso;
@@ -244,9 +252,7 @@ async function testarLoginProfessor(email, senha) {
     }
     
     const sucesso = status === 200 && data.token;
-    logTeste('Login Professor', sucesso,
-        `Status: ${status}${sucesso ? `\nToken: ${data.token.substring(0, 50)}...` : `\nResposta: ${JSON.stringify(data)}`}`
-    );
+    logTeste('Login Professor', sucesso, `Status: ${status}`);
     
     return data.token;
 }
@@ -266,13 +272,13 @@ async function testarListarUsuariosAdmin(token) {
     
     const sucesso = status === 200 && Array.isArray(data);
     logTeste('Listar Usuários (admin)', sucesso,
-        `Status: ${status}${sucesso ? `\nTotal de usuários: ${data.length}` : `\nResposta: ${JSON.stringify(data)}`}`
+        `Status: ${status}${sucesso ? `\nTotal de usuários: ${data.length}` : ''}`
     );
     
     if (sucesso && data.length > 0) {
         log(cores.cyan, 'Usuários encontrados:');
         data.slice(0, 5).forEach(u => {
-            console.log(`  - ID: ${u.id_usuario}, Nome: ${u.nome_completo}, Tipo: ${u.tipo}`);
+            console.log(`  - ID: ${u.id_usuario}, Tipo: ${u.tipo}`);
         });
         if (data.length > 5) console.log(`  ... e mais ${data.length - 5} usuários`);
     }
@@ -340,7 +346,7 @@ async function main() {
         
         // Teste 5: Login professor
         if (dadosProfessor) {
-            const tokenProfessor = await testarLoginProfessor(dadosProfessor.email, 'SenhaForte123!');
+            const tokenProfessor = await testarLoginProfessor(dadosProfessor.email, TEST_ACCOUNT_PASSWORD);
             resultados.push(!!tokenProfessor);
             
             // Teste 6: Listar usuários (admin)
@@ -382,8 +388,7 @@ if (process.argv.includes('--clean')) {
     limparUsuariosTeste().then(() => process.exit(0));
 } else {
     main().catch(error => {
-        log(cores.vermelho, `\n❌ Erro fatal: ${error.message}`);
-        console.error(error);
+        log(cores.vermelho, `\n❌ Erro fatal: ${error.code || 'UNEXPECTED_ERROR'}`);
         process.exit(1);
     });
 }

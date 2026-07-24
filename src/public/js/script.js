@@ -3,10 +3,10 @@
  * @description Carrega e exibe cursos e turmas disponíveis
  */
 
-import { getCurrentUser, clearToken } from './auth.js';
+import { getToken } from './auth.js';
 import { getCursos, getTurmas, handleAPIError } from './api.js';
+import { initSessionUI } from './session-ui.js';
 import {
-    formatarStatusTurma,
     formatarTagTurma,
     formatarCorTurma,
     escapeHtml,
@@ -15,7 +15,7 @@ import {
     showError,
     getUrlParams
 } from './utils.js';
-import { confirmDanger } from './modal.js';
+import { confirmSuccess } from './modal.js';
 
 // ============================================================
 // ELEMENTOS DO DOM
@@ -23,15 +23,35 @@ import { confirmDanger } from './modal.js';
 
 const avisoAcesso = document.getElementById('aviso-acesso');
 const statusUsuario = document.getElementById('status-usuario');
-const linkLogin = document.getElementById('link-login');
-const linkSala = document.getElementById('link-sala');
-const btnLogout = document.getElementById('btn-logout');
 const listaCursos = document.getElementById('lista-de-cursos');
 const listaTurmas = document.getElementById('lista-de-turmas');
 
 // ============================================================
+// ESTADO
+// ============================================================
+
+let usuarioLogado = null;
+let matriculasAtivas = []; // IDs das turmas que o usuário já está matriculado
+let cursosDisponiveis = [];
+let turmasDisponiveis = [];
+let cursoSelecionado = null;
+
+// ============================================================
 // FUNÇÕES AUXILIARES
 // ============================================================
+
+function setCollectionState(container, { busy = false, role = null } = {}) {
+    if (!container) return;
+
+    container.setAttribute('aria-busy', String(busy));
+    if (role) {
+        container.setAttribute('role', role);
+        container.setAttribute('aria-live', role === 'alert' ? 'assertive' : 'polite');
+    } else {
+        container.removeAttribute('role');
+        container.removeAttribute('aria-live');
+    }
+}
 
 /**
  * Exibe mensagem de redirecionamento baseada no parâmetro da URL
@@ -44,77 +64,7 @@ function mostrarMensagemPorMotivo() {
 
     if (motivo === 'nao_autorizado') {
         avisoAcesso.textContent = 'Acesso não autorizado para esta área. Você foi redirecionado para o catálogo.';
-    }
-}
-
-/**
- * Configura o botão de logout com confirmação
- */
-function configurarLogout() {
-    if (!btnLogout) return;
-
-    btnLogout.addEventListener('click', async () => {
-        const confirmou = await confirmDanger(
-            'Sair da conta',
-            'Tem certeza que deseja encerrar sua sessão?'
-        );
-
-        if (confirmou) {
-            clearToken();
-            window.location.href = '/index.html';
-        }
-    });
-}
-
-// ============================================================
-// SESSÃO DO USUÁRIO
-// ============================================================
-
-/**
- * Carrega e exibe informações da sessão do usuário
- */
-async function carregarSessaoUsuario() {
-    if (!statusUsuario) return;
-
-    try {
-        const usuario = await getCurrentUser();
-
-        if (!usuario) {
-            statusUsuario.textContent = 'Você não está logado.';
-            if (linkLogin) linkLogin.hidden = false;
-            if (linkSala) linkSala.hidden = true;
-            if (btnLogout) btnLogout.hidden = true;
-            return;
-        }
-
-        statusUsuario.textContent = `Bem-vindo, ${escapeHtml(usuario.nome_completo)}! (${usuario.tipo})`;
-
-        if (linkLogin) linkLogin.hidden = true;
-        if (btnLogout) btnLogout.hidden = false;
-
-        // Configurar link da sala baseado no tipo de usuário
-        if (linkSala) {
-            const tipoUsuario = String(usuario.tipo || '').toUpperCase();
-
-            if (tipoUsuario === 'ALUNO') {
-                linkSala.hidden = false;
-                linkSala.href = '/sala-virtual.html';
-                linkSala.textContent = 'Sala virtual';
-            } else if (tipoUsuario === 'PROFESSOR') {
-                linkSala.hidden = false;
-                linkSala.href = '/professor.html';
-                linkSala.textContent = 'Minhas Turmas';
-            } else if (tipoUsuario === 'ADMIN') {
-                linkSala.hidden = false;
-                linkSala.href = '/admin.html';
-                linkSala.textContent = 'Administração';
-            } else {
-                linkSala.hidden = true;
-            }
-        }
-    } catch (error) {
-        console.error('Erro ao carregar sessão do usuário:', error);
-        statusUsuario.textContent = 'Não foi possível carregar a sessão do usuário.';
+        avisoAcesso.hidden = false;
     }
 }
 
@@ -140,20 +90,33 @@ const COURSE_COLORS = [
 function renderizarCursos(cursos) {
     if (!listaCursos) return;
 
-    listaCursos.innerHTML = '';
+    setCollectionState(listaCursos);
+    listaCursos.replaceChildren();
 
     if (!Array.isArray(cursos) || cursos.length === 0) {
-        showEmpty(listaCursos, 'Nenhum curso disponivel no momento.');
+        showEmpty(listaCursos, 'Nenhum curso disponível no momento.');
+        setCollectionState(listaCursos, { role: 'status' });
         return;
     }
 
-    cursos.forEach((curso, index) => {
-        const item = document.createElement('div');
+    const opcoes = [
+        { id_curso: null, nome_curso: 'Todos os cursos', carga_horaria: null },
+        ...cursos
+    ];
+
+    opcoes.forEach((curso, index) => {
+        const courseId = curso.id_curso === null ? null : String(curso.id_curso);
+        const item = document.createElement('button');
+        item.type = 'button';
         item.className = 'course-item';
+        if (cursoSelecionado === courseId) item.classList.add('active');
+        item.setAttribute('aria-pressed', String(cursoSelecionado === courseId));
+        item.addEventListener('click', () => selecionarCurso(courseId));
 
         // Icone do curso
         const icon = document.createElement('div');
         icon.className = 'course-icon';
+        icon.setAttribute('aria-hidden', 'true');
         icon.style.background = COURSE_COLORS[index % COURSE_COLORS.length];
         icon.textContent = COURSE_ICONS[index % COURSE_ICONS.length];
 
@@ -167,7 +130,11 @@ function renderizarCursos(cursos) {
 
         const meta = document.createElement('div');
         meta.className = 'course-meta';
-        meta.innerHTML = `<span>⏱ ${curso.carga_horaria}h</span>`;
+        const workload = document.createElement('span');
+        workload.textContent = curso.carga_horaria === null
+            ? 'Exibir todas as turmas'
+            : `⏱ ${String(curso.carga_horaria ?? '')}h`;
+        meta.appendChild(workload);
 
         info.appendChild(name);
         info.appendChild(meta);
@@ -175,6 +142,7 @@ function renderizarCursos(cursos) {
         // Seta
         const arrow = document.createElement('span');
         arrow.className = 'c-arrow';
+        arrow.setAttribute('aria-hidden', 'true');
         arrow.textContent = '›';
 
         item.appendChild(icon);
@@ -184,21 +152,141 @@ function renderizarCursos(cursos) {
     });
 }
 
+function selecionarCurso(idCurso) {
+    cursoSelecionado = idCurso;
+    renderizarCursos(cursosDisponiveis);
+    renderizarTurmasFiltradas();
+}
+
+function renderizarTurmasFiltradas() {
+    const turmas = cursoSelecionado === null
+        ? turmasDisponiveis
+        : turmasDisponiveis.filter((turma) => String(turma.id_curso) === cursoSelecionado);
+
+    const emptyMessage = cursoSelecionado === null
+        ? 'Nenhuma turma aberta no momento.'
+        : 'Nenhuma turma encontrada para o curso selecionado.';
+    renderizarTurmas(turmas, emptyMessage);
+}
+
 /**
  * Carrega cursos da API e renderiza
  */
 async function carregarCursos() {
     if (!listaCursos) return;
 
+    setCollectionState(listaCursos, { busy: true, role: 'status' });
     showLoading(listaCursos, 'Carregando cursos...');
 
     try {
-        const cursos = await getCursos();
-        renderizarCursos(cursos);
+        cursosDisponiveis = await getCursos();
+        renderizarCursos(cursosDisponiveis);
+        setTextContent('stat-cursos', cursosDisponiveis.length);
     } catch (error) {
         console.error('Erro ao carregar cursos:', error);
         showError(listaCursos, handleAPIError(error));
+        setCollectionState(listaCursos, { role: 'alert' });
     }
+}
+
+// ============================================================
+// MATRÍCULA EM TURMAS
+// ============================================================
+
+/**
+ * Busca matrículas do aluno logado
+ */
+async function carregarMatriculasDoAluno() {
+    if (!usuarioLogado || usuarioLogado.tipo !== 'ALUNO') {
+        matriculasAtivas = [];
+        return;
+    }
+
+    try {
+        const token = getToken();
+        const response = await fetch(`/api/matriculas/aluno/${usuarioLogado.id_usuario}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const matriculas = await response.json();
+            matriculasAtivas = matriculas
+                .filter((matricula) => matricula.status_aprovacao !== 'CANCELADO')
+                .map((matricula) => matricula.id_turma);
+        } else {
+            matriculasAtivas = [];
+        }
+    } catch (error) {
+        console.error('Erro ao carregar matrículas:', error);
+        matriculasAtivas = [];
+    }
+}
+
+/**
+ * Realiza matrícula em uma turma
+ */
+async function matricularEmTurma(idTurma, nomeTurma) {
+    const token = getToken();
+
+    if (!token) {
+        // Usuário não está logado, redirecionar para login
+        window.location.href = '/login.html?motivo=auth&redirect=/index.html';
+        return;
+    }
+
+    try {
+        // Confirmar matrícula
+        const confirmado = await confirmSuccess(
+            'Confirmar Matrícula',
+            `Deseja se matricular na turma <strong>"${escapeHtml(nomeTurma)}"</strong>?`,
+            'Sim, quero me matricular!'
+        );
+
+        if (!confirmado) return;
+
+        // Fazer requisição para API
+        const response = await fetch('/api/matriculas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ id_turma: idTurma })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Sucesso
+            if (!matriculasAtivas.includes(idTurma)) matriculasAtivas.push(idTurma);
+            turmasDisponiveis = await getTurmas();
+            renderizarTurmasFiltradas();
+
+            // Mostrar feedback
+            alert('✅ ' + (data.mensagem || 'Matrícula realizada com sucesso!'));
+
+            // Atualizar mensagem de boas-vindas
+            if (statusUsuario) {
+                statusUsuario.textContent = `Bem-vindo, ${usuarioLogado.nome_completo}! (${usuarioLogado.tipo}) - Matrícula realizada!`;
+            }
+        } else {
+            // Erro
+            const mensagemErro = data.mensagem || data.message || 'Erro ao realizar matrícula. Tente novamente.';
+            alert('❌ ' + mensagemErro);
+        }
+    } catch (error) {
+        console.error('Erro ao realizar matrícula:', error);
+        alert('❌ Erro de conexão. Verifique sua internet e tente novamente.');
+    }
+}
+
+/**
+ * Verifica se usuário já está matriculado em uma turma
+ */
+function isMatriculado(idTurma) {
+    return matriculasAtivas.includes(idTurma);
 }
 
 // ============================================================
@@ -209,15 +297,19 @@ async function carregarCursos() {
  * Renderiza lista de turmas no DOM com novo design
  * @param {Array} turmas - Lista de turmas
  */
-function renderizarTurmas(turmas) {
+function renderizarTurmas(turmas, emptyMessage = 'Nenhuma turma aberta no momento.') {
     if (!listaTurmas) return;
 
-    listaTurmas.innerHTML = '';
+    setCollectionState(listaTurmas);
+    listaTurmas.replaceChildren();
 
     if (!Array.isArray(turmas) || turmas.length === 0) {
-        showEmpty(listaTurmas, 'Nenhuma turma aberta no momento.');
+        showEmpty(listaTurmas, emptyMessage);
+        setCollectionState(listaTurmas, { role: 'status' });
         return;
     }
+
+    const ehAluno = usuarioLogado?.tipo === 'ALUNO';
 
     turmas.forEach((turma) => {
         const item = document.createElement('div');
@@ -235,7 +327,7 @@ function renderizarTurmas(turmas) {
         date.className = 'class-date';
         const cursoNome = turma.nome_curso || turma.id_curso || 'N/A';
         const profNome = turma.nome_professor || turma.id_professor || 'N/A';
-        date.textContent = `📚 ${escapeHtml(cursoNome)} · 👤 ${escapeHtml(profNome)}`;
+        date.textContent = `📚 ${cursoNome} · 👤 ${profNome}`;
 
         info.appendChild(name);
         info.appendChild(date);
@@ -244,13 +336,48 @@ function renderizarTurmas(turmas) {
         const tag = document.createElement('span');
         tag.className = formatarTagTurma(turma.status);
         const statusText = turma.status || 'Status';
-        tag.textContent = statusText.toUpperCase().includes('ABERTA') ? '● Aberta' :
-                          statusText.toUpperCase().includes('BREVE') ? '◌ Em breve' :
-                          statusText.toUpperCase().includes('INSCRI') ? '✦ Inscricoes' :
-                          statusText;
+        const statusLabels = {
+            ABERTA: '● Inscrições abertas',
+            FECHADA: '🔒 Inscrições fechadas',
+            ENCERRADA: '■ Turma encerrada'
+        };
+        tag.textContent = statusLabels[statusText] || statusText;
 
         item.appendChild(info);
         item.appendChild(tag);
+
+        // Botão de matrícula (apenas para alunos logados)
+        if (ehAluno) {
+            const jaMatriculado = isMatriculado(turma.id_turma);
+            const statusAberto = statusText === 'ABERTA';
+
+            if (jaMatriculado) {
+                // Já está matriculado
+                const btnMatriculado = document.createElement('button');
+                btnMatriculado.className = 'btn btn-ghost btn-sm';
+                btnMatriculado.disabled = true;
+                btnMatriculado.textContent = '✓ Matriculado';
+                item.appendChild(btnMatriculado);
+            } else if (statusAberto) {
+                // Pode se matricular
+                const btnMatricular = document.createElement('button');
+                btnMatricular.className = 'btn btn-primary btn-sm';
+                btnMatricular.textContent = '📝 Matricular';
+                btnMatricular.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    matricularEmTurma(turma.id_turma, turma.nome_turma);
+                });
+                item.appendChild(btnMatricular);
+            } else {
+                // Turma fechada
+                const btnFechado = document.createElement('button');
+                btnFechado.className = 'btn btn-ghost btn-sm';
+                btnFechado.disabled = true;
+                btnFechado.textContent = '🔒 Fechado';
+                item.appendChild(btnFechado);
+            }
+        }
+
         listaTurmas.appendChild(item);
     });
 }
@@ -261,74 +388,23 @@ function renderizarTurmas(turmas) {
 async function carregarTurmas() {
     if (!listaTurmas) return;
 
+    setCollectionState(listaTurmas, { busy: true, role: 'status' });
     showLoading(listaTurmas, 'Carregando turmas...');
 
     try {
-        const turmas = await getTurmas();
-        renderizarTurmas(turmas);
+        turmasDisponiveis = await getTurmas();
+        renderizarTurmasFiltradas();
+        setTextContent('stat-turmas', turmasDisponiveis.length);
     } catch (error) {
         console.error('Erro ao carregar turmas:', error);
         showError(listaTurmas, handleAPIError(error));
+        setCollectionState(listaTurmas, { role: 'alert' });
     }
 }
 
-// ============================================================
-// AVATAR E ATIVIDADES
-// ============================================================
-
-/**
- * Renderiza avatar com iniciais do usuário
- */
-async function renderizarAvatar() {
-    const avatar = document.getElementById('avatar');
-    if (!avatar) return;
-
-    try {
-        const usuario = await getCurrentUser();
-        if (usuario) {
-            const iniciais = usuario.nome_completo
-                .split(' ')
-                .map(n => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2);
-            avatar.textContent = iniciais;
-        }
-    } catch {
-        avatar.textContent = '?';
-    }
-}
-
-/**
- * Gera timeline de atividades mockadas
- */
-function gerarAtividadesMock() {
-    return [
-        {
-            tipo: 'success',
-            acao: 'Você concluiu o módulo',
-            destaque: '"O que é plágio e como evitá-lo" no curso Plágio 3.0',
-            hora: 'Hoje, 14h32'
-        },
-        {
-            tipo: 'purple',
-            acao: 'Matriculado com sucesso na turma',
-            destaque: '"Plágio 3.0 — Março 2025"',
-            hora: 'Ontem, 10h15'
-        },
-        {
-            tipo: 'pink',
-            acao: 'Certificado emitido',
-            destaque: '"Direitos Autorais — Turma A"',
-            hora: '15 mar, 09h00'
-        },
-        {
-            tipo: 'cyan',
-            acao: 'Nova turma disponível',
-            destaque: '"Propriedade Intelectual T1" — inscrições abertas',
-            hora: '12 mar, 08h45'
-        }
-    ];
+function setTextContent(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = String(value);
 }
 
 // ============================================================
@@ -336,14 +412,17 @@ function gerarAtividadesMock() {
 // ============================================================
 
 window.addEventListener('load', async () => {
-    mostrarMensagemPorMotivo();
-    configurarLogout();
+    const session = await initSessionUI();
+    usuarioLogado = session.user;
 
-    // Carregar dados em paralelo para melhor performance
+    if (usuarioLogado?.tipo === 'ALUNO') {
+        await carregarMatriculasDoAluno();
+    }
+
+    mostrarMensagemPorMotivo();
+
     await Promise.all([
-        carregarSessaoUsuario(),
         carregarCursos(),
-        carregarTurmas(),
-        renderizarAvatar()
+        carregarTurmas()
     ]);
 });

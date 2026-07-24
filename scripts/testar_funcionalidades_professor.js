@@ -14,6 +14,12 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { assertDevelopmentDatabase } = require('./test_database_safety');
+assertDevelopmentDatabase(process.env);
+const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
+if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
+    throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
+}
 
 const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
 
@@ -68,7 +74,7 @@ async function setupDadosTeste() {
         const sufixo = Date.now();
         const cpf = String(10000000000 + (sufixo % 89999999999)).slice(0, 11);
         const email = `prof.teste.${sufixo}@example.com`;
-        const senha = '123456';
+        const senha = TEST_ACCOUNT_PASSWORD;
         const senhaHash = await bcrypt.hash(senha, 10);
 
         const [profResult] = await conn.query(
@@ -77,7 +83,7 @@ async function setupDadosTeste() {
         );
 
         const idProfessor = profResult.insertId;
-        log(cores.verde, `✓ Professor criado: ID=${idProfessor}, Email=${email}, Senha=${senha}`);
+        log(cores.verde, `✓ Professor de teste criado: ID=${idProfessor}`);
 
         // Criar curso de teste
         const [cursoResult] = await conn.query(
@@ -90,7 +96,7 @@ async function setupDadosTeste() {
         // Criar turma de teste
         const [turmaResult] = await conn.query(
             'INSERT INTO Turmas (id_curso, id_professor, nome_turma, data_inicio, data_fim, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [idCurso, idProfessor, 'Turma Teste 2026', '2026-02-01', '2026-06-30', 'EM ANDAMENTO']
+            [idCurso, idProfessor, 'Turma Teste 2026', '2026-02-01', '2026-06-30', 'FECHADA']
         );
         const idTurma = turmaResult.insertId;
         log(cores.verde, `✓ Turma criada: ID=${idTurma}`);
@@ -98,7 +104,7 @@ async function setupDadosTeste() {
         // Criar aluno de teste
         const cpfAluno = String(20000000000 + (sufixo % 89999999999)).slice(0, 11);
         const emailAluno = `aluno.teste.${sufixo}@example.com`;
-        const senhaAlunoHash = await bcrypt.hash('123456', 10);
+        const senhaAlunoHash = await bcrypt.hash(TEST_ACCOUNT_PASSWORD, 10);
 
         const [alunoResult] = await conn.query(
             'INSERT INTO Usuarios (nome_completo, cpf, email, senha, telefone, tipo) VALUES (?, ?, ?, ?, ?, ?)',
@@ -144,9 +150,7 @@ async function testarLoginProfessor(email, senha) {
     }
 
     const sucesso = status === 200 && data.token;
-    logTeste('Login do Professor', sucesso, 
-        `Status: ${status}${sucesso ? `\nToken JWT: ${data.token.substring(0, 50)}...` : `\nResposta: ${JSON.stringify(data)}`}`
-    );
+    logTeste('Login do Professor', sucesso, `Status: ${status}`);
 
     return data.token;
 }
@@ -166,13 +170,8 @@ async function testarListarTurmasDoProfessor(token, idProfessor) {
 
     const sucesso = status === 200 && data.turmas;
     logTeste('Listar Turmas', sucesso,
-        `Status: ${status}${sucesso ? `\nTurmas encontradas: ${data.turmas.length}` : `\nResposta: ${JSON.stringify(data)}`}`
+        `Status: ${status}${sucesso ? `\nTurmas encontradas: ${data.turmas.length}` : ''}`
     );
-
-    if (sucesso && data.turmas.length > 0) {
-        log(cores.cyan, 'Primeira turma:');
-        console.log(JSON.stringify(data.turmas[0], null, 2));
-    }
 
     return data.turmas;
 }
@@ -192,13 +191,8 @@ async function testarListarAlunosDaTurma(token, idTurma) {
 
     const sucesso = status === 200 && data.matriculas;
     logTeste('Listar Alunos da Turma', sucesso,
-        `Status: ${status}${sucesso ? `\nAlunos matriculados: ${data.matriculas.length}` : `\nResposta: ${JSON.stringify(data)}`}`
+        `Status: ${status}${sucesso ? `\nAlunos matriculados: ${data.matriculas.length}` : ''}`
     );
-
-    if (sucesso && data.matriculas.length > 0) {
-        log(cores.cyan, 'Primeiro aluno:');
-        console.log(JSON.stringify(data.matriculas[0], null, 2));
-    }
 
     return data.matriculas;
 }
@@ -222,9 +216,7 @@ async function testarAtualizarNotaAluno(token, idMatricula) {
     }
 
     const sucesso = status === 200;
-    logTeste('Atualizar Nota do Aluno', sucesso,
-        `Status: ${status}\nResposta: ${JSON.stringify(data)}`
-    );
+    logTeste('Atualizar Nota do Aluno', sucesso, `Status: ${status}`);
 
     return sucesso;
 }
@@ -244,7 +236,7 @@ async function testarBuscarMatriculaPorId(token, idMatricula) {
 
     const sucesso = status === 200 && data.id_matricula;
     logTeste('Buscar Matrícula por ID', sucesso,
-        `Status: ${status}${sucesso ? `\nNota final: ${data.nota_final}\nStatus: ${data.status_aprovacao}\nProgresso: ${data.progresso_percentual}%` : `\nResposta: ${JSON.stringify(data)}`}`
+        `Status: ${status}${sucesso ? `\nNota final: ${data.nota_final}\nStatus: ${data.status_aprovacao}\nProgresso: ${data.progresso_percentual}%` : ''}`
     );
 
     return sucesso;
@@ -267,7 +259,7 @@ async function testarAcessoNegadoAluno(token, idTurma) {
     // Esperamos 403 Forbidden
     const sucesso = status === 403;
     logTeste('Teste de Permissão', sucesso,
-        `Status: ${status} (esperado 403)\nResposta: ${JSON.stringify(data)}`
+        `Status: ${status} (esperado 403)`
     );
 
     return sucesso;
@@ -363,6 +355,5 @@ async function main() {
 
 main().catch((error) => {
     log(cores.vermelho, `\n✗ Erro fatal: ${error.message}`);
-    console.error(error);
     process.exit(1);
 });

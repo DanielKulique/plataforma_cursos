@@ -1,64 +1,91 @@
-import { clearToken, getCurrentUser, getToken } from './auth.js';
+import { clearToken, getToken } from './auth.js';
+import { initSessionUI } from './session-ui.js';
+import {
+    createAcademicState,
+    setAcademicBusy,
+    setAcademicMessage
+} from './academic-ui.js';
 
 const statusUsuario = document.getElementById('status-usuario');
 const mensagemSala = document.getElementById('mensagem-sala');
 const listaTurmas = document.getElementById('lista-minhas-turmas');
-const btnLogout = document.getElementById('btn-logout');
-
-const params = new URLSearchParams(window.location.search);
-const modoTeste = params.get('demo') === '1';
-
-const MOCK_SALA_PAYLOAD = {
-    total: 1,
-    turmas: [
-        {
-            id_turma: 101,
-            nome_turma: 'Turma Demo Front-end',
-            status_turma: 'EM ANDAMENTO',
-            progresso_percentual: 45,
-            nome_curso: 'Curso Demo de Interface',
-            descricao_curso: 'Turma simulada para validar fluxo de sala de aula e questionários sem login.'
-        }
-    ]
-};
 
 function formatarStatusTurma(status) {
     const texto = String(status || '').trim();
     const upper = texto.toUpperCase();
 
-    if (upper.includes('ABERTA')) return 'badge badge--success';
-    if (upper.includes('ANDAMENTO')) return 'badge badge--warning';
-    if (upper.includes('ENCERRADA') || upper.includes('CANCELADA')) return 'badge badge--danger';
+    if (upper === 'ABERTA') return 'badge badge--success';
+    if (upper === 'FECHADA') return 'badge badge--warning';
+    if (upper === 'ENCERRADA') return 'badge badge--danger';
     return 'badge badge--neutral';
 }
 
-function configurarLogout() {
-    if (!btnLogout) return;
-
-    if (modoTeste) {
-        btnLogout.textContent = 'Encerrar teste';
-    }
-
-    btnLogout.addEventListener('click', () => {
-        clearToken();
-        window.location.href = modoTeste ? '/index.html' : '/login.html';
-    });
+function rotularStatusTurma(status) {
+    const valor = String(status || '').toUpperCase();
+    const labels = {
+        ABERTA: 'Inscrições abertas',
+        FECHADA: 'Inscrições fechadas',
+        ENCERRADA: 'Turma encerrada'
+    };
+    return labels[valor] || status || 'Status não informado';
 }
 
-function montarLinkComDemo(url) {
-    if (!modoTeste) return url;
+function criarElemento(tag, className = '', text = '') {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = String(text ?? '');
+    return element;
+}
 
-    const separador = url.includes('?') ? '&' : '?';
-    return `${url}${separador}demo=1`;
+function criarLinhaMeta(label, value) {
+    const line = criarElemento('p', 'meta-line');
+    line.append(criarElemento('strong', '', `${label}: `), document.createTextNode(String(value ?? '')));
+    return line;
+}
+
+function criarLink(href, className, text) {
+    const link = criarElemento('a', className, text);
+    link.href = href;
+    return link;
+}
+
+function mostrarEstadoLista(message, className) {
+    const type = className.includes('error')
+        ? 'error'
+        : className.includes('loading') ? 'loading' : 'empty';
+    listaTurmas.replaceChildren(createAcademicState(message, type));
+    setAcademicBusy(listaTurmas, type === 'loading');
+}
+
+function criarProgresso(percentual) {
+    const valor = Math.min(100, Math.max(0, Number(percentual) || 0));
+    const wrapper = criarElemento('div', 'academic-progress academic-progress--compact');
+    const header = criarElemento('div', 'academic-progress__header');
+    header.append(
+        criarElemento('span', '', 'Progresso'),
+        criarElemento('strong', '', `${valor}%`)
+    );
+    const track = criarElemento('div', 'progress-bar-container');
+    track.setAttribute('role', 'progressbar');
+    track.setAttribute('aria-label', 'Progresso na turma');
+    track.setAttribute('aria-valuemin', '0');
+    track.setAttribute('aria-valuemax', '100');
+    track.setAttribute('aria-valuenow', String(valor));
+    const fill = criarElemento('div', 'progress-bar-fill');
+    fill.style.width = `${valor}%`;
+    track.append(fill);
+    wrapper.append(header, track);
+    return wrapper;
 }
 
 function renderizarTurmas(turmas = []) {
     if (!listaTurmas) return;
 
-    listaTurmas.innerHTML = '';
+    listaTurmas.replaceChildren();
+    setAcademicBusy(listaTurmas, false);
 
     if (turmas.length === 0) {
-        listaTurmas.innerHTML = '<li class="card-item empty-state">Você ainda não possui turma aberta ativa na sua sala virtual.</li>';
+        mostrarEstadoLista('Você ainda não possui turma com acesso ativo na sua sala virtual.', 'empty-state');
         return;
     }
 
@@ -66,81 +93,51 @@ function renderizarTurmas(turmas = []) {
         const item = document.createElement('li');
         item.className = 'card-item sala-card';
 
-        const linkSalaAula = montarLinkComDemo(`/sala-aula.html?id_turma=${encodeURIComponent(turma.id_turma)}`);
-        const linkProva = montarLinkComDemo(`/questionario.html?tipo=prova&id_turma=${encodeURIComponent(turma.id_turma)}`);
-        const linkExercicios = montarLinkComDemo(`/questionario.html?tipo=exercicio&id_turma=${encodeURIComponent(turma.id_turma)}`);
+        const linkSalaAula = `/sala-aula.html?id_turma=${encodeURIComponent(turma.id_turma)}`;
+        const linkProva = `/questionario.html?tipo=prova&id_turma=${encodeURIComponent(turma.id_turma)}`;
+        const linkExercicios = `/questionario.html?tipo=exercicio&id_turma=${encodeURIComponent(turma.id_turma)}`;
 
-        item.innerHTML = `
-            <div class="card-item__header">
-                <span class="card-item__title">${turma.nome_curso}</span>
-                <span class="${formatarStatusTurma(turma.status_turma)}">${turma.status_turma || 'Status não informado'}</span>
-            </div>
-            <div class="card-item__meta-grid">
-                <p class="meta-line"><strong>Turma:</strong> ${turma.nome_turma}</p>
-                <p class="meta-line"><strong>Progresso:</strong> ${turma.progresso_percentual}%</p>
-            </div>
-            <p class="card-item__description"><strong>Descrição:</strong> ${turma.descricao_curso || 'Conteúdo do curso sem descrição cadastrada.'}</p>
-            <div class="conteudo-placeholder">
-                <strong>Conteúdo liberado:</strong>
-                <ul>
-                    <li>Módulo 1: Boas-vindas da turma</li>
-                    <li>Módulo 2: Material inicial</li>
-                    <li>Módulo 3: Atividade prática</li>
-                </ul>
-            </div>
-            <div class="card-actions">
-                <a class="action-button" href="${linkSalaAula}">
-                    Entrar na sala de aula
-                </a>
-                <a class="action-button action-button--ghost" href="${linkProva}">
-                    Prova
-                </a>
-                <a class="action-button action-button--ghost" href="${linkExercicios}">
-                    Exercícios
-                </a>
-            </div>
-        `;
+        const header = criarElemento('div', 'card-item__header');
+        header.append(
+            criarElemento('span', 'card-item__title', turma.nome_curso || 'Curso sem nome'),
+            criarElemento('span', formatarStatusTurma(turma.status_turma), rotularStatusTurma(turma.status_turma))
+        );
+
+        const meta = criarElemento('div', 'card-item__meta-grid');
+        meta.append(
+            criarLinhaMeta('Turma', turma.nome_turma || 'Turma sem nome')
+        );
+
+        const description = criarElemento('p', 'card-item__description');
+        description.append(
+            criarElemento('strong', '', 'Descrição: '),
+            document.createTextNode(turma.descricao_curso || 'Conteúdo do curso sem descrição cadastrada.')
+        );
+
+        const actions = criarElemento('div', 'card-actions');
+        actions.append(
+            criarLink(linkSalaAula, 'action-button', 'Entrar na sala de aula'),
+            criarLink(linkProva, 'action-button action-button--ghost', 'Prova'),
+            criarLink(linkExercicios, 'action-button action-button--ghost', 'Exercícios')
+        );
+        item.append(
+            header,
+            meta,
+            criarProgresso(turma.progresso_percentual),
+            description,
+            actions
+        );
 
         listaTurmas.appendChild(item);
     });
 }
 
-async function carregarSalaVirtual() {
-    if (modoTeste) {
-        if (statusUsuario) {
-            statusUsuario.textContent = 'Modo teste ativo: navegação sem login.';
-        }
-
-        renderizarTurmas(MOCK_SALA_PAYLOAD.turmas || []);
-
-        if (mensagemSala) {
-            mensagemSala.textContent = 'Ambiente carregado com dados simulados para validação rápida.';
-        }
-
-        return;
-    }
-
+async function carregarSalaVirtual(usuario) {
     const token = getToken();
-    if (!token) {
-        window.location.href = '/login.html?motivo=auth';
-        return;
-    }
 
     try {
         if (listaTurmas) {
-            listaTurmas.innerHTML = '<li class="card-item loading-state">Carregando suas turmas...</li>';
-        }
-
-        const usuario = await getCurrentUser();
-
-        if (!usuario) {
-            window.location.href = '/login.html?motivo=auth';
-            return;
-        }
-
-        if (String(usuario.tipo || '').toUpperCase() !== 'ALUNO') {
-            window.location.href = '/index.html?motivo=nao_autorizado';
-            return;
+            mostrarEstadoLista('Carregando suas turmas...', 'loading-state');
         }
 
         if (statusUsuario) {
@@ -171,23 +168,25 @@ async function carregarSalaVirtual() {
         const payload = await response.json();
         renderizarTurmas(payload.turmas || []);
 
-        if (mensagemSala) {
-            mensagemSala.textContent = payload.total > 0
-                ? `Você possui ${payload.total} turma(s) aberta(s) com acesso ao conteúdo.`
-                : 'Sem turmas abertas no momento. Faça inscrição em uma turma com vagas abertas.';
-        }
+        setAcademicMessage(
+            mensagemSala,
+            payload.total > 0
+                ? `Você possui ${payload.total} turma(s) com acesso ao conteúdo.`
+                : 'Sem turmas com acesso no momento. Faça inscrição em uma turma com vagas abertas.',
+            'info'
+        );
     } catch (error) {
         console.error('Erro ao carregar sala virtual:', error);
-        if (mensagemSala) {
-            mensagemSala.textContent = 'Erro ao carregar sala virtual. Tente novamente.';
-        }
+        setAcademicMessage(mensagemSala, 'Erro ao carregar sala virtual. Tente novamente.', 'error');
         if (listaTurmas) {
-            listaTurmas.innerHTML = '<li class="card-item error-state">Erro ao carregar turmas da sala virtual.</li>';
+            mostrarEstadoLista('Erro ao carregar turmas da sala virtual.', 'error-state');
         }
     }
 }
 
-window.addEventListener('load', () => {
-    configurarLogout();
-    carregarSalaVirtual();
+window.addEventListener('load', async () => {
+    const session = await initSessionUI({ requiredRoles: ['ALUNO'] });
+    if (session.state === 'authenticated') {
+        await carregarSalaVirtual(session.user);
+    }
 });

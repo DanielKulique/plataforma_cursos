@@ -1,4 +1,5 @@
 const { Resend } = require('resend');
+const logger = require('../utils/logger');
 
 /**
  * Serviço de envio de e-mail.
@@ -26,8 +27,12 @@ async function enviarCodigoVerificacaoEmail({ to, codigo, expiraEm }) {
 
     // Fallback dev: sem API key -> não quebra fluxo local
     if (!apiKey) {
-        console.warn('[email.service] RESEND_API_KEY não configurada. E-mail real não enviado.');
-        console.info(`[email.service] DEBUG código para ${to}: ${codigo} (expira em ${expiraEm})`);
+        if (process.env.NODE_ENV === 'production') {
+            const error = new Error('Serviço de e-mail não configurado.');
+            error.status = 503;
+            throw error;
+        }
+        logger.warn('email.verificacao.nao_enviado', { reason: 'RESEND_NOT_CONFIGURED' });
         return { enviado: false, modo: 'debug' };
     }
 

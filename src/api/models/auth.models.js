@@ -2,21 +2,6 @@ const db = require('../../config/database');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-async function garantirTabelaVerificacaoEmail() {
-    await db.query(`
-        CREATE TABLE IF NOT EXISTS EmailVerificacoes (
-            id_verificacao INT NOT NULL AUTO_INCREMENT,
-            email VARCHAR(255) NOT NULL,
-            codigo VARCHAR(6) NOT NULL,
-            verificado TINYINT(1) NOT NULL DEFAULT 0,
-            expira_em DATETIME NOT NULL,
-            criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id_verificacao),
-            UNIQUE KEY uk_email_verificacao (email)
-        ) ENGINE=InnoDB
-    `);
-}
-
 function criarErro(mensagem, status = 400) {
     const error = new Error(mensagem);
     error.status = status;
@@ -129,7 +114,6 @@ async function buscarUsuarioPorId(id_usuario) {
 }
 
 module.exports = {
-    garantirTabelaVerificacaoEmail,
     login,
     buscarUsuarioPorId,
     enviarCodigoVerificacaoPorEmail,

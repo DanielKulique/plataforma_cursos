@@ -43,6 +43,26 @@ function applyTheme(theme) {
         body.classList.add('dark-mode');
         body.classList.remove('light-mode');
     }
+
+    updateThemeControl(theme);
+}
+
+/**
+ * Mantem o nome e o estado acessiveis do controle sincronizados.
+ * @param {'light'|'dark'} theme
+ */
+function updateThemeControl(theme) {
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (!toggleBtn) return;
+
+    const isDark = theme === 'dark';
+    const currentLabel = isDark ? 'escuro' : 'claro';
+    const nextLabel = isDark ? 'claro' : 'escuro';
+    const accessibleLabel = `Tema atual: ${currentLabel}. Ativar tema ${nextLabel}`;
+
+    toggleBtn.setAttribute('aria-pressed', String(isDark));
+    toggleBtn.setAttribute('aria-label', accessibleLabel);
+    toggleBtn.title = accessibleLabel;
 }
 
 /**

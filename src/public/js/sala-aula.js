@@ -1,264 +1,328 @@
-import { clearToken, getCurrentUser, getToken } from './auth.js';
+import { clearToken, getToken } from './auth.js';
+import { initSessionUI } from './session-ui.js';
+import { buscarQuestionarioDisponivel } from './questionario-disponibilidade.js';
+import {
+    createAcademicState,
+    formatAcademicDate,
+    preferredScrollBehavior,
+    setAcademicBusy,
+    setAcademicMessage
+} from './academic-ui.js';
 
-const statusUsuario = document.getElementById('status-usuario');
-const mensagemSalaAula = document.getElementById('mensagem-sala-aula');
-const tituloTurma = document.getElementById('titulo-turma');
-const nomeCurso = document.getElementById('nome-curso');
-const badgeStatusTurma = document.getElementById('badge-status-turma');
-const progressoTurma = document.getElementById('progresso-turma');
-const periodoTurma = document.getElementById('periodo-turma');
-const cargaHoraria = document.getElementById('carga-horaria');
-const descricaoCurso = document.getElementById('descricao-curso');
-const listaConteudos = document.getElementById('lista-conteudos');
-const linkProva = document.getElementById('link-prova');
-const linkExercicios = document.getElementById('link-exercicios');
-const btnLogout = document.getElementById('btn-logout');
+const $ = (id) => document.getElementById(id);
+const idTurma = Number(new URLSearchParams(location.search).get('id_turma'));
+const icones = { VIDEO: '🎥', TEXTO: '📄', PDF: '📕', LINK: '🔗', ATIVIDADE: '✏️' };
+let conteudos = [];
+let modulos = [];
+let selecionado = null;
+let filtro = 'todos';
+let progressoPercentual = null;
+let salvandoConclusao = false;
 
-const params = new URLSearchParams(window.location.search);
-const idTurma = Number(params.get('id_turma'));
-const modoTeste = params.get('demo') === '1';
-
-const MOCK_TURMA = {
-    id_turma: 101,
-    nome_turma: 'Turma Demo Front-end',
-    nome_curso: 'Curso Demo de Interface',
-    status_turma: 'EM ANDAMENTO',
-    progresso_percentual: 45,
-    data_inicio: '2026-01-10',
-    data_fim: '2026-03-30',
-    carga_horaria: 40,
-    descricao_curso: 'Ambiente de aula em modo de demonstração para validar o fluxo sem autenticação.'
-};
-
-function formatarStatusTurma(status) {
-    const texto = String(status || '').trim();
-    const upper = texto.toUpperCase();
-
-    if (upper.includes('ABERTA')) return 'badge badge--success';
-    if (upper.includes('ANDAMENTO')) return 'badge badge--warning';
-    if (upper.includes('ENCERRADA') || upper.includes('CONCLUÍDA') || upper.includes('CANCELADA')) {
-        return 'badge badge--danger';
-    }
-
-    return 'badge badge--neutral';
+function texto(elemento, valor) {
+    if (elemento) elemento.textContent = String(valor ?? '');
 }
 
-function formatarData(valor) {
-    if (!valor) return '--';
-
-    const data = new Date(valor);
-    if (Number.isNaN(data.getTime())) {
-        return '--';
-    }
-
-    return data.toLocaleDateString('pt-BR');
-}
-
-function montarPeriodo(dataInicio, dataFim) {
-    const inicio = formatarData(dataInicio);
-    const fim = formatarData(dataFim);
-
-    if (inicio === '--' && fim === '--') return 'Período não informado';
-    if (inicio !== '--' && fim === '--') return `Início em ${inicio}`;
-    if (inicio === '--' && fim !== '--') return `Até ${fim}`;
-    return `${inicio} até ${fim}`;
-}
-
-function montarConteudosPadrao(nomeTurma = '') {
-    return [
-        {
-            titulo: 'Módulo 1 — Boas-vindas e visão geral',
-            descricao: `Introdução à dinâmica da turma ${nomeTurma || ''}.`.trim()
-        },
-        {
-            titulo: 'Módulo 2 — Conteúdo principal da aula',
-            descricao: 'Material teórico e exemplos práticos para consolidar o aprendizado.'
-        },
-        {
-            titulo: 'Módulo 3 — Preparação para avaliações',
-            descricao: 'Revisão guiada para prova e lista de exercícios.'
-        }
+async function configurarQuestionarios(token) {
+    const avaliacoes = [
+        { tipo: 'exercicio', link: $('link-exercicios') },
+        { tipo: 'prova', link: $('link-prova') }
     ];
-}
-
-function renderizarConteudos(nomeTurma) {
-    if (!listaConteudos) return;
-
-    const conteudos = montarConteudosPadrao(nomeTurma);
-    listaConteudos.innerHTML = '';
-
-    conteudos.forEach((conteudo) => {
-        const item = document.createElement('li');
-        item.className = 'module-item';
-        item.innerHTML = `
-            <h4>${conteudo.titulo}</h4>
-            <p>${conteudo.descricao}</p>
-        `;
-        listaConteudos.appendChild(item);
+    avaliacoes.forEach(({ link }) => {
+        link.hidden = true;
+        link.removeAttribute('href');
     });
-}
+    setAcademicMessage(
+        $('mensagem-questionarios'),
+        'Verificando questionários disponíveis...',
+        'info'
+    );
 
-function configurarLinksAvaliacao(id) {
-    const sufixoDemo = modoTeste ? '&demo=1' : '';
+    const verificacoes = await Promise.allSettled(avaliacoes.map(async (avaliacao) => ({
+        ...avaliacao,
+        questionario: await buscarQuestionarioDisponivel({
+            idTurma,
+            tipo: avaliacao.tipo,
+            token
+        })
+    })));
+    const falhas = verificacoes.filter(({ status }) => status === 'rejected');
+    const sessaoExpirada = falhas.find(({ reason }) => reason?.status === 401);
+    if (sessaoExpirada) throw sessaoExpirada.reason;
 
-    if (linkProva) {
-        linkProva.href = `/questionario.html?tipo=prova&id_turma=${encodeURIComponent(id)}${sufixoDemo}`;
-    }
-    if (linkExercicios) {
-        linkExercicios.href = `/questionario.html?tipo=exercicio&id_turma=${encodeURIComponent(id)}${sufixoDemo}`;
-    }
-}
-
-function preencherDadosTurma(turma) {
-    if (tituloTurma) tituloTurma.textContent = turma.nome_turma || 'Turma';
-    if (nomeCurso) nomeCurso.textContent = `Curso: ${turma.nome_curso || 'Curso não informado'}`;
-
-    if (badgeStatusTurma) {
-        badgeStatusTurma.className = formatarStatusTurma(turma.status_turma);
-        badgeStatusTurma.textContent = turma.status_turma || 'Status não informado';
-    }
-
-    if (progressoTurma) {
-        const progresso = Number(turma.progresso_percentual);
-        progressoTurma.textContent = Number.isNaN(progresso) ? '--' : `${progresso}%`;
-    }
-
-    if (periodoTurma) {
-        periodoTurma.textContent = montarPeriodo(turma.data_inicio, turma.data_fim);
-    }
-
-    if (cargaHoraria) {
-        cargaHoraria.textContent = turma.carga_horaria ? `${turma.carga_horaria}h` : '--';
-    }
-
-    if (descricaoCurso) {
-        descricaoCurso.innerHTML = `<strong>Descrição:</strong> ${turma.descricao_curso || 'Conteúdo sem descrição cadastrada.'}`;
-    }
-
-    if (mensagemSalaAula) {
-        mensagemSalaAula.textContent = 'Acesso liberado para a sala de aula da turma selecionada.';
-    }
-
-    renderizarConteudos(turma.nome_turma);
-    configurarLinksAvaliacao(turma.id_turma);
-}
-
-function exibirErro(mensagem) {
-    if (mensagemSalaAula) {
-        mensagemSalaAula.textContent = mensagem;
-    }
-
-    if (listaConteudos) {
-        listaConteudos.innerHTML = `<li class="module-item error-state">${mensagem}</li>`;
-    }
-
-    if (linkProva) {
-        linkProva.href = modoTeste ? '/sala-virtual.html?demo=1' : '/sala-virtual.html';
-    }
-    if (linkExercicios) {
-        linkExercicios.href = modoTeste ? '/sala-virtual.html?demo=1' : '/sala-virtual.html';
-    }
-}
-
-function configurarLogout() {
-    if (!btnLogout) return;
-
-    if (modoTeste) {
-        btnLogout.textContent = 'Encerrar teste';
-    }
-
-    btnLogout.addEventListener('click', () => {
-        clearToken();
-        window.location.href = modoTeste ? '/index.html' : '/login.html';
+    const disponiveis = verificacoes
+        .filter(({ status }) => status === 'fulfilled')
+        .map(({ value }) => value)
+        .filter(({ questionario }) => Boolean(questionario));
+    disponiveis.forEach(({ tipo, link }) => {
+        link.href = `/questionario.html?tipo=${tipo}&id_turma=${idTurma}`;
+        link.hidden = false;
     });
+    setAcademicMessage(
+        $('mensagem-questionarios'),
+        falhas.length
+            ? 'Não foi possível verificar todos os questionários. Tente recarregar a página.'
+            : disponiveis.length
+            ? `${disponiveis.length} questionário${disponiveis.length === 1 ? '' : 's'} disponível${disponiveis.length === 1 ? '' : 'is'}.`
+            : 'Nenhum questionário ativo está disponível para esta turma.',
+        falhas.length ? 'error' : 'info'
+    );
 }
 
-async function carregarSalaAula() {
-    if (modoTeste) {
-        if (statusUsuario) {
-            statusUsuario.textContent = 'Modo teste ativo: acesso de demonstração sem login.';
-        }
+function atualizarResumo() {
+    const concluidos = conteudos.filter((conteudo) => Boolean(conteudo.concluido)).length;
+    const calculado = conteudos.length ? Math.round((concluidos / conteudos.length) * 100) : 0;
+    const percentual = progressoPercentual === null ? calculado : progressoPercentual;
+    texto($('conteudos-concluidos'), concluidos);
+    texto($('total-conteudos'), conteudos.length);
+    texto($('progresso-label'), `${percentual}%`);
+    $('progress-bar-fill').style.width = `${percentual}%`;
+    $('progress-bar').setAttribute('aria-valuenow', String(percentual));
+    texto($('progresso-turma'), `${percentual}%`);
+}
 
-        const turmaDemo = Number.isInteger(idTurma) && idTurma > 0
-            ? { ...MOCK_TURMA, id_turma: idTurma }
-            : MOCK_TURMA;
+function criarItemConteudo(conteudo) {
+    const item = document.createElement('li');
+    item.className = 'module-item';
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.className = 'module-item-action';
+    action.setAttribute('aria-label', `Abrir conteúdo: ${conteudo.titulo}`);
+    const icone = document.createElement('span');
+    icone.className = 'module-item-icon';
+    icone.setAttribute('aria-hidden', 'true');
+    texto(icone, icones[conteudo.tipo] || '📎');
 
-        preencherDadosTurma(turmaDemo);
+    const corpo = document.createElement('div');
+    corpo.className = 'module-item-body';
+    const titulo = document.createElement('h4');
+    texto(titulo, conteudo.titulo);
+    const descricao = document.createElement('p');
+    texto(descricao, [
+        conteudo.descricao,
+        conteudo.duracao_minutos ? `${conteudo.duracao_minutos} min` : null
+    ].filter(Boolean).join(' · '));
+    corpo.append(titulo, descricao);
 
-        if (mensagemSalaAula) {
-            mensagemSalaAula.textContent = 'Dados simulados carregados com sucesso para validação da sala de aula.';
-        }
+    const status = document.createElement('span');
+    status.className = `module-item-status ${
+        conteudo.concluido ? 'concluido' : conteudo.em_andamento ? 'em-andamento' : 'nao-iniciado'
+    }`;
+    texto(status, conteudo.concluido ? 'Concluído' : conteudo.em_andamento ? 'Em andamento' : 'Não iniciado');
+    action.append(icone, corpo, status);
+    action.addEventListener('click', () => abrirConteudo(conteudo));
+    item.append(action);
+    return item;
+}
 
+function renderizar() {
+    const lista = $('lista-conteudos');
+    lista.replaceChildren();
+    setAcademicBusy(lista, false);
+    const visiveis = conteudos.filter(
+        (conteudo) => filtro === 'todos' || conteudo.tipo.toLowerCase() === filtro
+    );
+    if (!visiveis.length) {
+        lista.appendChild(createAcademicState(
+            conteudos.length
+                ? 'Nenhum conteúdo corresponde ao filtro.'
+                : 'Nenhum conteúdo disponível.',
+            'empty'
+        ));
+        atualizarResumo();
         return;
     }
 
-    const token = getToken();
-
-    if (!token) {
-        window.location.href = '/login.html?motivo=auth';
-        return;
+    for (const modulo of modulos) {
+        const itens = visiveis.filter(
+            (conteudo) => Number(conteudo.id_modulo) === Number(modulo.id_modulo)
+        );
+        if (!itens.length) continue;
+        const cabecalho = document.createElement('li');
+        cabecalho.className = 'module-group-title';
+        const titulo = document.createElement('strong');
+        texto(titulo, modulo.titulo);
+        const descricao = document.createElement('span');
+        texto(descricao, modulo.descricao || '');
+        cabecalho.append(titulo, descricao);
+        lista.appendChild(cabecalho);
+        itens.forEach((conteudo) => lista.appendChild(criarItemConteudo(conteudo)));
     }
 
-    if (!Number.isInteger(idTurma) || idTurma <= 0) {
-        window.location.href = '/sala-virtual.html?motivo=turma_invalida';
-        return;
+    const semModulo = visiveis.filter((conteudo) => !conteudo.id_modulo);
+    if (semModulo.length) {
+        const cabecalho = document.createElement('li');
+        cabecalho.className = 'module-group-title';
+        texto(cabecalho, 'Conteúdos complementares');
+        lista.appendChild(cabecalho);
+        semModulo.forEach((conteudo) => lista.appendChild(criarItemConteudo(conteudo)));
     }
+    atualizarResumo();
+}
 
+async function salvarProgresso(conteudo, status) {
+    const response = await fetch(`/api/conteudos/${conteudo.id_conteudo}/progresso`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ status })
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.mensagem || 'Não foi possível salvar o progresso.');
+
+    conteudo.status_progresso = body.status;
+    conteudo.concluido = body.status === 'CONCLUIDO';
+    conteudo.em_andamento = body.status === 'INICIADO';
+    progressoPercentual = Number(body.progresso_percentual);
+    renderizar();
+    return body;
+}
+
+function fecharVisualizadores() {
+    $('player-video-container').hidden = true;
+    $('video-player').src = '';
+    $('conteudo-texto-container').hidden = true;
+    texto($('conteudo-corpo'), '');
+}
+
+async function abrirConteudo(conteudo) {
+    selecionado = conteudo;
+    setAcademicMessage($('mensagem-sala-aula'), 'Abrindo conteúdo...', 'info');
     try {
-        const usuario = await getCurrentUser();
-
-        if (!usuario) {
-            window.location.href = '/login.html?motivo=auth';
-            return;
+        if (!conteudo.concluido) await salvarProgresso(conteudo, 'INICIADO');
+        fecharVisualizadores();
+        const urlSegura = conteudo.url
+            ? window.SecurityUtils?.toSafeUrl(conteudo.url, { baseUrl: location.origin })
+            : null;
+        if (conteudo.url && !urlSegura) {
+            throw new Error('A URL deste conteúdo não pertence a uma origem permitida.');
         }
-
-        if (String(usuario.tipo || '').toUpperCase() !== 'ALUNO') {
-            window.location.href = '/index.html?motivo=nao_autorizado';
-            return;
+        if (conteudo.tipo === 'VIDEO' && urlSegura) {
+            $('player-video-container').hidden = false;
+            $('video-player').src = urlSegura;
+            texto($('video-nome-conteudo'), conteudo.titulo);
+            $('player-video-container').scrollIntoView({
+                behavior: preferredScrollBehavior()
+            });
+        } else if (urlSegura) {
+            window.open(urlSegura, '_blank', 'noopener,noreferrer');
+        } else if (conteudo.corpo) {
+            $('conteudo-texto-container').hidden = false;
+            texto($('conteudo-texto-titulo'), conteudo.titulo);
+            texto($('conteudo-corpo'), conteudo.corpo);
+            $('conteudo-texto-container').scrollIntoView({
+                behavior: preferredScrollBehavior()
+            });
+        } else {
+            throw new Error('Este conteúdo não possui material disponível para abertura.');
         }
-
-        if (statusUsuario) {
-            statusUsuario.textContent = `Aluno logado: ${usuario.nome_completo}`;
-        }
-
-        const response = await fetch('/api/matriculas/minha-sala', {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        if (response.status === 401) {
-            clearToken();
-            window.location.href = '/login.html?motivo=auth';
-            return;
-        }
-
-        if (response.status === 403) {
-            window.location.href = '/index.html?motivo=nao_autorizado';
-            return;
-        }
-
-        if (!response.ok) {
-            throw new Error('Não foi possível carregar os dados da sala de aula.');
-        }
-
-        const payload = await response.json();
-        const turmas = Array.isArray(payload.turmas) ? payload.turmas : [];
-        const turmaSelecionada = turmas.find((turma) => Number(turma.id_turma) === idTurma);
-
-        if (!turmaSelecionada) {
-            exibirErro('Você não possui acesso ativo para esta turma.');
-            return;
-        }
-
-        preencherDadosTurma(turmaSelecionada);
+        texto($('status-conteudo'), conteudo.concluido ? 'Concluído' : 'Em andamento');
+        setAcademicMessage(
+            $('mensagem-sala-aula'),
+            'Conteúdo aberto e progresso salvo.',
+            'success'
+        );
     } catch (error) {
-        console.error('Erro ao carregar sala de aula:', error);
-        exibirErro('Erro ao carregar sala de aula. Tente novamente.');
+        setAcademicMessage($('mensagem-sala-aula'), error.message, 'error');
     }
 }
 
-window.addEventListener('load', () => {
-    configurarLogout();
-    carregarSalaAula();
+$('btn-marcar-concluido').addEventListener('click', async () => {
+    if (!selecionado || salvandoConclusao) return;
+    salvandoConclusao = true;
+    const button = $('btn-marcar-concluido');
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    const idleLabel = button.textContent;
+    button.textContent = 'Salvando conclusão...';
+    try {
+        await salvarProgresso(selecionado, 'CONCLUIDO');
+        setAcademicMessage($('mensagem-sala-aula'), 'Conteúdo concluído.', 'success');
+    } catch (error) {
+        setAcademicMessage($('mensagem-sala-aula'), error.message, 'error');
+    } finally {
+        salvandoConclusao = false;
+        button.disabled = false;
+        button.setAttribute('aria-busy', 'false');
+        button.textContent = idleLabel;
+    }
+});
+$('btn-fechar-video').addEventListener('click', fecharVisualizadores);
+$('btn-fechar-texto').addEventListener('click', fecharVisualizadores);
+document.querySelectorAll('.filter-chip').forEach((chip) => chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach((item) => {
+        item.classList.remove('active');
+        item.setAttribute('aria-pressed', 'false');
+    });
+    chip.classList.add('active');
+    chip.setAttribute('aria-pressed', 'true');
+    filtro = chip.dataset.filtro;
+    renderizar();
+}));
+
+window.addEventListener('load', async () => {
+    const session = await initSessionUI({ requiredRoles: ['ALUNO'] });
+    if (session.state !== 'authenticated') return;
+    if (!Number.isInteger(idTurma) || idTurma <= 0) {
+        location.href = '/sala-virtual.html?motivo=turma_invalida';
+        return;
+    }
+    try {
+        texto($('status-usuario'), session.user.nome_completo);
+        setAcademicBusy($('lista-conteudos'), true);
+        const headers = { Authorization: `Bearer ${getToken()}` };
+        const [salaResponse, conteudosResponse] = await Promise.all([
+            fetch('/api/matriculas/minha-sala', { headers }),
+            fetch(`/api/turmas/${idTurma}/conteudos`, { headers })
+        ]);
+        const salaBody = await salaResponse.json().catch(() => ({}));
+        const conteudosBody = await conteudosResponse.json().catch(() => ({}));
+        if (!salaResponse.ok) throw new Error(salaBody.mensagem || salaBody.message || 'Falha ao carregar a sala virtual.');
+        if (!conteudosResponse.ok) throw new Error(conteudosBody.mensagem || 'Acesso negado à turma.');
+
+        const turma = (salaBody.turmas || []).find((item) => Number(item.id_turma) === idTurma);
+        if (!turma) throw new Error('A turma não está disponível na sua sala virtual.');
+        texto($('titulo-turma'), turma.nome_turma);
+        texto($('nome-curso'), turma.nome_curso);
+        texto($('badge-status-turma'), turma.status_turma);
+        texto($('carga-horaria'), `${turma.carga_horaria}h`);
+        texto($('descricao-curso'), turma.descricao_curso || '');
+        const periodo = [turma.data_inicio, turma.data_fim]
+            .filter(Boolean)
+            .map(formatAcademicDate)
+            .join(' — ');
+        texto($('periodo-turma'), periodo || 'Não informado');
+        const statusClass = String(turma.status_turma || '').toUpperCase() === 'ABERTA'
+            ? 'badge--success'
+            : String(turma.status_turma || '').toUpperCase() === 'FECHADA'
+                ? 'badge--warning'
+                : String(turma.status_turma || '').toUpperCase() === 'ENCERRADA'
+                    ? 'badge--danger'
+                    : 'badge--neutral';
+        $('badge-status-turma').className = `badge ${statusClass}`;
+        progressoPercentual = Number(turma.progresso_percentual) || 0;
+        conteudos = Array.isArray(conteudosBody.conteudos) ? conteudosBody.conteudos : [];
+        modulos = Array.isArray(conteudosBody.modulos) ? conteudosBody.modulos : [];
+        renderizar();
+        await configurarQuestionarios(getToken());
+        setAcademicMessage(
+            $('mensagem-sala-aula'),
+            conteudos.length
+                ? 'Módulos e conteúdos carregados do banco.'
+                : 'A turma ainda não possui conteúdos publicados.',
+            'info'
+        );
+    } catch (error) {
+        if (error.status === 401) {
+            clearToken();
+            location.href = '/login.html?motivo=auth';
+            return;
+        }
+        setAcademicMessage($('mensagem-sala-aula'), error.message, 'error');
+        conteudos = [];
+        modulos = [];
+        renderizar();
+    }
 });

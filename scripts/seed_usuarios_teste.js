@@ -8,7 +8,7 @@
  * - 1 número
  * - 1 símbolo especial
  * 
- * Senha definida: Plataforma@2026
+ * Senha carregada de CANONICAL_SEED_PASSWORD, sem fallback.
  * 
  * Uso: node scripts/seed_usuarios_teste.js
  */
@@ -17,6 +17,12 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { assertDevelopmentDatabase } = require('./test_database_safety');
+assertDevelopmentDatabase(process.env);
+const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
+if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
+    throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
+}
 
 // Cores para output no console
 const cores = {
@@ -31,8 +37,6 @@ function log(cor, mensagem) {
     console.log(`${cor}${mensagem}${cores.reset}`);
 }
 
-// Senha forte que atende todos os requisitos
-const SENHA_FORTE = 'Plataforma@2026';
 
 async function limparUsuariosTeste() {
     log(cores.amarelo, '\n=== LIMPANDO USUÁRIOS DE TESTE ===');
@@ -96,8 +100,7 @@ async function criarUsuariosTeste() {
     log(cores.cyan, '║   SEED - USUÁRIOS DE TESTE COM SENHA FORTE               ║');
     log(cores.cyan, '╚════════════════════════════════════════════════════════╝\n');
 
-    log(cores.amarelo, 'Dados dos Usuários:');
-    log(cores.cyan, `  Senha: ${SENHA_FORTE}`);
+    log(cores.amarelo, 'Validação da senha de teste:');
     log(cores.cyan, '  Requisitos atendidos:');
     log(cores.cyan, '    ✓ Mínimo 8 caracteres');
     log(cores.cyan, '    ✓ 1 letra maiúscula');
@@ -115,7 +118,7 @@ async function criarUsuariosTeste() {
     try {
         // Gerar hash da senha forte
         log(cores.amarelo, 'Gerando hash da senha forte...');
-        const senhaHash = await bcrypt.hash(SENHA_FORTE, 10);
+        const senhaHash = await bcrypt.hash(TEST_ACCOUNT_PASSWORD, 10);
         log(cores.verde, '✓ Hash gerado\n');
 
         // Criar ADMIN
@@ -125,7 +128,7 @@ async function criarUsuariosTeste() {
              VALUES (?, ?, ?, ?, ?, 'ADMIN')`,
             ['Administrador do Sistema', '00000000000', 'admin@teste.com', senhaHash, '11900000000']
         );
-        log(cores.verde, `  ✓ ADMIN criado: admin@teste.com (ID: ${adminResult.insertId})`);
+        log(cores.verde, `  ✓ ADMIN criado (ID: ${adminResult.insertId})`);
 
         // Criar PROFESSORES
         log(cores.amarelo, '\nCriando PROFESSORES...');
@@ -141,7 +144,7 @@ async function criarUsuariosTeste() {
                  VALUES (?, ?, ?, ?, ?, 'PROFESSOR')`,
                 [prof.nome, prof.cpf, prof.email, senhaHash, prof.tel]
             );
-            log(cores.verde, `  ✓ Professor criado: ${prof.email} (ID: ${result.insertId})`);
+            log(cores.verde, `  ✓ Professor criado (ID: ${result.insertId})`);
         }
 
         // Criar ALUNOS
@@ -160,30 +163,11 @@ async function criarUsuariosTeste() {
                  VALUES (?, ?, ?, ?, ?, 'ALUNO')`,
                 [aluno.nome, aluno.cpf, aluno.email, senhaHash, aluno.tel]
             );
-            log(cores.verde, `  ✓ Aluno criado: ${aluno.email} (ID: ${result.insertId})`);
+            log(cores.verde, `  ✓ Aluno criado (ID: ${result.insertId})`);
         }
 
         // Resumo final
-        log(cores.cyan, '\n┌─────────────────────────────────────────────────────────┐');
-        log(cores.cyan, '│              DADOS DE ACESSO PARA TESTE                 │');
-        log(cores.cyan, '├─────────────────────────────────────────────────────────┤');
-        log(cores.cyan, `│  SENHA: ${SENHA_FORTE.padEnd(45)} │`);
-        log(cores.cyan, '├─────────────────────────────────────────────────────────┤');
-        log(cores.cyan, '│  ADMIN:                                                 │');
-        log(cores.cyan, '│    - admin@teste.com                                    │');
-        log(cores.cyan, '├─────────────────────────────────────────────────────────┤');
-        log(cores.cyan, '│  PROFESSORES:                                           │');
-        log(cores.cyan, '│    - carlos.silva@plataforma.com                        │');
-        log(cores.cyan, '│    - ana.costa@plataforma.com                           │');
-        log(cores.cyan, '│    - roberto.martins@plataforma.com                     │');
-        log(cores.cyan, '├─────────────────────────────────────────────────────────┤');
-        log(cores.cyan, '│  ALUNOS:                                                │');
-        log(cores.cyan, '│    - joao@email.com                                     │');
-        log(cores.cyan, '│    - maria@email.com                                    │');
-        log(cores.cyan, '│    - lucas@email.com                                    │');
-        log(cores.cyan, '│    - isabela@email.com                                  │');
-        log(cores.cyan, '│    - gabriel@email.com                                  │');
-        log(cores.cyan, '└─────────────────────────────────────────────────────────┘\n');
+        log(cores.cyan, '\n✓ Usuários de teste criados. Credenciais e dados pessoais não são exibidos nos logs.\n');
 
         log(cores.amarelo, '⚠ IMPORTANTE:');
         log(cores.reset, '   - Esta senha atende todos os requisitos de segurança');

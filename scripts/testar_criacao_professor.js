@@ -4,6 +4,12 @@
 
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { assertDevelopmentDatabase } = require('./test_database_safety');
+assertDevelopmentDatabase(process.env);
+const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
+if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
+    throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
+}
 
 const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
 
@@ -30,11 +36,8 @@ async function testarCriacaoProfessor() {
     const cpf = String(30000000000 + (sufixo % 89999999999)).slice(0, 11);
     const email = `prof.cadastro.${sufixo}@example.com`;
 
-    console.log('Dados do usuário:');
-    console.log(`  Nome: Professor Cadastro Teste`);
-    console.log(`  CPF: ${cpf}`);
-    console.log(`  Email: ${email}`);
-    console.log(`  Tipo: PROFESSOR\n`);
+    console.log('Payload de teste preparado (dados pessoais omitidos do log).');
+    console.log('  Tipo: PROFESSOR\n');
 
     const { status, data, error } = await fazerRequisicao(`${BASE_URL}/usuarios`, {
         method: 'POST',
@@ -42,7 +45,7 @@ async function testarCriacaoProfessor() {
             nome_completo: 'Professor Cadastro Teste',
             cpf: cpf,
             email: email,
-            senha: 'SenhaForte123!',
+            senha: TEST_ACCOUNT_PASSWORD,
             telefone: '11999999999',
             tipo: 'PROFESSOR'
         })
@@ -55,13 +58,10 @@ async function testarCriacaoProfessor() {
     }
 
     console.log(`Status HTTP: ${status}`);
-    console.log(`Resposta: ${JSON.stringify(data, null, 2)}\n`);
 
     if (status === 201 && data.id_usuario) {
         console.log('✅ SUCESSO! Usuário PROFESSOR criado com sucesso!');
         console.log(`   ID: ${data.id_usuario}`);
-        console.log(`   Nome: ${data.nome_completo}`);
-        console.log(`   Email: ${data.email}`);
         console.log(`   Tipo: ${data.tipo}`);
         return true;
     } else if (status === 400) {
@@ -83,10 +83,7 @@ async function testarCriacaoAluno() {
     const cpf = String(40000000000 + (sufixo % 89999999999)).slice(0, 11);
     const email = `aluno.cadastro.${sufixo}@example.com`;
 
-    console.log('Dados do usuário (sem especificar tipo - deve ser ALUNO):');
-    console.log(`  Nome: Aluno Cadastro Teste`);
-    console.log(`  CPF: ${cpf}`);
-    console.log(`  Email: ${email}\n`);
+    console.log('Payload de teste preparado sem papel explícito (dados pessoais omitidos do log).\n');
 
     const { status, data, error } = await fazerRequisicao(`${BASE_URL}/usuarios`, {
         method: 'POST',
@@ -94,7 +91,7 @@ async function testarCriacaoAluno() {
             nome_completo: 'Aluno Cadastro Teste',
             cpf: cpf,
             email: email,
-            senha: 'SenhaForte123!',
+            senha: TEST_ACCOUNT_PASSWORD,
             telefone: '11988888888'
             // tipo não especificado - deve ser ALUNO por padrão
         })
@@ -106,7 +103,6 @@ async function testarCriacaoAluno() {
     }
 
     console.log(`Status HTTP: ${status}`);
-    console.log(`Resposta: ${JSON.stringify(data, null, 2)}\n`);
 
     if (status === 201 && data.id_usuario && data.tipo === 'ALUNO') {
         console.log('✅ SUCESSO! Usuário ALUNO criado com sucesso!');
@@ -135,7 +131,7 @@ async function testarTipoInvalido() {
             nome_completo: 'Usuário Inválido Teste',
             cpf: cpf,
             email: email,
-            senha: 'SenhaForte123!',
+            senha: TEST_ACCOUNT_PASSWORD,
             tipo: 'INVALIDO'
         })
     });
@@ -146,7 +142,6 @@ async function testarTipoInvalido() {
     }
 
     console.log(`Status HTTP: ${status}`);
-    console.log(`Resposta: ${JSON.stringify(data, null, 2)}\n`);
 
     if (status === 400) {
         console.log('✅ SUCESSO! Validação funcionou - tipo inválido rejeitado');

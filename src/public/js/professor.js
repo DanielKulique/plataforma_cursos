@@ -1,37 +1,66 @@
-import { clearToken, getCurrentUser, getToken, requireRole } from './auth.js';
+import { clearToken, getToken } from './auth.js';
+import { initSessionUI } from './session-ui.js';
+import {
+    createAcademicState,
+    formatAcademicDate,
+    setAcademicBusy,
+    setAcademicMessage
+} from './academic-ui.js';
 
 const statusUsuario = document.getElementById('status-usuario');
 const mensagemProfessor = document.getElementById('mensagem-professor');
 const listaTurmas = document.getElementById('lista-minhas-turmas');
-const btnLogout = document.getElementById('btn-logout');
-const linkSala = document.getElementById('link-sala');
 
 function formatarStatusTurma(status) {
     const texto = String(status || '').trim();
     const upper = texto.toUpperCase();
 
-    if (upper.includes('ABERTA')) return 'badge badge--success';
-    if (upper.includes('ANDAMENTO')) return 'badge badge--warning';
-    if (upper.includes('ENCERRADA') || upper.includes('CANCELADA')) return 'badge badge--danger';
+    if (upper === 'ABERTA') return 'badge badge--success';
+    if (upper === 'FECHADA') return 'badge badge--warning';
+    if (upper === 'ENCERRADA') return 'badge badge--danger';
     return 'badge badge--neutral';
 }
 
-function configurarLogout() {
-    if (!btnLogout) return;
+function rotularStatusTurma(status) {
+    const valor = String(status || '').toUpperCase();
+    const labels = {
+        ABERTA: 'Inscrições abertas',
+        FECHADA: 'Inscrições fechadas',
+        ENCERRADA: 'Turma encerrada'
+    };
+    return labels[valor] || status || 'Status não informado';
+}
 
-    btnLogout.addEventListener('click', () => {
-        clearToken();
-        window.location.href = '/login.html';
-    });
+function criarElemento(tag, className = '', text = '') {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = String(text ?? '');
+    return element;
+}
+
+function criarLinhaMeta(label, value) {
+    const line = criarElemento('p', 'meta-line');
+    const strong = criarElemento('strong', '', `${label}: `);
+    line.append(strong, document.createTextNode(String(value ?? '')));
+    return line;
+}
+
+function mostrarEstadoLista(message, className) {
+    const type = className.includes('error')
+        ? 'error'
+        : className.includes('loading') ? 'loading' : 'empty';
+    listaTurmas.replaceChildren(createAcademicState(message, type));
+    setAcademicBusy(listaTurmas, type === 'loading');
 }
 
 function renderizarTurmas(turmas = []) {
     if (!listaTurmas) return;
 
-    listaTurmas.innerHTML = '';
+    listaTurmas.replaceChildren();
+    setAcademicBusy(listaTurmas, false);
 
     if (turmas.length === 0) {
-        listaTurmas.innerHTML = '<li class="card-item empty-state">Você não está atribuído a nenhuma turma no momento.</li>';
+        mostrarEstadoLista('Você não está atribuído a nenhuma turma no momento.', 'empty-state');
         return;
     }
 
@@ -39,60 +68,44 @@ function renderizarTurmas(turmas = []) {
         const item = document.createElement('li');
         item.className = 'card-item';
 
-        item.innerHTML = `
-            <div class="card-item__header">
-                <span class="card-item__title">${turma.nome_turma}</span>
-                <span class="${formatarStatusTurma(turma.status)}">${turma.status || 'Status não informado'}</span>
-            </div>
-            <div class="card-item__meta-grid">
-                <p class="meta-line"><strong>Curso:</strong> ${turma.nome_curso || 'N/A'}</p>
-                <p class="meta-line"><strong>Alunos matriculados:</strong> ${turma.total_alunos || 0}</p>
-                <p class="meta-line"><strong>Início:</strong> ${turma.data_inicio ? new Date(turma.data_inicio).toLocaleDateString('pt-BR') : 'N/A'}</p>
-            </div>
-            <p class="card-item__description">${turma.descricao_curso || 'Curso sem descrição cadastrada.'}</p>
-            <div class="card-actions">
-                <a class="action-button" href="/professor-turma.html?id_turma=${encodeURIComponent(turma.id_turma)}">
-                    Gerenciar turma
-                </a>
-            </div>
-        `;
+        const header = criarElemento('div', 'card-item__header');
+        const title = criarElemento('span', 'card-item__title', turma.nome_turma || 'Turma sem nome');
+        const status = criarElemento(
+            'span',
+            formatarStatusTurma(turma.status),
+            rotularStatusTurma(turma.status)
+        );
+        header.append(title, status);
+
+        const meta = criarElemento('div', 'card-item__meta-grid');
+        const dataInicio = formatAcademicDate(turma.data_inicio);
+        meta.append(
+            criarLinhaMeta('Curso', turma.nome_curso || 'N/A'),
+            criarLinhaMeta('Alunos matriculados', Number(turma.total_alunos) || 0),
+            criarLinhaMeta('Início', dataInicio)
+        );
+
+        const description = criarElemento('p', 'card-item__description', turma.descricao_curso || 'Curso sem descrição cadastrada.');
+        const actions = criarElemento('div', 'card-actions');
+        const manage = criarElemento('a', 'action-button', 'Gerenciar turma');
+        manage.href = `/professor-turma.html?id_turma=${encodeURIComponent(turma.id_turma)}`;
+        actions.append(manage);
+        item.append(header, meta, description, actions);
 
         listaTurmas.appendChild(item);
     });
 }
 
-async function carregarTurmasProfessor() {
+async function carregarTurmasProfessor(usuario) {
     const token = getToken();
-    if (!token) {
-        window.location.href = '/login.html?motivo=auth';
-        return;
-    }
 
     try {
         if (listaTurmas) {
-            listaTurmas.innerHTML = '<li class="card-item loading-state">Carregando suas turmas...</li>';
-        }
-
-        const usuario = await getCurrentUser();
-
-        if (!usuario) {
-            window.location.href = '/login.html?motivo=auth';
-            return;
-        }
-
-        // Verificar se o usuário é professor
-        if (String(usuario.tipo || '').toUpperCase() !== 'PROFESSOR') {
-            window.location.href = '/index.html?motivo=nao_autorizado';
-            return;
+            mostrarEstadoLista('Carregando suas turmas...', 'loading-state');
         }
 
         if (statusUsuario) {
             statusUsuario.textContent = `Professor logado: ${usuario.nome_completo}`;
-        }
-
-        // Mostrar link para sala virtual apenas para alunos
-        if (linkSala) {
-            linkSala.hidden = true;
         }
 
         const response = await fetch('/api/turmas/professor/' + usuario.id_usuario, {
@@ -119,24 +132,26 @@ async function carregarTurmasProfessor() {
         const payload = await response.json();
         renderizarTurmas(Array.isArray(payload.turmas) ? payload.turmas : []);
 
-        if (mensagemProfessor) {
-            const total = Array.isArray(payload.turmas) ? payload.turmas.length : 0;
-            mensagemProfessor.textContent = total > 0 
+        const total = Array.isArray(payload.turmas) ? payload.turmas.length : 0;
+        setAcademicMessage(
+            mensagemProfessor,
+            total > 0
                 ? `Você está responsável por ${total} turma(s).`
-                : 'Você não está atribuído a nenhuma turma no momento.';
-        }
+                : 'Você não está atribuído a nenhuma turma no momento.',
+            'info'
+        );
     } catch (error) {
         console.error('Erro ao carregar turmas do professor:', error);
-        if (mensagemProfessor) {
-            mensagemProfessor.textContent = 'Erro ao carregar turmas. Tente novamente.';
-        }
+        setAcademicMessage(mensagemProfessor, 'Erro ao carregar turmas. Tente novamente.', 'error');
         if (listaTurmas) {
-            listaTurmas.innerHTML = '<li class="card-item error-state">Erro ao carregar turmas do professor.</li>';
+            mostrarEstadoLista('Erro ao carregar turmas do professor.', 'error-state');
         }
     }
 }
 
-window.addEventListener('load', () => {
-    configurarLogout();
-    carregarTurmasProfessor();
+window.addEventListener('load', async () => {
+    const session = await initSessionUI({ requiredRoles: ['PROFESSOR'] });
+    if (session.state === 'authenticated') {
+        await carregarTurmasProfessor(session.user);
+    }
 });

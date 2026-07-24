@@ -193,21 +193,6 @@ export function addUrlParams(url, params = {}) {
     return urlObj.pathname + urlObj.search;
 }
 
-/**
- * Monta link preservando modo demo se ativo
- * @param {string} url - URL base
- * @returns {string}
- */
-export function montarLinkComDemo(url) {
-    const params = getUrlParams();
-    const modoTeste = params.get('demo') === '1';
-
-    if (!modoTeste) return url;
-
-    const separador = url.includes('?') ? '&' : '?';
-    return `${url}${separador}demo=1`;
-}
-
 // ============================================================
 // UI HELPERS
 // ============================================================

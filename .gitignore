@@ -1,11 +1,14 @@
-#ignorar os/as seguintes pastas/arquivos
+# Ignorar os/as seguintes pastas/arquivos
 
 .env
-node_modules/
+.env.*
+!.env.example
+!.env.test.example
 
 # backups / lixo
 *.bak
 *.colorbak
+*.swp
 
 # coverage
 coverage/
@@ -18,3 +21,18 @@ node_modules/
 
 # sistema
 .DS_Store
+
+# tooling local do Codex/agentes
+.agents/
+skills-lock.json
+
+# relatórios e rascunhos mantidos apenas para consulta local
+ANALISE_FRONTEND.md
+ANALISE_INTEGRACAO.md
+DADOS_MOCK_TESTE.md
+FRONTEND_IMPLEMENTACOES.md
+RESUMO_EXECUTIVO.md
+audit-autoria.js
+audit-report.html
+color-report.html
+layout.html

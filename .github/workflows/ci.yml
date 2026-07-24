@@ -15,7 +15,7 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
         ports: ['3306:3306']
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot -p${{ secrets.CI_MYSQL_ROOT_PASSWORD }}"
+          --health-cmd='mysqladmin ping -h 127.0.0.1 -uroot --password="$MYSQL_ROOT_PASSWORD"'
           --health-interval=10s --health-timeout=5s --health-retries=10
     env:
       NODE_ENV: test

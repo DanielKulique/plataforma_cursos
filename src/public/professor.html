@@ -3,84 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Area do Professor — Plágio</title>
+  <title>Área do Professor — Plágio</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layouts.css">
+  <link rel="stylesheet" href="/css/responsive.css">
 </head>
-<body>
+<body class="academic-page academic-page--teacher teacher-dashboard" data-session-state="loading" data-session-protected>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-brand" href="/index.html">
-    <div class="brand-mark">🧠</div>
-    <div class="brand-texts">
-      <span class="brand-name">Plágio</span>
-      <span class="brand-sub">Nao Copie Essa Ideia</span>
+<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+
+<header class="academic-header">
+  <nav class="academic-nav" aria-label="Navegação da área do professor">
+    <a class="nav-brand" href="/index.html" aria-label="Plágio — página inicial">
+      <span class="brand-mark" aria-hidden="true">🧠</span>
+      <span class="brand-texts">
+        <span class="brand-name">Plágio</span>
+        <span class="brand-sub">Não Copie Essa Ideia 4.0</span>
+      </span>
+    </a>
+    <div class="nav-links" id="primary-navigation">
+      <a href="/index.html">Catálogo</a>
+      <a href="/professor.html" aria-current="page" data-session-private data-session-roles="PROFESSOR" hidden>Minhas turmas</a>
+      <a href="/verificador.html">Verificador</a>
     </div>
-  </a>
-
-  <div class="nav-links">
-    <a href="/index.html">Catalogo</a>
-    <a href="/sala-virtual.html" id="link-sala" hidden>Sala Virtual</a>
-    <a href="/professor.html" class="active">Professor</a>
-  </div>
-
-  <div class="nav-right">
-    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
-    <div class="nav-bell" title="Notificações">🔔</div>
-    <div class="avatar" id="avatar">AT</div>
-    <button class="btn-exit" id="btn-logout">Sair</button>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-  <div class="hero-fade"></div>
-
-  <div class="hero-inner">
-    <div class="hero-content">
-      <div class="hero-eyebrow">Area do Professor</div>
-      <h1 class="hero-title">Dashboard de <em>Turmas</em></h1>
-      <p class="hero-sub">Gerencie suas turmas, visualize alunos matriculados e acompanhe o progresso.</p>
+    <div class="nav-right">
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Abrir menu de navegação">
+        <span class="mobile-nav-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="mobile-nav-toggle__label">Menu</span>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema">
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+      </button>
+      <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
     </div>
-  </div>
-</section>
+  </nav>
+</header>
 
-<!-- WELCOME BAR -->
-<div class="welcome-wrap">
-  <div class="welcome-card">
-    <div class="welcome-left">
-      <div class="welcome-icon">👨‍🏫</div>
-      <div class="welcome-info">
-        <strong id="status-usuario">Carregando...</strong>
-        <p id="mensagem-professor"></p>
-      </div>
-      <span class="badge-role">Professor</span>
+<main class="academic-main" id="conteudo-principal" tabindex="-1">
+  <section class="academic-hero" aria-labelledby="titulo-pagina">
+    <div class="academic-hero__content">
+      <p class="academic-eyebrow">Área do professor</p>
+      <h1 id="titulo-pagina">Acompanhamento de turmas</h1>
+      <p>Encontre rapidamente suas turmas, períodos e alunos para continuar o acompanhamento acadêmico.</p>
     </div>
-  </div>
-</div>
+    <div class="academic-trail" aria-hidden="true"><span></span><span></span><span></span></div>
+  </section>
 
-<!-- MAIN -->
-<main>
-  <div class="card">
-    <div class="card-head">
+  <section class="academic-context" aria-label="Identificação do professor">
+    <span class="academic-context__icon" aria-hidden="true">👨‍🏫</span>
+    <div>
+      <strong id="status-usuario">Validando sua sessão...</strong>
+      <p id="mensagem-professor" role="status" aria-live="polite">Carregando suas turmas.</p>
+    </div>
+    <span class="badge badge--accent">Professor</span>
+  </section>
+
+  <section class="academic-panel" aria-labelledby="titulo-turmas">
+    <header class="academic-panel__header">
       <div>
-        <div class="card-title">Minhas Turmas</div>
-        <div class="card-sub">Gerencie as turmas sob sua responsabilidade.</div>
+        <p class="academic-section-label">Responsabilidade acadêmica</p>
+        <h2 id="titulo-turmas">Minhas turmas</h2>
+        <p>Consulte apenas as turmas vinculadas ao seu perfil.</p>
       </div>
-    </div>
-    <div class="card-div"></div>
-    <div class="class-list" id="lista-minhas-turmas">
-      <div class="loading-state">Carregando suas turmas...</div>
-    </div>
-  </div>
+    </header>
+    <ul class="academic-card-list" id="lista-minhas-turmas" aria-busy="true">
+      <li class="ui-state is-loading" role="status">Carregando suas turmas...</li>
+    </ul>
+  </section>
 </main>
 
 <script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/navigation.js"></script>
 <script type="module" src="/js/professor.js"></script>
 </body>
 </html>

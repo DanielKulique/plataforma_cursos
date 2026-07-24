@@ -3,99 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Questionario — Plágio</title>
+  <title>Questionário — Plágio</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layouts.css">
+  <link rel="stylesheet" href="/css/responsive.css">
 </head>
-<body>
+<body class="academic-page academic-page--student quiz-page" data-session-state="loading" data-session-protected>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-brand" href="/index.html">
-    <div class="brand-mark">🧠</div>
-    <div class="brand-texts">
-      <span class="brand-name">Plágio</span>
-      <span class="brand-sub">Nao Copie Essa Ideia</span>
+<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+
+<header class="academic-header">
+  <nav class="academic-nav" aria-label="Navegação do questionário">
+    <a class="nav-brand" href="/index.html" aria-label="Plágio — página inicial">
+      <span class="brand-mark" aria-hidden="true">🧠</span>
+      <span class="brand-texts">
+        <span class="brand-name">Plágio</span>
+        <span class="brand-sub">Não Copie Essa Ideia 4.0</span>
+      </span>
+    </a>
+    <div class="nav-links" id="primary-navigation">
+      <a href="/index.html">Catálogo</a>
+      <a href="/sala-virtual.html" aria-current="page" data-session-private data-session-roles="ALUNO" hidden>Sala Virtual</a>
+      <a href="/verificador.html">Verificador</a>
     </div>
-  </a>
-
-  <div class="nav-links">
-    <a href="/index.html">Catalogo</a>
-    <a href="/sala-virtual.html">Sala Virtual</a>
-  </div>
-
-  <div class="nav-right">
-    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
-    <button class="btn-exit" id="btn-logout">Sair</button>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-  <div class="hero-fade"></div>
-
-  <div class="hero-inner">
-    <div class="hero-content">
-      <div class="hero-eyebrow" id="questionario-tag">Questionario</div>
-      <h1 class="hero-title" id="questionario-title">Carregando ambiente...</h1>
-      <p class="hero-sub" id="questionario-description">Aguarde enquanto preparamos sua avaliacao.</p>
+    <div class="nav-right">
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Abrir menu de navegação">
+        <span class="mobile-nav-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="mobile-nav-toggle__label">Menu</span>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema">
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+      </button>
+      <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
     </div>
-  </div>
-</section>
+  </nav>
+</header>
 
-<!-- WELCOME BAR -->
-<div class="welcome-wrap">
-  <div class="welcome-card">
-    <div class="welcome-left">
-      <div class="welcome-icon">📝</div>
-      <div class="welcome-info">
-        <strong id="status-usuario">Carregando...</strong>
-        <p id="mensagem-questionario"></p>
-      </div>
+<main class="academic-main" id="conteudo-principal" tabindex="-1">
+  <section class="academic-hero" aria-labelledby="questionario-title">
+    <div class="academic-hero__content">
+      <a id="link-voltar-sala" class="academic-back-link" href="/sala-virtual.html">← Voltar para a sala de aula</a>
+      <p class="academic-eyebrow" id="questionario-tag">Questionário</p>
+      <h1 id="questionario-title">Carregando ambiente...</h1>
+      <p id="questionario-description">Aguarde enquanto preparamos sua avaliação.</p>
+      <p class="academic-hero__meta"><span aria-hidden="true">📝</span> <span id="total-questoes-info">-- questões</span></p>
     </div>
-  </div>
-</div>
+    <div class="academic-trail" aria-hidden="true"><span></span><span></span><span></span></div>
+  </section>
 
-<!-- MAIN -->
-<main>
-  <div class="card">
-    <div class="card-head">
+  <section class="academic-context" aria-label="Identificação do aluno e estado do questionário">
+    <span class="academic-context__icon" aria-hidden="true">📝</span>
+    <div>
+      <strong id="status-usuario">Validando sua sessão...</strong>
+      <p id="mensagem-questionario" class="ui-message is-info" role="status" aria-live="polite">Carregando o questionário.</p>
+    </div>
+  </section>
+
+  <section class="academic-panel academic-panel--context" aria-labelledby="contexto-questionario">
+    <header class="academic-panel__header">
       <div>
-        <div class="card-title" id="contexto-questionario">Contexto da turma</div>
-        <div class="card-sub" id="subtitulo-questionario">Carregando dados da turma e do questionario...</div>
+        <p class="academic-section-label">Contexto da avaliação</p>
+        <h2 id="contexto-questionario">Contexto da turma</h2>
+        <p id="subtitulo-questionario">Carregando dados da turma e do questionário...</p>
       </div>
-    </div>
-    <div class="card-div"></div>
+    </header>
+  </section>
 
-    <form id="form-questionario">
-      <ul id="lista-questoes" class="question-list">
-        <li class="question-item">
-          <p style="text-align:center; color:var(--muted);">Carregando perguntas...</p>
-        </li>
+  <section class="academic-panel" aria-labelledby="titulo-questoes">
+    <header class="academic-panel__header">
+      <div>
+        <p class="academic-section-label">Respostas</p>
+        <h2 id="titulo-questoes">Questões</h2>
+        <p>Leia cada enunciado e selecione exatamente uma alternativa.</p>
+      </div>
+    </header>
+    <form id="form-questionario" aria-busy="false">
+      <ul id="lista-questoes" class="question-list" aria-busy="true">
+        <li class="ui-state is-loading" role="status">Carregando perguntas...</li>
       </ul>
-
-      <div style="margin-top:24px; display:flex; gap:10px; flex-wrap:wrap;">
-        <button id="btn-finalizar-questionario" type="submit" class="btn btn-primary">
-          Finalizar questionario
-        </button>
-        <a id="link-voltar-sala" class="btn btn-ghost" href="/sala-virtual.html">
-          Voltar para sala
-        </a>
+      <div class="academic-action-row academic-action-row--quiz">
+        <button id="btn-finalizar-questionario" type="submit" class="btn btn-primary" data-idle-label="Finalizar questionário" disabled>Finalizar questionário</button>
+        <a class="btn btn-ghost" href="/sala-virtual.html">Voltar para sala</a>
+        <span id="contador-respostas" class="answer-counter" role="status" aria-live="polite">0 de 0 respondidas</span>
       </div>
     </form>
 
-    <section id="resultado-questionario" class="result-card" hidden>
-      <h3 id="resultado-titulo">Questionario finalizado</h3>
-      <p id="resultado-descricao"></p>
+    <section id="resultado-questionario" class="result-card" aria-labelledby="resultado-titulo" role="status" aria-live="polite" hidden>
+      <span class="result-card__icon" aria-hidden="true">🏆</span>
+      <div>
+        <h2 id="resultado-titulo">Questionário finalizado</h2>
+        <p id="resultado-descricao"></p>
+      </div>
+      <div class="academic-action-row">
+        <a id="link-refazer" class="btn btn-ghost" href="#">Refazer</a>
+        <a id="link-voltar-sala-resultado" class="btn btn-primary" href="/sala-virtual.html">Voltar para sala de aula</a>
+      </div>
     </section>
-  </div>
+  </section>
+
+  <section class="academic-panel" aria-labelledby="titulo-historico">
+    <header class="academic-panel__header">
+      <div>
+        <p class="academic-section-label">Desempenho persistido</p>
+        <h2 id="titulo-historico">Histórico de tentativas</h2>
+        <p>Resultados já registrados para este questionário.</p>
+      </div>
+    </header>
+    <ul id="lista-historico" class="history-list" aria-busy="true">
+      <li class="ui-state is-loading" role="status">Carregando histórico...</li>
+    </ul>
+  </section>
 </main>
 
 <script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/navigation.js"></script>
 <script type="module" src="/js/questionario.js"></script>
 </body>
 </html>

@@ -5,128 +5,174 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerenciar Turma — Plágio</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layouts.css">
+  <link rel="stylesheet" href="/css/responsive.css">
 </head>
-<body>
+<body class="academic-page academic-page--teacher teacher-class-page" data-session-state="loading" data-session-protected>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-brand" href="/index.html">
-    <div class="brand-mark">🧠</div>
-    <div class="brand-texts">
-      <span class="brand-name">Plágio</span>
-      <span class="brand-sub">Nao Copie Essa Ideia</span>
+<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+
+<header class="academic-header">
+  <nav class="academic-nav" aria-label="Navegação do gerenciamento da turma">
+    <a class="nav-brand" href="/index.html" aria-label="Plágio — página inicial">
+      <span class="brand-mark" aria-hidden="true">🧠</span>
+      <span class="brand-texts">
+        <span class="brand-name">Plágio</span>
+        <span class="brand-sub">Não Copie Essa Ideia 4.0</span>
+      </span>
+    </a>
+    <div class="nav-links" id="primary-navigation">
+      <a href="/index.html">Catálogo</a>
+      <a href="/professor.html" aria-current="page" data-session-private data-session-roles="PROFESSOR" hidden>Minhas turmas</a>
+      <a href="/verificador.html">Verificador</a>
     </div>
-  </a>
-
-  <div class="nav-links">
-    <a href="/index.html">Catalogo</a>
-    <a href="/professor.html">Minhas Turmas</a>
-  </div>
-
-  <div class="nav-right">
-    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
-    <button class="btn-exit" id="btn-logout">Sair</button>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-  <div class="hero-fade"></div>
-
-  <div class="hero-inner">
-    <div class="hero-content">
-      <div class="hero-eyebrow">Gerenciamento de Turma</div>
-      <h1 class="hero-title" id="turma-title">Carregando turma...</h1>
-      <p class="hero-sub">Gerencie os alunos matriculados e acompanhe seu desempenho.</p>
+    <div class="nav-right">
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Abrir menu de navegação">
+        <span class="mobile-nav-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="mobile-nav-toggle__label">Menu</span>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema">
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+      </button>
+      <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
     </div>
-  </div>
-</section>
+  </nav>
+</header>
 
-<!-- WELCOME BAR -->
-<div class="welcome-wrap">
-  <div class="welcome-card">
-    <div class="welcome-left">
-      <div class="welcome-icon">👨‍🏫</div>
-      <div class="welcome-info">
-        <strong id="status-usuario">Carregando...</strong>
-        <p id="mensagem-turma"></p>
-      </div>
-      <span class="badge-role">Professor</span>
+<main class="academic-main" id="conteudo-principal" tabindex="-1">
+  <section class="academic-hero" aria-labelledby="turma-title">
+    <div class="academic-hero__content">
+      <a class="academic-back-link" href="/professor.html">← Voltar às minhas turmas</a>
+      <p class="academic-eyebrow">Acompanhamento da turma</p>
+      <h1 id="turma-title">Carregando turma...</h1>
+      <p>Acompanhe alunos, notas, progresso e o material já publicado.</p>
     </div>
-  </div>
-</div>
+    <div class="academic-trail" aria-hidden="true"><span></span><span></span><span></span></div>
+  </section>
 
-<!-- MAIN -->
-<main>
-  <div class="card">
-    <div class="card-head">
+  <section class="academic-context" aria-label="Identificação do professor e estado da turma">
+    <span class="academic-context__icon" aria-hidden="true">👨‍🏫</span>
+    <div>
+      <strong id="status-usuario">Validando sua sessão...</strong>
+      <p id="mensagem-turma" class="ui-message is-info" role="status" aria-live="polite">Carregando a turma.</p>
+    </div>
+    <span class="badge badge--accent">Professor</span>
+  </section>
+
+  <section class="academic-panel academic-panel--summary" aria-labelledby="titulo-resumo">
+    <header class="academic-panel__header">
       <div>
-        <div class="card-title" id="titulo-alunos">Alunos Matriculados</div>
-        <div class="card-sub" id="subtitulo-alunos">Lista de alunos e seu desempenho na turma.</div>
+        <p class="academic-section-label">Contexto</p>
+        <h2 id="titulo-resumo">Resumo da turma</h2>
       </div>
-    </div>
-    <div class="card-div"></div>
+    </header>
+    <dl class="academic-summary-grid">
+      <div><dt>Curso</dt><dd id="resumo-curso">--</dd></div>
+      <div><dt>Status</dt><dd><span id="resumo-status" class="badge badge--neutral">--</span></dd></div>
+      <div><dt>Período</dt><dd id="resumo-periodo">--</dd></div>
+      <div><dt>Alunos</dt><dd id="resumo-alunos">--</dd></div>
+    </dl>
+  </section>
 
-    <div class="table-container">
+  <section class="academic-panel" aria-labelledby="titulo-alunos">
+    <header class="academic-panel__header">
+      <div>
+        <p class="academic-section-label">Desempenho</p>
+        <h2 id="titulo-alunos">Alunos matriculados</h2>
+        <p id="subtitulo-alunos">Lista de alunos e seu desempenho na turma.</p>
+      </div>
+    </header>
+    <p class="table-scroll-hint" id="pista-rolagem">A tabela pode ser rolada horizontalmente em telas estreitas.</p>
+    <div class="academic-table-scroll" tabindex="0" role="region" aria-labelledby="titulo-alunos" aria-describedby="pista-rolagem">
       <table>
+        <caption class="sr-only">Alunos matriculados, progresso, nota, status e ações</caption>
         <thead>
           <tr>
-            <th>Aluno</th>
-            <th>Email</th>
-            <th>Progresso</th>
-            <th>Nota Final</th>
-            <th>Status</th>
-            <th>Acoes</th>
+            <th scope="col">Aluno</th>
+            <th scope="col">E-mail</th>
+            <th scope="col">Progresso</th>
+            <th scope="col">Nota final</th>
+            <th scope="col">Status</th>
+            <th scope="col">Ações</th>
           </tr>
         </thead>
-        <tbody id="lista-alunos-turma">
-          <tr>
-            <td colspan="6" class="table-empty">Carregando alunos matriculados...</td>
-          </tr>
+        <tbody id="lista-alunos-turma" aria-busy="true">
+          <tr><td colspan="6" class="table-empty" role="status">Carregando alunos matriculados...</td></tr>
         </tbody>
       </table>
     </div>
+  </section>
+
+  <div class="academic-learning-grid">
+    <section class="academic-panel" aria-labelledby="titulo-conteudos-professor">
+      <header class="academic-panel__header">
+        <div>
+          <p class="academic-section-label">Consulta</p>
+          <h2 id="titulo-conteudos-professor">Conteúdos da turma</h2>
+          <p>Material persistido, sem ações de autoria.</p>
+        </div>
+      </header>
+      <ul id="lista-conteudos-professor" class="module-list" aria-busy="true">
+        <li class="ui-state is-loading" role="status">Carregando conteúdos...</li>
+      </ul>
+    </section>
+    <section class="academic-panel" aria-labelledby="titulo-questionarios-professor">
+      <header class="academic-panel__header">
+        <div>
+          <p class="academic-section-label">Consulta</p>
+          <h2 id="titulo-questionarios-professor">Questionários</h2>
+          <p>Somente metadados; nenhum gabarito é exibido.</p>
+        </div>
+      </header>
+      <ul id="lista-questionarios-professor" class="module-list" aria-busy="true">
+        <li class="ui-state is-loading" role="status">Carregando questionários...</li>
+      </ul>
+    </section>
   </div>
 </main>
 
-<!-- Modal para edicao de matricula -->
-<div id="modal-edicao" class="modal">
-  <div class="modal-content">
-    <span id="fechar-modal" class="modal-close">&times;</span>
-    <h3 class="modal-title">Editar Matricula</h3>
-
-    <form id="form-edicao-matricula" class="modal-form">
-      <div class="form-group">
-        <label for="nota-final">Nota Final</label>
-        <input type="number" id="nota-final" name="nota_final" min="0" max="10" step="0.1" placeholder="0.0 a 10.0">
-      </div>
-      <div class="form-group">
-        <label for="status-aprovacao">Status de Aprovacao</label>
-        <select id="status-aprovacao" name="status_aprovacao">
-          <option value="CURSANDO">CURSANDO</option>
-          <option value="APROVADO">APROVADO</option>
-          <option value="REPROVADO">REPROVADO</option>
-          <option value="CANCELADO">CANCELADO</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="progresso">Progresso (%)</label>
-        <input type="number" id="progresso" name="progresso_percentual" min="0" max="100" placeholder="0 a 100">
-      </div>
-      <div class="modal-actions">
-        <button type="submit" class="btn btn-primary">Atualizar</button>
-        <button type="button" id="cancelar-modal" class="btn btn-ghost">Cancelar</button>
-      </div>
-    </form>
+<dialog id="modal-edicao" class="academic-dialog" aria-labelledby="titulo-modal-edicao" aria-describedby="descricao-modal-edicao">
+  <div class="academic-dialog__header">
+    <div>
+      <p class="academic-section-label">Avaliação do aluno</p>
+      <h2 id="titulo-modal-edicao">Editar matrícula</h2>
+    </div>
+    <button id="fechar-modal" type="button" class="academic-dialog__close" aria-label="Fechar edição da matrícula">×</button>
   </div>
-</div>
+  <p id="descricao-modal-edicao" class="academic-dialog__description">Atualize somente os dados já previstos para esta matrícula.</p>
+  <p id="erro-modal-edicao" class="ui-message is-error" role="alert" aria-live="assertive" hidden></p>
+  <form id="form-edicao-matricula" class="academic-dialog__form" aria-busy="false">
+    <div class="form-group">
+      <label for="nota-final">Nota final</label>
+      <input type="number" id="nota-final" name="nota_final" min="0" max="10" step="0.1" placeholder="0,0 a 10,0">
+    </div>
+    <div class="form-group">
+      <label for="status-aprovacao">Status de aprovação</label>
+      <select id="status-aprovacao" name="status_aprovacao">
+        <option value="CURSANDO">Cursando</option>
+        <option value="APROVADO">Aprovado</option>
+        <option value="REPROVADO">Reprovado</option>
+        <option value="CANCELADO">Cancelado</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="progresso">Progresso (%)</label>
+      <input type="number" id="progresso" name="progresso_percentual" min="0" max="100" placeholder="0 a 100">
+    </div>
+    <div class="academic-dialog__actions">
+      <button id="salvar-matricula" type="submit" class="btn btn-primary" data-idle-label="Atualizar">Atualizar</button>
+      <button type="button" id="cancelar-modal" class="btn btn-ghost">Cancelar</button>
+    </div>
+  </form>
+</dialog>
 
 <script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/navigation.js"></script>
 <script type="module" src="/js/professor-turma.js"></script>
 </body>
 </html>

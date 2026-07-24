@@ -5,120 +5,160 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sala de Aula — Plágio</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layouts.css">
+  <link rel="stylesheet" href="/css/responsive.css">
 </head>
-<body>
+<body class="academic-page academic-page--student classroom-page" data-session-state="loading" data-session-protected>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-brand" href="/index.html">
-    <div class="brand-mark">🧠</div>
-    <div class="brand-texts">
-      <span class="brand-name">Plágio</span>
-      <span class="brand-sub">Nao Copie Essa Ideia</span>
+<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+
+<header class="academic-header">
+  <nav class="academic-nav" aria-label="Navegação da sala de aula">
+    <a class="nav-brand" href="/index.html" aria-label="Plágio — página inicial">
+      <span class="brand-mark" aria-hidden="true">🧠</span>
+      <span class="brand-texts">
+        <span class="brand-name">Plágio</span>
+        <span class="brand-sub">Não Copie Essa Ideia 4.0</span>
+      </span>
+    </a>
+    <div class="nav-links" id="primary-navigation">
+      <a href="/index.html">Catálogo</a>
+      <a href="/sala-virtual.html" aria-current="page" data-session-private data-session-roles="ALUNO" hidden>Sala Virtual</a>
+      <a href="/verificador.html">Verificador</a>
     </div>
-  </a>
-
-  <div class="nav-links">
-    <a href="/index.html">Catalogo</a>
-    <a href="/sala-virtual.html">Sala Virtual</a>
-  </div>
-
-  <div class="nav-right">
-    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
-    <div class="nav-bell" title="Notificações">🔔</div>
-    <div class="avatar" id="avatar">AT</div>
-    <button class="btn-exit" id="btn-logout">Sair</button>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-  <div class="hero-fade"></div>
-
-  <div class="hero-inner">
-    <div class="hero-content">
-      <div class="hero-eyebrow">Turma Ativa</div>
-      <h1 class="hero-title">Sala de <em>Aula</em></h1>
-      <p class="hero-sub">Acompanhe os conteudos da turma, seu progresso e acesse avaliacoes.</p>
+    <div class="nav-right">
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Abrir menu de navegação">
+        <span class="mobile-nav-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="mobile-nav-toggle__label">Menu</span>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema">
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+      </button>
+      <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
     </div>
-  </div>
-</section>
+  </nav>
+</header>
 
-<!-- WELCOME BAR -->
-<div class="welcome-wrap">
-  <div class="welcome-card">
-    <div class="welcome-left">
-      <div class="welcome-icon">📖</div>
-      <div class="welcome-info">
-        <strong id="status-usuario">Carregando...</strong>
-        <p id="mensagem-sala-aula"></p>
-      </div>
+<main class="academic-main" id="conteudo-principal" tabindex="-1">
+  <section class="academic-hero" aria-labelledby="titulo-pagina">
+    <div class="academic-hero__content">
+      <a class="academic-back-link" href="/sala-virtual.html">← Voltar às minhas turmas</a>
+      <p class="academic-eyebrow">Sala de aula</p>
+      <h1 id="titulo-pagina">Conteúdo e progresso</h1>
+      <p>Acesse os módulos publicados, acompanhe sua evolução e encontre as avaliações da turma.</p>
     </div>
-  </div>
-</div>
+    <div class="academic-trail" aria-hidden="true"><span></span><span></span><span></span></div>
+  </section>
 
-<!-- MAIN -->
-<main>
-  <div class="card" style="margin-bottom:20px;">
-    <div class="card-head">
+  <section class="academic-context" aria-label="Identificação do aluno e estado da sala">
+    <span class="academic-context__icon" aria-hidden="true">📖</span>
+    <div>
+      <strong id="status-usuario">Validando sua sessão...</strong>
+      <p id="mensagem-sala-aula" class="ui-message is-info" role="status" aria-live="polite">Carregando a turma.</p>
+    </div>
+  </section>
+
+  <section class="academic-panel academic-panel--context" aria-labelledby="titulo-turma">
+    <header class="academic-panel__header">
       <div>
-        <div class="card-title" id="titulo-turma">Carregando turma...</div>
-        <div class="card-sub" id="nome-curso">Aguarde enquanto validamos seu acesso.</div>
+        <p class="academic-section-label">Turma atual</p>
+        <h2 id="titulo-turma">Carregando turma...</h2>
+        <p id="nome-curso">Aguarde enquanto validamos seu acesso.</p>
       </div>
-    </div>
-  </div>
+    </header>
+  </section>
 
-  <div class="aula-grid">
-    <!-- Info da turma -->
-    <div class="aula-card">
-      <h3>📊 Informacoes da turma</h3>
-      <ul class="aula-meta-list">
-        <li>
-          <span>Status</span>
-          <span id="badge-status-turma" class="badge badge-neutral">Carregando</span>
-        </li>
-        <li>
-          <span>Progresso atual</span>
-          <strong id="progresso-turma">--</strong>
-        </li>
-        <li>
-          <span>Periodo</span>
-          <strong id="periodo-turma">--</strong>
-        </li>
-        <li>
-          <span>Carga horaria</span>
-          <strong id="carga-horaria">--</strong>
-        </li>
-      </ul>
-
-      <p id="descricao-curso" style="margin-top:16px; font-size:13px; color:var(--muted); line-height:1.6;">
-        Carregando descricao do curso...
-      </p>
-    </div>
-
-    <!-- Conteudo da aula -->
-    <div class="aula-card">
-      <h3>📚 Conteudo da aula</h3>
-      <ul id="lista-conteudos" class="module-list">
-        <li class="module-item">
-          <p>Carregando conteudos liberados...</p>
-        </li>
-      </ul>
-
-      <div class="aula-actions">
-        <a id="link-prova" class="btn btn-primary" href="#">Ir para prova</a>
-        <a id="link-exercicios" class="btn btn-ghost" href="#">Ir para exercicios</a>
+  <section id="player-video-container" class="academic-panel academic-viewer" aria-labelledby="video-titulo" hidden>
+    <header class="academic-panel__header">
+      <div>
+        <p class="academic-section-label">Em reprodução</p>
+        <h2 id="video-titulo">Assistindo: <span id="video-nome-conteudo">--</span></h2>
+        <p>Acompanhe a aula e marque como concluída ao finalizar.</p>
       </div>
+    </header>
+    <div class="video-wrapper">
+      <iframe id="video-player" title="Conteúdo em vídeo" sandbox="allow-scripts allow-same-origin allow-presentation" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
+    <div class="academic-action-row">
+      <button id="btn-marcar-concluido" type="button" class="btn btn-primary">Marcar como concluída</button>
+      <button id="btn-fechar-video" type="button" class="btn btn-ghost">Fechar vídeo</button>
+      <span id="status-conteudo" class="badge badge--neutral" role="status">Não iniciado</span>
+    </div>
+  </section>
+
+  <section id="conteudo-texto-container" class="academic-panel academic-viewer" aria-labelledby="conteudo-texto-titulo" hidden>
+    <header class="academic-panel__header academic-panel__header--actions">
+      <div>
+        <p class="academic-section-label">Material textual</p>
+        <h2 id="conteudo-texto-titulo">Conteúdo</h2>
+      </div>
+      <button id="btn-fechar-texto" type="button" class="btn btn-ghost">Fechar conteúdo</button>
+    </header>
+    <pre id="conteudo-corpo" class="content-reader"></pre>
+  </section>
+
+  <div class="academic-learning-grid">
+    <section class="academic-panel" aria-labelledby="titulo-informacoes">
+      <header class="academic-panel__header">
+        <div>
+          <p class="academic-section-label">Visão geral</p>
+          <h2 id="titulo-informacoes">Informações da turma</h2>
+        </div>
+      </header>
+      <dl class="academic-data-list">
+        <div><dt>Status</dt><dd><span id="badge-status-turma" class="badge badge--neutral">Carregando</span></dd></div>
+        <div><dt>Progresso atual</dt><dd id="progresso-turma">--</dd></div>
+        <div><dt>Período</dt><dd id="periodo-turma">--</dd></div>
+        <div><dt>Carga horária</dt><dd id="carga-horaria">--</dd></div>
+      </dl>
+      <p id="descricao-curso" class="academic-description">Carregando descrição do curso...</p>
+      <div class="academic-progress">
+        <div class="academic-progress__header">
+          <span>Progresso do curso</span>
+          <strong id="progresso-label">0%</strong>
+        </div>
+        <div id="progress-bar" class="progress-bar-container" role="progressbar" aria-label="Progresso do curso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        </div>
+        <p><span id="conteudos-concluidos">0</span> de <span id="total-conteudos">0</span> conteúdos concluídos</p>
+      </div>
+    </section>
+
+    <section class="academic-panel" aria-labelledby="titulo-conteudos">
+      <header class="academic-panel__header">
+        <div>
+          <p class="academic-section-label">Trilha publicada</p>
+          <h2 id="titulo-conteudos">Conteúdo da aula</h2>
+          <p>Filtre os materiais e abra o conteúdo que deseja estudar.</p>
+        </div>
+      </header>
+      <div class="filter-toolbar" role="group" aria-label="Filtrar conteúdos por tipo">
+        <button type="button" class="filter-chip active" data-filtro="todos" aria-pressed="true">Todos</button>
+        <button type="button" class="filter-chip" data-filtro="video" aria-pressed="false">Vídeos</button>
+        <button type="button" class="filter-chip" data-filtro="texto" aria-pressed="false">Textos</button>
+        <button type="button" class="filter-chip" data-filtro="pdf" aria-pressed="false">PDFs</button>
+        <button type="button" class="filter-chip" data-filtro="atividade" aria-pressed="false">Atividades</button>
+      </div>
+      <ul id="lista-conteudos" class="module-list" aria-busy="true">
+        <li class="ui-state is-loading" role="status">Carregando conteúdos liberados...</li>
+      </ul>
+      <div class="academic-action-row">
+        <a id="link-prova" class="btn btn-primary" hidden>Ir para prova</a>
+        <a id="link-exercicios" class="btn btn-ghost" hidden>Ir para exercícios</a>
+      </div>
+      <p id="mensagem-questionarios" class="ui-message is-info" role="status" aria-live="polite">Verificando questionários disponíveis...</p>
+    </section>
   </div>
 </main>
 
+<script src="/js/security-utils.js" defer></script>
 <script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/navigation.js"></script>
 <script type="module" src="/js/sala-aula.js"></script>
 </body>
 </html>

@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Admin — Plágio</title>
+  <title>Painel administrativo — Plágio</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body data-session-state="loading" data-session-protected>
 
 <!-- NAV -->
 <nav>
@@ -21,12 +23,13 @@
 
   <div class="nav-links">
     <a href="/index.html">Catalogo</a>
-    <a href="/admin.html" class="active">Admin</a>
+    <a href="/verificador.html">Verificador</a>
+    <a href="/admin.html" class="active" data-session-private data-session-roles="ADMIN" hidden>Admin</a>
   </div>
 
   <div class="nav-right">
     <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
-    <a href="/login.html" class="btn btn-ghost">Login</a>
+    <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
   </div>
 </nav>
 
@@ -49,15 +52,8 @@
 
 <!-- MAIN -->
 <main>
-  <section id="admin-root" class="card">
-    <div class="card-head">
-      <div>
-        <div class="card-title">Admin</div>
-        <div class="card-sub">Carregando dados e permissoes do usuario...</div>
-      </div>
-    </div>
-    <div class="card-div"></div>
-    <p style="color:var(--muted); text-align:center; padding:40px 0;">Carregando painel...</p>
+  <section id="admin-root" class="card admin-panel" aria-busy="true">
+    <p class="loading-state" role="status">Carregando painel administrativo...</p>
   </section>
 </main>
 

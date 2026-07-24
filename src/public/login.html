@@ -5,30 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login — Plágio</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layouts.css">
+  <link rel="stylesheet" href="/css/responsive.css">
 </head>
-<body class="auth-page">
+<body class="auth-page auth-page--login">
 
+<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+
+<main class="auth-shell" id="conteudo-principal" tabindex="-1">
 <section class="auth-card" aria-labelledby="titulo-login">
-  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
-    <div class="auth-brand">
-      <div class="brand-mark">🧠</div>
+  <div class="auth-card-header">
+    <a class="auth-brand" href="/index.html" aria-label="Plágio — voltar ao catálogo">
+      <div class="brand-mark" aria-hidden="true">🧠</div>
       <div>
         <div class="auth-brand-text">Plágio</div>
-        <div class="auth-brand-sub">Nao Copie Essa Ideia</div>
+        <div class="auth-brand-sub">Não Copie Essa Ideia</div>
       </div>
-    </div>
-    <button class="theme-toggle" id="theme-toggle" title="Alternar tema">
-      <span class="icon-moon">🌙</span>
-      <span class="icon-sun">☀️</span>
+    </a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema">
+      <span class="icon-moon" aria-hidden="true">🌙</span>
+      <span class="icon-sun" aria-hidden="true">☀️</span>
     </button>
   </div>
 
-  <p class="auth-kicker">Acesso a area do aluno</p>
+  <p class="auth-kicker">Acesso à plataforma</p>
   <h1 class="auth-title" id="titulo-login">Bem-vindo de volta</h1>
-  <p class="auth-subtitle">Faca login para acessar seu painel e continuar sua jornada.</p>
+  <p class="auth-subtitle">Faça login para acessar sua área e continuar sua jornada.</p>
 
-  <form id="form-login" class="auth-form">
+  <form id="form-login" class="auth-form" aria-busy="false">
     <div class="form-group">
       <label for="email">E-mail</label>
       <input type="email" id="email" name="email" placeholder="voce@email.com" autocomplete="email" required>
@@ -39,16 +47,17 @@
       <input type="password" id="senha" name="senha" minlength="8" placeholder="Sua senha" autocomplete="current-password" required>
     </div>
 
-    <button type="submit" class="btn-submit">Entrar</button>
+    <button type="submit" class="btn-submit" data-idle-label="Entrar">Entrar</button>
   </form>
 
-  <p id="mensagem-login" class="auth-message" role="status" aria-live="polite"></p>
+  <p id="mensagem-login" class="auth-message status-message" role="status" aria-live="polite" aria-atomic="true"></p>
 
   <div class="auth-links">
-    <p>Nao tem conta? <a href="/cadastro.html">Criar conta</a></p>
-    <p><a href="/index.html">← Voltar para o catalogo</a></p>
+    <p>Não tem conta? <a href="/cadastro.html">Criar conta</a></p>
+    <p><a href="/index.html">← Voltar para o catálogo</a></p>
   </div>
 </section>
+</main>
 
 <script type="module" src="/js/theme.js"></script>
 <script type="module" src="/js/login.js"></script>

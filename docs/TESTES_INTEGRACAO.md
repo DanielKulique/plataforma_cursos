@@ -1,336 +1,101 @@
-# Guia de Testes de Integração - Plataforma de Cursos
+# Testes e integração
 
-Este documento descreve como configurar e executar testes de integração para a plataforma.
+## Bancos e proteção
 
-## Diferença entre Testes Unitários e de Integração
+- `plataforma_cursos_dev`: runtime e testes manuais em `localhost:3000`. Nenhuma suíte automatizada limpa esse banco.
+- `plataforma_cursos_test`: banco descartável exclusivo da integração. O setup pode recriar somente esse nome.
+- `site_cursos`: legado somente para consulta/backup. Runtime, setup, seed e testes recusam esse alvo.
 
-| Tipo | Escopo | Banco de Dados | Velocidade |
-|------|--------|----------------|------------|
-| **Unitários** | Funções/métodos isolados | Mockado | Rápidos |
-| **Integração** | Fluxos completos | Real (teste) | Mais lentos |
-
-## Configuração Inicial
-
-### 1. Instalar Dependências
-
-```bash
-npm install
-```
-
-### 2. Configurar Banco de Dados de Teste
-
-O banco de dados de teste é separado do banco de desenvolvimento/produção.
-
-```bash
-# Configurar banco de dados de teste (roda uma vez)
-npm run db:test:setup
-```
-
-Este comando:
-- Cria o banco `site_cursos_test`
-- Cria todas as tabelas (schema)
-- Prepara o ambiente para testes
-
-### 3. Variáveis de Ambiente de Teste
-
-O arquivo `.env.test` contém as configurações para testes:
+O arquivo `.env` local fornece a conexão MySQL e aponta o runtime para o banco de desenvolvimento. O `.env.test`, também ignorado pelo Git, deve definir ao menos:
 
 ```env
 NODE_ENV=test
-DB_HOST=localhost
-DB_USER=appuser
-DB_PASSWORD=sua_senha
-DB_NAME=site_cursos_test
-JWT_SECRET=test_jwt_secret_key_for_integration_tests_only
-PORT=3001
+DB_NAME=plataforma_cursos_test
+JWT_SECRET=<segredo_jwt_exclusivo_de_teste>
+TEST_SEED_PASSWORD=<senha_descartavel_dos_usuarios_de_teste>
 ```
 
-## Executando Testes de Integração
+Não registre valores reais. Use `.env.example` e `.env.test.example` apenas como modelos. O runner valida `NODE_ENV` e o nome exato antes de abrir o pool ou executar limpeza.
 
-### Comandos Disponíveis
+## Preparação reproduzível
 
 ```bash
-# Rodar todos os testes de integração
+npm ci
+npm run db:test:setup
+npm run db:test:seed
+npm run db:test:seed
+```
+
+O setup recria o banco descartável e aplica `mysql/schema.sql`. O segundo seed deve terminar sem duplicar os registros canônicos. O desenvolvimento só recebe setup/seed por comando explícito:
+
+```bash
+npm run db:dev:setup
+CANONICAL_SEED_PASSWORD='<senha-local>' npm run db:dev:seed
+```
+
+O setup de desenvolvimento não apaga dados e apenas aceita um banco vazio ou já compatível com o contrato canônico.
+
+## Comandos oficiais
+
+```bash
+npm run test:security
+npm test
 npm run test:integration
-
-# Rodar em modo watch (reexecuta ao salvar)
-npm run test:integration:watch
-
-# Rodar testes unitários E de integração
 npm run test:all
 ```
 
-## Estrutura dos Testes de Integração
+- `npm test`: unitários, contratos, frontend e segurança, com cobertura e detecção de handles abertos.
+- `npm run test:security`: subconjunto de regressões de sessão, CSP/XSS, redaction, autorização e proteção dos bancos.
+- `npm run test:integration`: fluxos HTTP com MySQL real em `plataforma_cursos_test`.
+- `npm run test:all`: `npm test` seguido da integração.
 
-```
-src/__tests__/integration/
-├── setup.js                          # Configuração do banco de teste
-├── auth.integration.test.js          # Testes de autenticação
-├── cursos-turmas.integration.test.js # Testes de cursos e turmas
-└── matriculas.integration.test.js    # Testes de matrículas
-```
+Os thresholds globais oficiais são superiores a 50% para statements, branches, functions e lines. A integração usa `supertest` diretamente sobre o app Express; não abre porta fixa.
 
-## Testes Implementados
+## Mapa atual
 
-### 1. Autenticação (`auth.integration.test.js`)
+| Categoria | Evidência principal |
+|---|---|
+| Sessão/autenticação | `auth.controller.test.js`, `auth.model.test.js`, `middlewares.test.js`, `session.frontend.test.js`, `auth.integration.test.js` |
+| Cliente HTTP | `api.frontend.test.js` |
+| Matrícula | `matricula.controller.test.js`, `matricula.model.test.js`, `matriculas.integration.test.js` |
+| Aluno/professor | `goal3.models.test.js`, `goal3.routes.test.js`, `goal3-fluxos.integration.test.js` |
+| Administração | `goal4.models.test.js`, `goal4.interface.test.js`, `goal4-admin.integration.test.js` |
+| Segurança | `frontend.security.test.js`, `admin.routes.security.test.js`, `conteudos.routes.security.test.js`, `logger.test.js`, `test_database_safety.test.js` |
+| Contrato | `schema_contract.test.js`, `seed_admin_inicial.test.js` |
+| Serviço externo | `plagio.service.test.js`, `plagio.test.js` (serviço externo simulado) |
 
-Testa o fluxo completo de autenticação:
+Os testes unitários isolam dependências com mocks quando o objetivo é controller/model. Os fluxos de integração validam persistência, transações, chaves e autorização no MySQL real descartável. O motor externo do detector de plágio permanece simulado na integração Node e ainda está em desenvolvimento.
 
-```javascript
-// Exemplo de teste
-describe('POST /api/auth/login', () => {
-    it('deve autenticar usuário ADMIN com sucesso', async () => {
-        const response = await request(app)
-            .post('/api/auth/login')
-            .send({
-                email: 'admin@teste.com',
-                senha: 'Teste@123'
-            });
+## Seed de integração
 
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('token');
-    });
-});
-```
+O helper de integração cria um usuário de cada papel e lê a senha descartável de `TEST_SEED_PASSWORD`. Os testes acessam essa variável por helper e nunca imprimem seu valor. Cada cenário limpa e recria os dados necessários, fecha pools no teardown e captura IDs retornados pelo banco.
 
-**Cenários testados:**
-- ✅ Login de ADMIN
-- ✅ Login de PROFESSOR
-- ✅ Login de ALUNO
-- ✅ Credenciais inválidas (401)
-- ✅ Usuário inexistente (401)
-- ✅ Recuperação de sessão (/me)
-- ✅ Token ausente/inválido
-
-### 2. Cursos e Turmas (`cursos-turmas.integration.test.js`)
-
-Testa CRUD completo de cursos e turmas:
-
-**Cursos:**
-- ✅ Criar curso (ADMIN)
-- ✅ Listar cursos (público)
-- ✅ Buscar curso por ID
-- ✅ Atualizar curso (ADMIN)
-- ✅ Deletar curso (ADMIN)
-- ✅ Permissões (401/403)
-
-**Turmas:**
-- ✅ Criar turma (ADMIN)
-- ✅ Listar turmas (público)
-- ✅ Buscar turma por ID
-- ✅ Permissões
-
-### 3. Matrículas (`matriculas.integration.test.js`)
-
-Testa fluxo de matrículas:
-
-**Cenários testados:**
-- ✅ Aluno se matricula em turma
-- ✅ Matrícula duplicada (409)
-- ✅ Listar matrículas do aluno
-- ✅ Professor visualiza matrículas da turma
-- ✅ Professor atualiza nota
-- ✅ Aluno cancela matrícula
-- ✅ Sala virtual do aluno
-
-## Setup e Teardown
-
-Cada arquivo de teste segue este padrão:
-
-```javascript
-beforeAll(async () => {
-    // 1. Conecta ao banco de teste
-    await initTestPool();
-    
-    // 2. Limpa banco
-    await clearDatabase();
-    
-    // 3. Cria dados seed (usuários, etc)
-    testUsers = await seedBasicData();
-    
-    // 4. Faz login para obter tokens
-    authToken = await login();
-});
-
-afterEach(async () => {
-    // Limpa banco após cada teste para isolamento
-    await clearDatabase();
-    await seedBasicData();
-});
-
-afterAll(async () => {
-    // Fecha conexão
-    await closeTestPool();
-});
-```
-
-## Dados de Teste
-
-O seed básico cria:
-
-| Tipo | Email | Senha |
-|------|-------|-------|
-| ADMIN | admin@teste.com | Teste@123 |
-| PROFESSOR | professor@teste.com | Teste@123 |
-| ALUNO | aluno@teste.com | Teste@123 |
-
-## Escrevendo Novos Testes de Integração
-
-### Template
+Exemplo:
 
 ```javascript
 const request = require('supertest');
-const { initTestPool, clearDatabase, seedBasicData, closeTestPool } = require('../setup');
-const app = require('../../../index');
+const { app } = require('../../../index');
+const { getTestPassword } = require('./setup');
 
-describe('Testes de Integração - [Funcionalidade]', () => {
-    let authToken = null;
-    let testUsers = null;
-
-    beforeAll(async () => {
-        await initTestPool();
-        await clearDatabase();
-        testUsers = await seedBasicData();
-        
-        // Login se necessário
-        const login = await request(app)
-            .post('/api/auth/login')
-            .send({ email: 'admin@teste.com', senha: 'Teste@123' });
-        authToken = login.body.token;
-    });
-
-    afterEach(async () => {
-        await clearDatabase();
-        testUsers = await seedBasicData();
-    });
-
-    afterAll(async () => {
-        await closeTestPool();
-    });
-
-    describe('POST /api/[endpoint]', () => {
-        it('deve [ação] com sucesso', async () => {
-            const response = await request(app)
-                .post('/api/[endpoint]')
-                .set('Authorization', `Bearer ${authToken}`)
-                .send({ /* dados */ });
-
-            expect(response.status).toBe(201);
-            expect(response.body).toHaveProperty('id');
-        });
-    });
-});
+const response = await request(app)
+    .post('/api/auth/login')
+    .send({ email: 'usuario-descartavel@example.test', senha: getTestPassword() });
 ```
 
-### Boas Práticas
+## CI
 
-1. **Isole testes**: Cada teste deve ser independente
-2. **Limpe dados**: Use `afterEach` para limpar o banco
-3. **Use seed**: Recrie dados básicos antes de cada teste
-4. **Teste permissões**: Verifique 401/403 para usuários sem permissão
-5. **Nomes descritivos**: Descreva o cenário completo no `it()`
+O workflow `.github/workflows/ci.yml` usa `npm ci`, verifica sintaxe, recria o banco descartável com a credencial administrativa efêmera do serviço MySQL, aplica o seed com o usuário da aplicação e executa segurança e `test:all`. Configure no GitHub:
 
-## Debug de Testes
+- `CI_MYSQL_ROOT_PASSWORD`;
+- `CI_DB_PASSWORD`;
+- `CI_JWT_SECRET`;
+- `CI_TEST_SEED_PASSWORD`.
 
-### Ver Logs Detalhados
+Nenhum valor deve ser colocado no YAML. O pipeline não referencia nem acessa `site_cursos`.
 
-```bash
-npm run test:integration -- --verbose
-```
+## Limitações conhecidas
 
-### Execute um Arquivo Específico
-
-```bash
-npm run test:integration -- auth.integration.test.js
-```
-
-### Execute um Teste Específico
-
-```bash
-npm run test:integration -- -t "deve autenticar usuário ADMIN"
-```
-
-## CI/CD Integration
-
-### GitHub Actions (Exemplo)
-
-```yaml
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    services:
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: site_cursos_test
-          MYSQL_USER: appuser
-          MYSQL_PASSWORD: password
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping"
-    
-    steps:
-      - uses: actions/checkout@v2
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-      
-      - name: Install dependencies
-        run: npm install
-      
-      - name: Setup test database
-        run: npm run db:test:setup
-      
-      - name: Run unit tests
-        run: npm test
-      
-      - name: Run integration tests
-        run: npm run test:integration
-```
-
-## Troubleshooting
-
-### Erro: "Cannot connect to database"
-
-```bash
-# Verifique se MySQL está rodando
-mysql -u appuser -p
-
-# Recrie o banco de teste
-npm run db:test:setup
-```
-
-### Erro: "Table doesn't exist"
-
-```bash
-# O schema não foi executado
-npm run db:test:setup
-```
-
-### Testes falhando aleatoriamente
-
-Isso pode indicar que os testes não estão isolados. Verifique:
-- O `afterEach` está limpando o banco?
-- O seed está sendo recriado?
-- Os IDs estão sendo capturados corretamente?
-
-## Próximos Passos
-
-1. **Adicionar mais cenários**: Testar casos de borda
-2. **Testes de performance**: Medir tempo de resposta
-3. **Testes de carga**: Simular múltiplos usuários
-4. **Cobertura**: Adicionar testes para módulos faltantes
-
-## Recursos
-
-- [Jest Documentation](https://jestjs.io/docs/getting-started)
-- [Supertest Documentation](https://github.com/ladjs/supertest)
-- [MySQL2 Documentation](https://github.com/sidorares/node-mysql2)
+- A autoria de conteúdos e questionários continua fora do escopo; as telas atuais são de consulta/acompanhamento.
+- O JWT ainda fica em `localStorage`; migrar para cookie `HttpOnly`, `Secure` e `SameSite`, com CSRF, é trabalho futuro.
+- O detector de plágio depende de um motor externo ainda em desenvolvimento.
+- Interação visual, teclado, responsividade e console CSP exigem validação humana quando não houver driver de navegador automatizável.

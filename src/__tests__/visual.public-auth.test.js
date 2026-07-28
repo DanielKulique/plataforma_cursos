@@ -485,7 +485,8 @@ describe('Goal Visual 2 - estrutura, CSS e segurança', () => {
             '/css/style.css',
             '/css/components.css',
             '/css/layouts.css',
-            '/css/responsive.css'
+            '/css/responsive.css',
+            '/css/utilities.css'
         ]);
         expect(html).not.toMatch(/\sstyle\s*=/i);
         expect(html).not.toMatch(/\son[a-z]+\s*=/i);

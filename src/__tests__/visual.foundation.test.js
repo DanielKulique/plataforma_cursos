@@ -43,7 +43,9 @@ describe('Goal Visual 1 - fundação visual', () => {
             'sala-aula.html',
             'questionario.html',
             'professor.html',
-            'professor-turma.html'
+            'professor-turma.html',
+            'admin.html',
+            'verificador.html'
         ]);
         expect(pages).toHaveLength(11);
 
@@ -61,7 +63,8 @@ describe('Goal Visual 1 - fundação visual', () => {
                 expectedStyles.push(
                     '/css/components.css',
                     '/css/layouts.css',
-                    '/css/responsive.css'
+                    '/css/responsive.css',
+                    '/css/utilities.css'
                 );
             }
 
@@ -149,12 +152,14 @@ describe('Goal Visual 1 - fundação visual', () => {
         expect(baseSource).toMatch(/scroll-behavior:\s*auto !important/);
     });
 
-    it('mantém aliases legados apontando para os tokens semânticos', () => {
-        expect(legacySource).toContain('--bg:          var(--color-background)');
-        expect(legacySource).toContain('--white:       var(--color-text)');
-        expect(legacySource).toContain('--muted:       var(--color-text-tertiary)');
-        expect(legacySource).toContain('--purple:      var(--color-action)');
-        expect(legacySource).toContain('--ease: var(--duration-normal) var(--ease-standard)');
+    it('usa tokens semânticos diretamente, sem aliases legados', () => {
+        expect(legacySource).toContain('var(--color-background)');
+        expect(legacySource).toContain('var(--color-text)');
+        expect(legacySource).toContain('var(--color-text-tertiary)');
+        expect(legacySource).toContain('var(--color-action)');
+        expect(legacySource).toContain('var(--duration-normal) var(--ease-standard)');
+        expect(tokensSource).not.toMatch(/--(?:bg|white|muted|purple|ease)\s*:/);
+        expect(legacySource).not.toMatch(/var\(--(?:bg|white|muted|purple|ease)\)/);
     });
 
     it('serve os novos arquivos CSS pela aplicação sem alterar a CSP', async () => {

@@ -308,12 +308,15 @@ describe('estados visuais centralizados', () => {
 
     it('permite que o catálogo filtrado encolha sem overflow em telas móveis', () => {
         const css = fs.readFileSync(publicPath('css', 'style.css'), 'utf8');
+        const responsiveCss = fs.readFileSync(publicPath('css', 'responsive.css'), 'utf8');
 
         expect(css).toMatch(/\.grid-2\s*\{[^}]*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s);
         expect(css).toMatch(/\.grid-3\s*\{[^}]*repeat\(3,\s*minmax\(0,\s*1fr\)\)/s);
         expect(css).toMatch(/\.grid-2\s*>\s*\*,\s*\.grid-3\s*>\s*\*\s*\{\s*min-width:\s*0/s);
         expect(css).toMatch(/\.card\s*\{[^}]*min-width:\s*0/s);
-        expect(css).toMatch(/@media\s*\(max-width:900px\)[\s\S]*?\.grid-2,\s*\.grid-3\s*\{\s*grid-template-columns:minmax\(0,\s*1fr\)/);
+        expect(responsiveCss).toMatch(
+            /@media\s*\(max-width:\s*900px\)[\s\S]*?\.public-home\s+\.catalog-section\s+\.grid-2\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\)/
+        );
     });
 
     it('não introduz sinks XSS no controlador visual da sessão', () => {

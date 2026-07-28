@@ -28,13 +28,21 @@ const expectedStyles = [
     '/css/style.css',
     '/css/components.css',
     '/css/layouts.css',
-    '/css/responsive.css'
+    '/css/responsive.css',
+    '/css/utilities.css'
 ];
 
 function loadModuleFunctions(file, names) {
-    const source = readPublic('js', file).replace(/\bexport\s+/g, '');
-    const factory = new Function(`${source}\nreturn { ${names.join(', ')} };`);
-    return factory();
+    const source = readPublic('js', file)
+        .replace(/^import[^\n]+\n/gm, '')
+        .replace(/\bexport\s+/g, '');
+    const scrollSource = readPublic('js', 'page-scroll.js').replace(/\bexport\s+/g, '');
+    const lockPageScroll = new Function(`${scrollSource}\nreturn lockPageScroll;`)();
+    const factory = new Function(
+        'lockPageScroll',
+        `${source}\nreturn { ${names.join(', ')} };`
+    );
+    return factory(lockPageScroll);
 }
 
 class FakeClassList {
@@ -48,6 +56,10 @@ class FakeClassList {
 
     remove(...values) {
         values.forEach((value) => this.values.delete(value));
+    }
+
+    contains(value) {
+        return this.values.has(value);
     }
 }
 
@@ -108,7 +120,8 @@ class FakeDialog extends FakeElement {
 function dialogSetup() {
     const documentRef = {
         activeElement: null,
-        body: { style: { overflow: 'auto' } },
+        body: { classList: new FakeClassList() },
+        documentElement: { classList: new FakeClassList() },
         defaultView: { setTimeout: (callback) => callback() }
     };
     const opener = new FakeElement(documentRef);
@@ -259,7 +272,8 @@ describe('Goal Visual 3 - diálogo acessível', () => {
 
         expect(dialog.showModalCalls).toBe(1);
         expect(dialog.attributes).toMatchObject({ 'aria-modal': 'true', tabindex: '-1' });
-        expect(documentRef.body.style.overflow).toBe('hidden');
+        expect(documentRef.body.classList.contains('is-scroll-locked')).toBe(true);
+        expect(documentRef.documentElement.classList.contains('is-scroll-locked')).toBe(true);
         expect(documentRef.activeElement).toBe(first);
     });
 
@@ -299,7 +313,8 @@ describe('Goal Visual 3 - diálogo acessível', () => {
 
         expect(cancelEvent.preventDefault).toHaveBeenCalledTimes(1);
         expect(dialog.closeCalls).toBe(1);
-        expect(documentRef.body.style.overflow).toBe('auto');
+        expect(documentRef.body.classList.contains('is-scroll-locked')).toBe(false);
+        expect(documentRef.documentElement.classList.contains('is-scroll-locked')).toBe(false);
         expect(documentRef.activeElement).toBe(opener);
     });
 });
@@ -313,7 +328,8 @@ describe('Goal Visual 3 - CSS responsivo e utilitários acadêmicos', () => {
         expect(components).toMatch(/\.academic-page \.btn[\s\S]*?min-block-size:\s*44px/);
         expect(components).toMatch(/\.academic-page \.filter-chip[\s\S]*?min-block-size:\s*44px/);
         expect(layouts).toContain('.academic-page .academic-main');
-        expect(`${components}\n${layouts}\n${responsive}`).not.toMatch(/(^|\})\s*\.admin-page\b/m);
+        expect(`${components}\n${layouts}\n${responsive}`).not.toMatch(/(^|\})\s*\.admin-tabs\b/m);
+        expect(components).toContain('.admin-page .admin-tabs');
     });
 
     it('prevê tabela rolável, disclosure, celular e telas baixas', () => {

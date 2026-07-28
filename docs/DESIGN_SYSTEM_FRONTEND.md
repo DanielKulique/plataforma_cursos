@@ -268,3 +268,75 @@ regras necessárias, sem novos `!important`. A classe `.academic-dialog` é
 exclusiva desta fase e não coincide com os diálogos administrativos. A remoção
 das regras legadas fica para a consolidação, depois das fases das áreas ainda
 não migradas.
+
+## Goal Visual 6 — Consolidação
+
+As onze páginas usam uma única cascata explícita:
+
+1. `/css/tokens.css`;
+2. `/css/base.css`;
+3. `/css/style.css`;
+4. `/css/components.css`;
+5. `/css/layouts.css`;
+6. `/css/responsive.css`;
+7. `/css/utilities.css`.
+
+A posição temporária de `style.css` antes das camadas modernas é uma exceção
+deliberada à ordem recomendada no plano. O arquivo ainda fornece estruturas
+específicas da página pública, autenticação e áreas acadêmicas; carregá-lo por
+último restauraria conflitos que os escopos modernos já resolvem. A ordem
+preserva os Goals Visuais 1–5 e deve permanecer até a migração completa das
+regras específicas, sem aumentar especificidade ou usar `!important`.
+
+### Responsabilidade das folhas
+
+| Arquivo | Responsabilidade |
+| --- | --- |
+| `tokens.css` | primitivos e tokens semânticos de tema, forma, tempo, largura e breakpoints conceituais |
+| `base.css` | reset, elementos nativos, foco, conteúdo oculto e preferências do usuário |
+| `style.css` | compatibilidade e estruturas específicas ainda consumidas |
+| `components.css` | aparência de componentes compartilhados e variantes semânticas |
+| `layouts.css` | geometria das páginas e regiões maiores |
+| `responsive.css` | adaptações nos breakpoints de 640px, 900px e 1200px e exceções de altura |
+| `utilities.css` | única utilidade transversal de bloqueio da rolagem |
+
+Os aliases legados foram removidos. Consumidores usam diretamente tokens
+semânticos, e as redefinições restantes são intencionais entre temas claro e
+escuro. Os breakpoints são documentados como tokens conceituais; media queries
+continuam com valores literais porque custom properties não são válidas nessa
+posição em CSS nativo.
+
+### Estados e JavaScript visual
+
+- `[hidden]` é a fonte única de ocultação estrutural;
+- `is-scroll-locked` é aplicado por `page-scroll.js`, com contagem de locks e
+  restauração idempotente;
+- ícones de curso usam variantes semânticas em vez de cor inline;
+- barras de progresso usam `--progress-value`; essa é a única exceção visual
+  dinâmica, limitada a dois consumidores de percentual real;
+- o modal compartilhado é construído com DOM seguro, `textContent`, foco
+  contido, Escape, restauração do foco e rolagem interna;
+- nenhum componente injeta `<style>`, usa handler inline ou atribui
+  `innerHTML` dinâmico.
+
+### Exceções de `!important`
+
+Restam seis declarações efetivas:
+
+- uma em `[hidden]`, necessária para preservar a semântica do atributo contra
+  regras de apresentação;
+- cinco em `prefers-reduced-motion`, necessárias para suprimir animações e
+  transições declaradas em qualquer camada.
+
+Não existem `!important` para resolver competição entre componentes.
+
+### Compatibilidade preservada
+
+`style.css` permanece necessário e não foi renomeado para `legacy.css`. Foram
+removidos somente blocos sem consumidores confirmados, implementações antigas
+do verificador e duplicações integralmente substituídas. Regras repetidas entre
+componente, layout, tema e breakpoint permanecem quando expressam
+responsabilidades diferentes; não são fundidas em seletores globais amplos.
+
+A consolidação não altera textos funcionais, navegação, endpoints, payloads,
+sessão, autorização, regras acadêmicas, CRUDs ou cálculo de similaridade.

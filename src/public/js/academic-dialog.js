@@ -1,3 +1,5 @@
+import { lockPageScroll } from './page-scroll.js';
+
 const FOCUSABLE_SELECTOR = [
     'a[href]',
     'button:not([disabled])',
@@ -16,7 +18,7 @@ export function createAcademicDialog(dialog, {
     }
 
     let opener = null;
-    let previousOverflow = '';
+    let restorePageScroll = null;
     let restoreFocus = true;
 
     function getFocusableElements() {
@@ -39,8 +41,7 @@ export function createAcademicDialog(dialog, {
 
         opener = trigger;
         restoreFocus = true;
-        previousOverflow = documentRef.body.style.overflow;
-        documentRef.body.style.overflow = 'hidden';
+        restorePageScroll = lockPageScroll(documentRef);
         dialog.setAttribute('aria-modal', 'true');
         dialog.setAttribute('tabindex', '-1');
         dialog.showModal();
@@ -59,7 +60,8 @@ export function createAcademicDialog(dialog, {
     });
 
     dialog.addEventListener('close', () => {
-        documentRef.body.style.overflow = previousOverflow;
+        restorePageScroll?.();
+        restorePageScroll = null;
         const focusTarget = opener;
         const shouldFocus = restoreFocus;
         opener = null;

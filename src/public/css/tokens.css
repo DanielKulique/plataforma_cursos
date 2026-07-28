@@ -1,8 +1,8 @@
 /*
  * Goal Visual 1 — Fundação visual
  *
- * Tokens semânticos compartilhados. Os aliases legados permanecem em
- * style.css durante a migração incremental para evitar quebra de páginas.
+ * Tokens primitivos e semânticos compartilhados. As demais camadas consomem
+ * estes nomes diretamente, sem aliases de compatibilidade.
  */
 :root {
   color-scheme: dark;
@@ -51,6 +51,12 @@
   --reading-width: 45rem;
   --form-width: 30rem;
 
+  /* Breakpoints conceituais; media queries usam os valores literais porque
+   * custom properties não são válidas em condições @media. */
+  --breakpoint-compact: 40rem;
+  --breakpoint-navigation: 56.25rem;
+  --breakpoint-wide: 75rem;
+
   --duration-fast: 120ms;
   --duration-normal: 180ms;
   --duration-slow: 240ms;
@@ -63,6 +69,7 @@
   --palette-dark-surface: #11141b;
   --palette-dark-surface-elevated: #181c26;
   --palette-dark-surface-inset: #07090f;
+  --palette-dark-verifier-bar: #0f1420;
   --palette-dark-text: #f4f4f5;
   --palette-dark-text-secondary: #cbd5e1;
   --palette-dark-text-tertiary: #a7b0c0;
@@ -84,6 +91,7 @@
   --palette-light-surface: #ffffff;
   --palette-light-surface-elevated: #ffffff;
   --palette-light-surface-inset: #f1f3f8;
+  --palette-light-verifier-bar: #ffffff;
   --palette-light-text: #1a1a2e;
   --palette-light-text-secondary: #4b5563;
   --palette-light-text-tertiary: #5f6878;
@@ -111,6 +119,7 @@
   --color-surface: var(--palette-dark-surface);
   --color-surface-elevated: var(--palette-dark-surface-elevated);
   --color-surface-inset: var(--palette-dark-surface-inset);
+  --color-verifier-bar: var(--palette-dark-verifier-bar);
   --color-text: var(--palette-dark-text);
   --color-text-secondary: var(--palette-dark-text-secondary);
   --color-text-tertiary: var(--palette-dark-text-tertiary);
@@ -140,6 +149,7 @@
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.32);
   --shadow-brand: 0 0 24px rgba(124, 58, 237, 0.18);
   --focus-ring: 0 0 0 3px color-mix(in srgb, var(--color-focus) 28%, transparent);
+
 }
 
 @media (prefers-color-scheme: light) {
@@ -149,6 +159,7 @@
     --color-surface: var(--palette-light-surface);
     --color-surface-elevated: var(--palette-light-surface-elevated);
     --color-surface-inset: var(--palette-light-surface-inset);
+    --color-verifier-bar: var(--palette-light-verifier-bar);
     --color-text: var(--palette-light-text);
     --color-text-secondary: var(--palette-light-text-secondary);
     --color-text-tertiary: var(--palette-light-text-tertiary);
@@ -179,6 +190,7 @@
   --color-surface: var(--palette-light-surface);
   --color-surface-elevated: var(--palette-light-surface-elevated);
   --color-surface-inset: var(--palette-light-surface-inset);
+  --color-verifier-bar: var(--palette-light-verifier-bar);
   --color-text: var(--palette-light-text);
   --color-text-secondary: var(--palette-light-text-secondary);
   --color-text-tertiary: var(--palette-light-text-tertiary);
@@ -208,6 +220,7 @@
   --color-surface: var(--palette-dark-surface);
   --color-surface-elevated: var(--palette-dark-surface-elevated);
   --color-surface-inset: var(--palette-dark-surface-inset);
+  --color-verifier-bar: var(--palette-dark-verifier-bar);
   --color-text: var(--palette-dark-text);
   --color-text-secondary: var(--palette-dark-text-secondary);
   --color-text-tertiary: var(--palette-dark-text-tertiary);

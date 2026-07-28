@@ -204,7 +204,7 @@ export function addUrlParams(url, params = {}) {
  */
 export function showLoading(container, mensagem = 'Carregando...') {
     if (!container) return;
-    container.innerHTML = `<div class="loading-state">${escapeHtml(mensagem)}</div>`;
+    container.replaceChildren(createTextElement('div', mensagem, 'loading-state'));
 }
 
 /**
@@ -214,7 +214,7 @@ export function showLoading(container, mensagem = 'Carregando...') {
  */
 export function showEmpty(container, mensagem) {
     if (!container) return;
-    container.innerHTML = `<div class="empty-state">${escapeHtml(mensagem)}</div>`;
+    container.replaceChildren(createTextElement('div', mensagem, 'empty-state'));
 }
 
 /**
@@ -224,7 +224,7 @@ export function showEmpty(container, mensagem) {
  */
 export function showError(container, mensagem) {
     if (!container) return;
-    container.innerHTML = `<div class="error-state">${escapeHtml(mensagem)}</div>`;
+    container.replaceChildren(createTextElement('div', mensagem, 'error-state'));
 }
 
 /**

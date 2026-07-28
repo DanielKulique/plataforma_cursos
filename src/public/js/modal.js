@@ -3,177 +3,15 @@
  * @description Modais de confirmação, alerta e input
  */
 
-import { escapeHtml } from './utils.js';
+import { lockPageScroll } from './page-scroll.js';
 
-// ============================================================
-// ESTILOS DO MODAL (injetados dinamicamente)
-// ============================================================
+let modalSequence = 0;
 
-const MODAL_STYLES = `
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    animation: modal-fade-in 0.2s ease;
-}
-
-@keyframes modal-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes modal-slide-in {
-    from {
-        opacity: 0;
-        transform: scale(0.95) translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.modal-container {
-    background: var(--surface, #101a2f);
-    border: 1px solid var(--border, rgba(148, 163, 184, 0.35));
-    border-radius: var(--radius-lg, 20px);
-    padding: 24px;
-    max-width: 420px;
-    width: 90%;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    animation: modal-slide-in 0.25s ease;
-}
-
-.modal-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.modal-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-
-.modal-icon--warning {
-    background: rgba(251, 191, 36, 0.2);
-    color: var(--warning, #fbbf24);
-}
-
-.modal-icon--danger {
-    background: rgba(248, 113, 113, 0.2);
-    color: var(--danger, #f87171);
-}
-
-.modal-icon--info {
-    background: rgba(56, 189, 248, 0.2);
-    color: var(--primary, #38bdf8);
-}
-
-.modal-icon--success {
-    background: rgba(52, 211, 153, 0.2);
-    color: var(--success, #34d399);
-}
-
-.modal-title {
-    margin: 0;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text, #e2e8f0);
-}
-
-.modal-body {
-    margin-bottom: 20px;
-    color: var(--muted, #94a3b8);
-    line-height: 1.5;
-}
-
-.modal-input {
-    width: 100%;
-    padding: 10px 14px;
-    margin-top: 12px;
-    background: var(--bg-soft, #111c33);
-    border: 1px solid var(--border, rgba(148, 163, 184, 0.35));
-    border-radius: var(--radius-sm, 10px);
-    color: var(--text, #e2e8f0);
-    font-size: 0.95rem;
-}
-
-.modal-input:focus {
-    outline: none;
-    border-color: var(--primary, #38bdf8);
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.modal-btn {
-    padding: 10px 18px;
-    border-radius: var(--radius-sm, 10px);
-    font-size: 0.92rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-}
-
-.modal-btn--cancel {
-    background: transparent;
-    border-color: var(--border, rgba(148, 163, 184, 0.35));
-    color: var(--text, #e2e8f0);
-}
-
-.modal-btn--cancel:hover {
-    background: rgba(148, 163, 184, 0.1);
-}
-
-.modal-btn--confirm {
-    background: var(--primary, #38bdf8);
-    color: #0c1929;
-}
-
-.modal-btn--confirm:hover {
-    background: var(--primary-hover, #0ea5e9);
-}
-
-.modal-btn--danger {
-    background: var(--danger, #f87171);
-    color: #1f1f1f;
-}
-
-.modal-btn--danger:hover {
-    background: #ef4444;
-}
-`;
-
-// ============================================================
-// INJEÇÃO DE ESTILOS
-// ============================================================
-
-let stylesInjected = false;
-
-function injectStyles() {
-    if (stylesInjected) return;
-
-    const style = document.createElement('style');
-    style.textContent = MODAL_STYLES;
-    document.head.appendChild(style);
-    stylesInjected = true;
+function createElement(tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== undefined) element.textContent = String(text);
+    return element;
 }
 
 // ============================================================
@@ -202,7 +40,6 @@ function createModalElement(options) {
     backdrop.className = 'modal-backdrop';
     backdrop.setAttribute('role', 'dialog');
     backdrop.setAttribute('aria-modal', 'true');
-    backdrop.setAttribute('aria-labelledby', 'modal-title');
 
     const iconMap = {
         warning: '!',
@@ -210,27 +47,98 @@ function createModalElement(options) {
         info: 'i',
         success: '✓'
     };
+    const normalizedType = Object.hasOwn(iconMap, type) ? type : 'info';
+    const titleId = `shared-modal-title-${++modalSequence}`;
+    backdrop.setAttribute('aria-labelledby', titleId);
 
-    backdrop.innerHTML = `
-        <div class="modal-container">
-            <div class="modal-header">
-                <div class="modal-icon modal-icon--${type}">
-                    ${iconMap[type] || 'i'}
-                </div>
-                <h2 class="modal-title" id="modal-title">${escapeHtml(title)}</h2>
-            </div>
-            <div class="modal-body">
-                <p>${escapeHtml(message)}</p>
-                ${showInput ? `<input type="text" class="modal-input" placeholder="${escapeHtml(inputPlaceholder)}" />` : ''}
-            </div>
-            <div class="modal-actions">
-                ${showCancel ? `<button class="modal-btn modal-btn--cancel" data-action="cancel">${escapeHtml(cancelText)}</button>` : ''}
-                <button class="modal-btn ${dangerous ? 'modal-btn--danger' : 'modal-btn--confirm'}" data-action="confirm">${escapeHtml(confirmText)}</button>
-            </div>
-        </div>
-    `;
+    const container = createElement('div', 'modal-container');
+    const header = createElement('div', 'modal-header');
+    const icon = createElement(
+        'div',
+        `modal-icon modal-icon--${normalizedType}`,
+        iconMap[normalizedType]
+    );
+    icon.setAttribute('aria-hidden', 'true');
+    const heading = createElement('h2', 'modal-title', title);
+    heading.id = titleId;
+    header.append(icon, heading);
+
+    const body = createElement('div', 'modal-body');
+    body.appendChild(createElement('p', '', message));
+    if (showInput) {
+        const input = createElement('input', 'modal-input');
+        input.type = 'text';
+        input.placeholder = String(inputPlaceholder);
+        body.appendChild(input);
+    }
+
+    const actions = createElement('div', 'modal-actions');
+    if (showCancel) {
+        const cancel = createElement('button', 'modal-btn modal-btn--cancel', cancelText);
+        cancel.type = 'button';
+        cancel.dataset.action = 'cancel';
+        actions.appendChild(cancel);
+    }
+    const confirm = createElement(
+        'button',
+        `modal-btn ${dangerous ? 'modal-btn--danger' : 'modal-btn--confirm'}`,
+        confirmText
+    );
+    confirm.type = 'button';
+    confirm.dataset.action = 'confirm';
+    actions.appendChild(confirm);
+
+    container.append(header, body, actions);
+    backdrop.appendChild(container);
 
     return backdrop;
+}
+
+function getFocusableElements(modal) {
+    return [...modal.querySelectorAll(
+        'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )].filter((element) => !element.hidden);
+}
+
+function mountModal(modal, initialFocus) {
+    const opener = document.activeElement;
+    const restorePageScroll = lockPageScroll(document);
+
+    function containFocus(event) {
+        if (event.key !== 'Tab') return;
+        const focusable = getFocusableElements(modal);
+        if (!focusable.length) {
+            event.preventDefault();
+            modal.focus();
+            return;
+        }
+        const first = focusable[0];
+        const last = focusable.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    }
+
+    modal.tabIndex = -1;
+    modal.addEventListener('keydown', containFocus);
+    document.body.appendChild(modal);
+    (initialFocus || getFocusableElements(modal)[0] || modal).focus();
+
+    let cleaned = false;
+    return () => {
+        if (cleaned) return;
+        cleaned = true;
+        modal.removeEventListener('keydown', containFocus);
+        modal.remove();
+        restorePageScroll();
+        if (opener && opener.isConnected !== false && typeof opener.focus === 'function') {
+            opener.focus();
+        }
+    };
 }
 
 // ============================================================
@@ -245,8 +153,6 @@ function createModalElement(options) {
  * @returns {Promise<boolean>}
  */
 export function confirm(title, message, options = {}) {
-    injectStyles();
-
     return new Promise((resolve) => {
         const modal = createModalElement({
             title,
@@ -258,14 +164,12 @@ export function confirm(title, message, options = {}) {
             dangerous: options.dangerous || false
         });
 
-        document.body.appendChild(modal);
-
-        // Focus no botão cancelar por segurança
         const cancelBtn = modal.querySelector('[data-action="cancel"]');
-        if (cancelBtn) cancelBtn.focus();
+        const unmount = mountModal(modal, cancelBtn);
 
         function cleanup() {
-            modal.remove();
+            document.removeEventListener('keydown', handleKeydown);
+            unmount();
         }
 
         function handleClick(e) {
@@ -295,7 +199,7 @@ export function confirm(title, message, options = {}) {
         });
 
         modal.addEventListener('click', handleClick);
-        document.addEventListener('keydown', handleKeydown, { once: true });
+        document.addEventListener('keydown', handleKeydown);
     });
 }
 
@@ -307,8 +211,6 @@ export function confirm(title, message, options = {}) {
  * @returns {Promise<void>}
  */
 export function alert(title, message, options = {}) {
-    injectStyles();
-
     return new Promise((resolve) => {
         const modal = createModalElement({
             title,
@@ -318,13 +220,12 @@ export function alert(title, message, options = {}) {
             showCancel: false
         });
 
-        document.body.appendChild(modal);
-
         const confirmBtn = modal.querySelector('[data-action="confirm"]');
-        if (confirmBtn) confirmBtn.focus();
+        const unmount = mountModal(modal, confirmBtn);
 
         function cleanup() {
-            modal.remove();
+            document.removeEventListener('keydown', handleKeydown);
+            unmount();
             resolve();
         }
 
@@ -345,7 +246,7 @@ export function alert(title, message, options = {}) {
         });
 
         modal.addEventListener('click', handleClick);
-        document.addEventListener('keydown', handleKeydown, { once: true });
+        document.addEventListener('keydown', handleKeydown);
     });
 }
 
@@ -357,8 +258,6 @@ export function alert(title, message, options = {}) {
  * @returns {Promise<string|null>} Valor digitado ou null se cancelado
  */
 export function prompt(title, message, options = {}) {
-    injectStyles();
-
     return new Promise((resolve) => {
         const modal = createModalElement({
             title,
@@ -371,17 +270,16 @@ export function prompt(title, message, options = {}) {
             inputPlaceholder: options.placeholder || ''
         });
 
-        document.body.appendChild(modal);
-
         const input = modal.querySelector('.modal-input');
         if (input) {
             input.value = options.defaultValue || '';
-            input.focus();
-            input.select();
         }
+        const unmount = mountModal(modal, input);
+        input?.select();
 
         function cleanup() {
-            modal.remove();
+            document.removeEventListener('keydown', handleKeydown);
+            unmount();
         }
 
         function handleClick(e) {

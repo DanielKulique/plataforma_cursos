@@ -1,0 +1,10 @@
+/*
+ * Goal Visual 6 — utilitários mínimos de estado.
+ *
+ * Utilitários não substituem componentes semânticos. Esta camada concentra
+ * apenas estados transversais controlados pelo JavaScript da interface.
+ */
+
+:where(html, body).is-scroll-locked {
+  overflow: hidden;
+}

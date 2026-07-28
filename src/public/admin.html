@@ -8,56 +8,64 @@
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layouts.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/utilities.css">
 </head>
-<body data-session-state="loading" data-session-protected>
+<body class="academic-page admin-page admin-dashboard" data-session-state="loading" data-session-protected>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-brand" href="/index.html">
-    <div class="brand-mark">🧠</div>
-    <div class="brand-texts">
-      <span class="brand-name">Plágio</span>
-      <span class="brand-sub">Nao Copie Essa Ideia</span>
+<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+
+<header class="academic-header">
+  <nav class="academic-nav" aria-label="Navegação da administração">
+    <a class="nav-brand" href="/index.html" aria-label="Plágio — página inicial">
+      <span class="brand-mark" aria-hidden="true">🧠</span>
+      <span class="brand-texts">
+        <span class="brand-name">Plágio</span>
+        <span class="brand-sub">Não Copie Essa Ideia 4.0</span>
+      </span>
+    </a>
+    <div class="nav-links" id="primary-navigation">
+      <a href="/index.html">Catálogo</a>
+      <a href="/verificador.html">Verificador</a>
+      <a href="/admin.html" aria-current="page" data-session-private data-session-roles="ADMIN" hidden>Administração</a>
     </div>
-  </a>
-
-  <div class="nav-links">
-    <a href="/index.html">Catalogo</a>
-    <a href="/verificador.html">Verificador</a>
-    <a href="/admin.html" class="active" data-session-private data-session-roles="ADMIN" hidden>Admin</a>
-  </div>
-
-  <div class="nav-right">
-    <button class="theme-toggle" id="theme-toggle" title="Alternar tema"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
-    <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-  <div class="hero-fade"></div>
-
-  <div class="hero-inner">
-    <div class="hero-content">
-      <div class="hero-eyebrow">Gestao</div>
-      <h1 class="hero-title">Painel <em>Administrativo</em></h1>
-      <p class="hero-sub">Area exclusiva para operacoes administrativas da plataforma.</p>
+    <div class="nav-right">
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Abrir menu de navegação">
+        <span class="mobile-nav-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="mobile-nav-toggle__label">Menu</span>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema">
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+      </button>
+      <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
     </div>
-  </div>
-</section>
+  </nav>
+</header>
 
-<!-- MAIN -->
-<main>
-  <section id="admin-root" class="card admin-panel" aria-busy="true">
-    <p class="loading-state" role="status">Carregando painel administrativo...</p>
+<main class="academic-main" id="conteudo-principal" tabindex="-1">
+  <section class="academic-hero" aria-labelledby="titulo-pagina">
+    <div class="academic-hero__content">
+      <p class="academic-eyebrow">Área administrativa</p>
+      <h1 id="titulo-pagina">Gestão da plataforma</h1>
+      <p>Gerencie usuários, cursos e turmas com dados reais e controles protegidos.</p>
+    </div>
+    <div class="academic-trail" aria-hidden="true"><span></span><span></span><span></span></div>
+  </section>
+
+  <section id="admin-root" class="academic-panel admin-panel" aria-busy="true" aria-labelledby="admin-loading-title">
+    <h2 id="admin-loading-title" class="sr-only">Painel administrativo</h2>
+    <div class="ui-state is-loading" role="status">
+      <strong>Carregando painel administrativo</strong>
+      <span>Validando sua sessão e consultando os dados.</span>
+    </div>
   </section>
 </main>
 
 <script type="module" src="/js/theme.js"></script>
+<script type="module" src="/js/navigation.js"></script>
 <script type="module" src="/js/admin.js"></script>
 </body>
 </html>

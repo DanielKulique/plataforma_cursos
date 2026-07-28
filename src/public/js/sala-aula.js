@@ -76,7 +76,8 @@ function atualizarResumo() {
     texto($('conteudos-concluidos'), concluidos);
     texto($('total-conteudos'), conteudos.length);
     texto($('progresso-label'), `${percentual}%`);
-    $('progress-bar-fill').style.width = `${percentual}%`;
+    // Exceção dinâmica documentada: o percentual real não cabe em classes fixas.
+    $('progress-bar-fill').style.setProperty('--progress-value', `${percentual}%`);
     $('progress-bar').setAttribute('aria-valuenow', String(percentual));
     texto($('progresso-turma'), `${percentual}%`);
 }

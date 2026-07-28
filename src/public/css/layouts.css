@@ -475,6 +475,41 @@
   margin: 0;
 }
 
+.admin-page .academic-hero {
+  min-block-size: 11rem;
+}
+
+.admin-page .admin-panel {
+  min-block-size: 28rem;
+}
+
+.admin-page .admin-header {
+  align-items: center;
+}
+
+.admin-page .admin-header > div {
+  min-inline-size: 0;
+}
+
+.admin-page .admin-content {
+  min-inline-size: 0;
+}
+
+.admin-page .admin-toolbar {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(10rem, auto) auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.admin-page .admin-toolbar__search {
+  min-inline-size: 0;
+}
+
+.admin-page .admin-toolbar__actions {
+  justify-content: flex-end;
+}
+
 .academic-page .academic-card-list {
   display: grid;
   gap: var(--space-4);
@@ -537,4 +572,196 @@
   line-height: var(--line-height-reading);
   overflow: auto;
   white-space: pre-wrap;
+}
+
+/* Goal Visual 5 — estrutura do verificador de similaridade */
+.verificador-page {
+  display: block;
+  min-block-size: 100vh;
+  block-size: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.verificador-page .verifier-header {
+  position: relative;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  min-block-size: 4.5rem;
+  padding: var(--space-3) max(var(--space-4), calc((100% - var(--content-width)) / 2));
+  border-block-end: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+
+.verificador-page .verifier-brand {
+  flex: 0 0 auto;
+}
+
+.verificador-page .verifier-nav {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  block-size: auto;
+  min-block-size: auto;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inset);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.verificador-page .verifier-nav a {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+.verificador-page .verifier-nav a:hover {
+  color: var(--color-text);
+}
+
+.verificador-page .verifier-nav a[aria-current="page"] {
+  background: color-mix(in srgb, var(--color-action) 12%, var(--color-surface));
+  color: var(--color-action);
+}
+
+.verificador-page .verifier-header-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.verificador-page .verifier-breadcrumb {
+  padding-inline: max(var(--space-4), calc((100% - var(--content-width)) / 2));
+}
+
+.verificador-page .verifier-main {
+  inline-size: min(100% - (2 * var(--space-4)), var(--content-width));
+  margin-inline: auto;
+  padding-block: var(--space-8) var(--space-12);
+}
+
+.verificador-page .verifier-intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin-block-end: var(--space-5);
+}
+
+.verificador-page .verifier-intro h1 {
+  max-inline-size: 48rem;
+  margin: 0;
+}
+
+.verificador-page .verifier-lead {
+  max-inline-size: 50rem;
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.verificador-page .verifier-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block-end: var(--space-5);
+}
+
+.verificador-page .verifier-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(23rem, 0.92fr);
+  align-items: start;
+  gap: var(--space-6);
+}
+
+.verificador-page .verifier-card {
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.verificador-page .verifier-form {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.verificador-page .verifier-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.verificador-page .verifier-card-header h2 {
+  margin: 0;
+}
+
+.verificador-page .verifier-results-header {
+  padding: var(--space-6) var(--space-6) var(--space-4);
+}
+
+.verificador-page .verifier-tabs {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+}
+
+.verificador-page .verifier-tab {
+  flex: 1 0 auto;
+}
+
+.verificador-page .verifier-panel {
+  min-inline-size: 0;
+}
+
+.verificador-page .verifier-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.verificador-page #detailsContent,
+.verificador-page .verifier-guidance {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.verificador-page .verifier-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.verificador-dialog .verifier-dialog-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.verificador-dialog .verifier-shortcuts > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.verificador-dialog .verifier-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
 }

@@ -19,6 +19,10 @@ const state = {
 let root;
 let content;
 let feedback;
+let tabsBySection = new Map();
+let dialogSequence = 0;
+let elementSequence = 0;
+let loadSequence = 0;
 
 function el(tag, { className, text, type, id } = {}) {
     const node = document.createElement(tag);
@@ -29,8 +33,9 @@ function el(tag, { className, text, type, id } = {}) {
     return node;
 }
 
-function actionButton(label, className, handler) {
+function actionButton(label, className, handler, { ariaLabel } = {}) {
     const button = el('button', { className, text: label, type: 'button' });
+    if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
     button.addEventListener('click', (event) => {
         button.focus();
         handler(event);
@@ -74,6 +79,8 @@ function showFeedback(message, type = 'success') {
     feedback.className = `admin-feedback admin-feedback--${type}`;
     feedback.textContent = message;
     feedback.hidden = false;
+    feedback.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    feedback.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
     feedback.focus();
 }
 
@@ -83,29 +90,62 @@ function clearFeedback() {
 }
 
 function renderLoading(label) {
-    content.replaceChildren(el('p', {
-        className: 'loading-state',
-        text: `Carregando ${label}...`
-    }));
+    content.setAttribute('aria-busy', 'true');
+    const box = el('div', { className: 'ui-state is-loading' });
+    box.setAttribute('role', 'status');
+    box.append(
+        el('strong', { text: `Carregando ${label}` }),
+        el('span', { text: 'Aguarde enquanto os dados são consultados.' })
+    );
+    content.replaceChildren(box);
 }
 
 function renderError(error) {
-    const box = el('section', { className: 'error-state' });
+    content.setAttribute('aria-busy', 'false');
+    const box = el('section', { className: 'ui-state is-error' });
     box.setAttribute('role', 'alert');
+    const status = Number(error.status);
+    const heading = Number.isInteger(status)
+        ? `Não foi possível carregar (HTTP ${status})`
+        : 'Não foi possível carregar';
     box.append(
-        el('p', { text: error.message || 'Não foi possível carregar os dados.' }),
+        el('strong', { text: heading }),
+        el('span', { text: error.message || 'Não foi possível carregar os dados.' }),
         actionButton('Tentar novamente', 'btn btn-ghost btn-sm', () => loadActive())
     );
     content.replaceChildren(box);
 }
 
-function emptyState(message) {
-    return el('p', { className: 'empty-state', text: message });
+function emptyState(title, description) {
+    const box = el('section', { className: 'ui-state is-empty admin-empty-state' });
+    box.append(
+        el('strong', { text: title }),
+        el('span', { text: description })
+    );
+    return box;
 }
 
-function inputControl({ label, name, type = 'text', value = '', required = false, maxLength, min, pattern, options }) {
-    const wrapper = el('label', { className: 'admin-field' });
-    const caption = el('span', { text: label });
+function inputControl({
+    label,
+    name,
+    type = 'text',
+    value = '',
+    required = false,
+    maxLength,
+    min,
+    pattern,
+    options
+}, dialogId) {
+    const wrapper = el('div', { className: 'admin-field' });
+    const controlId = `${dialogId}-${name}`;
+    const errorId = `${controlId}-error`;
+    const caption = el('label', { text: label });
+    caption.htmlFor = controlId;
+    if (required) {
+        const marker = el('span', { className: 'admin-required-marker', text: ' *' });
+        marker.setAttribute('aria-hidden', 'true');
+        caption.appendChild(marker);
+    }
     let control;
 
     if (options) {
@@ -123,30 +163,85 @@ function inputControl({ label, name, type = 'text', value = '', required = false
         control.type = type;
     }
 
+    control.id = controlId;
     control.name = name;
     control.value = value === null || value === undefined ? '' : String(value);
     control.required = required;
+    if (required) control.setAttribute('aria-required', 'true');
     if (maxLength) control.maxLength = maxLength;
     if (min !== undefined) control.min = String(min);
     if (pattern) control.pattern = pattern;
-    control.autocomplete = type === 'password' ? 'new-password' : 'off';
-    wrapper.append(caption, control);
-    return { wrapper, control };
+    if (type === 'password') {
+        control.autocomplete = name === 'senha_atual' ? 'current-password' : 'new-password';
+    } else {
+        control.autocomplete = 'off';
+    }
+
+    const fieldError = el('p', { className: 'admin-field-error' });
+    fieldError.id = errorId;
+    fieldError.hidden = true;
+    fieldError.setAttribute('aria-live', 'polite');
+    control.setAttribute('aria-describedby', errorId);
+    control.addEventListener('invalid', () => {
+        control.setAttribute('aria-invalid', 'true');
+        fieldError.textContent = control.validationMessage;
+        fieldError.hidden = false;
+    });
+    control.addEventListener('input', () => {
+        control.removeAttribute('aria-invalid');
+        fieldError.textContent = '';
+        fieldError.hidden = true;
+    });
+
+    wrapper.append(caption, control, fieldError);
+    return { wrapper, control, fieldError };
 }
 
-function openForm({ title, fields, submitLabel, onSubmit }) {
+function setFormBusy({ form, submit, cancel, close, busy, submitLabel }) {
+    form.setAttribute('aria-busy', String(busy));
+    submit.disabled = busy;
+    cancel.disabled = busy;
+    close.disabled = busy;
+    submit.textContent = busy ? 'Processando...' : submitLabel;
+}
+
+function openForm({
+    title,
+    description = 'Preencha os campos abaixo. Os campos marcados com asterisco são obrigatórios.',
+    fields,
+    submitLabel,
+    onSubmit
+}) {
+    const dialogId = `admin-dialog-${++dialogSequence}`;
     const dialog = el('dialog', { className: 'admin-dialog' });
-    dialog.setAttribute('aria-labelledby', 'admin-dialog-title');
+    dialog.id = dialogId;
+    dialog.setAttribute('aria-labelledby', `${dialogId}-title`);
+    dialog.setAttribute('aria-describedby', `${dialogId}-description`);
+
+    const header = el('header', { className: 'admin-dialog__header' });
+    const heading = el('h2', { id: `${dialogId}-title`, text: title });
+    const close = actionButton('×', 'admin-dialog__close', () => dialog.close(), {
+        ariaLabel: `Fechar ${title.toLocaleLowerCase('pt-BR')}`
+    });
+    close.firstChild?.setAttribute?.('aria-hidden', 'true');
+    header.append(heading, close);
+
+    const descriptionNode = el('p', {
+        className: 'admin-dialog__description',
+        id: `${dialogId}-description`,
+        text: description
+    });
     const form = el('form', { className: 'admin-form' });
     form.method = 'dialog';
-    const heading = el('h2', { id: 'admin-dialog-title', text: title });
     const formError = el('p', { className: 'admin-form-error' });
     formError.hidden = true;
+    formError.tabIndex = -1;
     formError.setAttribute('role', 'alert');
     const controls = {};
+    let submitting = false;
 
     fields.forEach((field) => {
-        const built = inputControl(field);
+        const built = inputControl(field, dialogId);
         controls[field.name] = built.control;
         form.appendChild(built.wrapper);
     });
@@ -155,41 +250,69 @@ function openForm({ title, fields, submitLabel, onSubmit }) {
     const cancel = actionButton('Cancelar', 'btn btn-ghost', () => dialog.close());
     const submit = el('button', { className: 'btn btn-primary', text: submitLabel, type: 'submit' });
     actions.append(cancel, submit);
-    form.prepend(heading, formError);
+    form.prepend(formError);
     form.appendChild(actions);
-    dialog.appendChild(form);
+    dialog.append(header, descriptionNode, form);
     document.body.appendChild(dialog);
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (!form.reportValidity()) return;
+        if (submitting) return;
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            form.querySelector(':invalid')?.focus();
+            return;
+        }
 
-        submit.disabled = true;
-        cancel.disabled = true;
+        submitting = true;
+        setFormBusy({ form, submit, cancel, close, busy: true, submitLabel });
         formError.hidden = true;
+        formError.textContent = '';
         try {
             const values = Object.fromEntries(
                 Object.entries(controls).map(([name, control]) => [name, control.value])
             );
             await onSubmit(values);
-            dialog.close();
+            if (dialog.open) dialog.close();
         } catch (error) {
             formError.textContent = error.message;
+            if (error.status) formError.dataset.httpStatus = String(error.status);
             formError.hidden = false;
-            submit.disabled = false;
-            cancel.disabled = false;
+            formError.focus();
+        } finally {
+            submitting = false;
+            if (dialog.open) {
+                setFormBusy({ form, submit, cancel, close, busy: false, submitLabel });
+            }
         }
     });
 
     showAdminDialog(dialog, { initialFocus: controls[fields[0]?.name] });
 }
 
-function makeTable(headers, rows) {
-    const container = el('div', { className: 'table-container admin-table' });
+function makeTable({ caption, headers, rows, regionLabel }) {
+    const hintId = `admin-table-hint-${++elementSequence}`;
+    const region = el('section', { className: 'admin-table-region' });
+    const hint = el('p', {
+        className: 'admin-table-scroll-hint',
+        id: hintId,
+        text: 'Deslize horizontalmente para consultar todas as colunas e ações.'
+    });
+    const container = el('div', { className: 'admin-table-scroll' });
+    container.tabIndex = 0;
+    container.setAttribute('role', 'region');
+    container.setAttribute('aria-label', regionLabel);
+    container.setAttribute('aria-describedby', hintId);
     const table = el('table');
+    table.className = 'admin-table';
+    const tableCaption = el('caption', { className: 'sr-only', text: caption });
     const thead = el('thead');
     const headerRow = el('tr');
-    headers.forEach((header) => headerRow.appendChild(el('th', { text: header })));
+    headers.forEach((header) => {
+        const cell = el('th', { text: header });
+        cell.scope = 'col';
+        headerRow.appendChild(cell);
+    });
     thead.appendChild(headerRow);
     const tbody = el('tbody');
     rows.forEach((cells) => {
@@ -202,24 +325,51 @@ function makeTable(headers, rows) {
         });
         tbody.appendChild(row);
     });
-    table.append(thead, tbody);
+    table.append(tableCaption, thead, tbody);
     container.appendChild(table);
-    return container;
+    region.append(hint, container);
+    return region;
 }
 
-function toolbar({ query, onQuery, filter, onFilter, filterOptions, addLabel, onAdd, extraAction }) {
-    const bar = el('div', { className: 'admin-toolbar' });
+function toolbar({
+    sectionLabel,
+    query,
+    onQuery,
+    filter,
+    onFilter,
+    filterOptions,
+    onClear,
+    addLabel,
+    onAdd,
+    extraAction
+}) {
+    const bar = el('form', { className: 'admin-toolbar' });
+    bar.setAttribute('role', 'search');
+    bar.setAttribute('aria-label', `Busca e filtros de ${sectionLabel}`);
+    const searchGroup = el('div', { className: 'admin-toolbar__field admin-toolbar__search' });
+    const searchId = `admin-search-${++elementSequence}`;
+    const searchLabel = el('label', { text: `Buscar ${sectionLabel}` });
+    searchLabel.htmlFor = searchId;
     const search = el('input');
+    search.id = searchId;
     search.type = 'search';
-    search.placeholder = 'Buscar...';
+    search.placeholder = `Buscar em ${sectionLabel}`;
     search.value = query;
-    search.setAttribute('aria-label', 'Buscar registros');
-    search.addEventListener('change', () => onQuery(search.value));
-    bar.appendChild(search);
+    searchGroup.append(searchLabel, search);
+    bar.appendChild(searchGroup);
+    bar.addEventListener('submit', (event) => {
+        event.preventDefault();
+        onQuery(search.value);
+    });
+    search.addEventListener('search', () => onQuery(search.value));
 
     if (filterOptions) {
+        const filterGroup = el('div', { className: 'admin-toolbar__field' });
+        const filterId = `admin-filter-${++elementSequence}`;
+        const filterLabel = el('label', { text: 'Filtrar por' });
+        filterLabel.htmlFor = filterId;
         const select = el('select');
-        select.setAttribute('aria-label', 'Filtrar registros');
+        select.id = filterId;
         filterOptions.forEach((option) => {
             const item = el('option', { text: option.label });
             item.value = option.value;
@@ -227,21 +377,70 @@ function toolbar({ query, onQuery, filter, onFilter, filterOptions, addLabel, on
         });
         select.value = filter;
         select.addEventListener('change', () => onFilter(select.value));
-        bar.appendChild(select);
+        filterGroup.append(filterLabel, select);
+        bar.appendChild(filterGroup);
     }
 
-    if (extraAction) bar.appendChild(extraAction);
-    bar.appendChild(actionButton(addLabel, 'btn btn-primary btn-sm', onAdd));
+    const actions = el('div', { className: 'admin-toolbar__actions' });
+    const clear = actionButton('Limpar filtros', 'btn btn-ghost btn-sm', onClear);
+    clear.disabled = !query && !filter;
+    actions.appendChild(clear);
+    if (extraAction) actions.appendChild(extraAction);
+    actions.appendChild(actionButton(addLabel, 'btn btn-primary btn-sm', onAdd));
+    bar.appendChild(actions);
     return bar;
 }
 
-function rowActions(onEdit, onDelete) {
+function rowActions(itemType, itemLabel, onEdit, onDelete) {
     const actions = el('div', { className: 'admin-row-actions' });
     actions.append(
-        actionButton('Editar', 'btn btn-ghost btn-sm', onEdit),
-        actionButton('Excluir', 'btn btn-danger btn-sm', onDelete)
+        actionButton('Editar', 'btn btn-ghost btn-sm', onEdit, {
+            ariaLabel: `Editar ${itemType} ${itemLabel}`
+        }),
+        actionButton('Excluir', 'btn btn-danger btn-sm', onDelete, {
+            ariaLabel: `Excluir ${itemType} ${itemLabel}`
+        })
     );
     return actions;
+}
+
+function statusBadge(value, label = value) {
+    const normalized = String(value || '').toLocaleLowerCase('pt-BR');
+    const badge = el('span', { className: `badge admin-badge admin-badge--${normalized}`, text: label });
+    return badge;
+}
+
+function confirmAction({ title, message, confirmLabel }) {
+    return new Promise((resolve) => {
+        const dialogId = `admin-dialog-${++dialogSequence}`;
+        const dialog = el('dialog', { className: 'admin-dialog admin-confirm-dialog' });
+        dialog.id = dialogId;
+        dialog.setAttribute('aria-labelledby', `${dialogId}-title`);
+        dialog.setAttribute('aria-describedby', `${dialogId}-description`);
+
+        const header = el('header', { className: 'admin-dialog__header' });
+        const heading = el('h2', { id: `${dialogId}-title`, text: title });
+        const close = actionButton('×', 'admin-dialog__close', () => dialog.close(), {
+            ariaLabel: `Fechar ${title.toLocaleLowerCase('pt-BR')}`
+        });
+        header.append(heading, close);
+        const description = el('p', {
+            className: 'admin-dialog__description',
+            id: `${dialogId}-description`,
+            text: message
+        });
+        const actions = el('div', { className: 'admin-form-actions' });
+        const cancel = actionButton('Cancelar', 'btn btn-ghost', () => dialog.close());
+        const confirm = actionButton(confirmLabel, 'btn btn-danger', () => {
+            resolve(true);
+            dialog.close();
+        });
+        actions.append(cancel, confirm);
+        dialog.append(header, description, actions);
+        dialog.addEventListener('close', () => resolve(false), { once: true });
+        document.body.appendChild(dialog);
+        showAdminDialog(dialog, { initialFocus: cancel });
+    });
 }
 
 async function mutate(operation, successMessage) {
@@ -310,7 +509,12 @@ function openPasswordChange() {
 }
 
 async function deleteUser(usuario) {
-    if (!window.confirm(`Excluir fisicamente o usuário “${usuario.nome_completo}”? Esta ação não pode ser desfeita.`)) return;
+    const confirmed = await confirmAction({
+        title: 'Excluir usuário',
+        message: `Excluir fisicamente o usuário “${usuario.nome_completo}”? Esta ação não pode ser desfeita.`,
+        confirmLabel: 'Excluir usuário'
+    });
+    if (!confirmed) return;
     try {
         await mutate(
             () => api(`/api/admin/usuarios/${usuario.id_usuario}`, { method: 'DELETE' }),
@@ -331,12 +535,22 @@ function renderUsers() {
         return matchesQuery && (!filter.tipo || usuario.tipo === filter.tipo);
     });
 
-    const passwordButton = actionButton('Trocar minha senha', 'btn btn-ghost btn-sm', openPasswordChange);
+    const passwordButton = actionButton(
+        'Trocar minha senha',
+        'btn btn-ghost btn-sm',
+        openPasswordChange
+    );
     const bar = toolbar({
+        sectionLabel: 'usuários',
         query: filter.query,
         onQuery: (value) => { filter.query = value; renderUsers(); },
         filter: filter.tipo,
         onFilter: (value) => { filter.tipo = value; renderUsers(); },
+        onClear: () => {
+            filter.query = '';
+            filter.tipo = '';
+            renderUsers();
+        },
         filterOptions: [
             { value: '', label: 'Todos os papéis' },
             { value: 'ALUNO', label: 'Alunos' },
@@ -349,18 +563,28 @@ function renderUsers() {
     });
 
     const body = users.length === 0
-        ? emptyState('Nenhum usuário encontrado para os filtros selecionados.')
-        : makeTable(
-            ['Nome', 'E-mail', 'CPF', 'Telefone', 'Papel', 'Ações'],
-            users.map((usuario) => [
+        ? (state.usuarios.length === 0
+            ? emptyState('Nenhum usuário cadastrado', 'Cadastre o primeiro usuário administrativo.')
+            : emptyState('Nenhum resultado', 'Nenhum usuário corresponde à busca ou ao papel selecionado.'))
+        : makeTable({
+            caption: 'Usuários cadastrados na plataforma',
+            regionLabel: 'Tabela de usuários cadastrados',
+            headers: ['Nome', 'E-mail', 'CPF', 'Telefone', 'Papel', 'Ações'],
+            rows: users.map((usuario) => [
                 usuario.nome_completo,
                 usuario.email,
                 usuario.cpf,
                 usuario.telefone,
-                usuario.tipo,
-                rowActions(() => openEditUser(usuario), () => deleteUser(usuario))
+                statusBadge(usuario.tipo),
+                rowActions(
+                    'usuário',
+                    usuario.nome_completo,
+                    () => openEditUser(usuario),
+                    () => deleteUser(usuario)
+                )
             ])
-        );
+        });
+    content.setAttribute('aria-busy', 'false');
     content.replaceChildren(bar, body);
 }
 
@@ -401,7 +625,12 @@ function openEditCourse(curso) {
 }
 
 async function deleteCourse(curso) {
-    if (!window.confirm(`Excluir o curso “${curso.nome_curso}”?`)) return;
+    const confirmed = await confirmAction({
+        title: 'Excluir curso',
+        message: `Excluir o curso “${curso.nome_curso}”? Cursos com turmas vinculadas permanecem protegidos.`,
+        confirmLabel: 'Excluir curso'
+    });
+    if (!confirmed) return;
     try {
         await mutate(
             () => api(`/api/cursos/${curso.id_curso}`, { method: 'DELETE' }),
@@ -419,28 +648,50 @@ function renderCourses() {
         || curso.nome_curso.toLocaleLowerCase('pt-BR').includes(term)
         || String(curso.descricao || '').toLocaleLowerCase('pt-BR').includes(term));
     const bar = toolbar({
+        sectionLabel: 'cursos',
         query: filter.query,
         onQuery: (value) => { filter.query = value; renderCourses(); },
+        onClear: () => {
+            filter.query = '';
+            renderCourses();
+        },
         addLabel: 'Novo curso',
         onAdd: openCreateCourse
     });
     const body = courses.length === 0
-        ? emptyState('Nenhum curso encontrado.')
-        : makeTable(
-            ['Curso', 'Descrição', 'Carga horária', 'Ações'],
-            courses.map((curso) => [
+        ? (state.cursos.length === 0
+            ? emptyState('Nenhum curso cadastrado', 'Cadastre o primeiro curso para organizar as turmas.')
+            : emptyState('Nenhum resultado', 'Nenhum curso corresponde ao termo buscado.'))
+        : makeTable({
+            caption: 'Cursos cadastrados na plataforma',
+            regionLabel: 'Tabela de cursos cadastrados',
+            headers: ['Curso', 'Descrição', 'Carga horária', 'Ações'],
+            rows: courses.map((curso) => [
                 curso.nome_curso,
                 curso.descricao,
                 `${curso.carga_horaria} h`,
-                rowActions(() => openEditCourse(curso), () => deleteCourse(curso))
+                rowActions(
+                    'curso',
+                    curso.nome_curso,
+                    () => openEditCourse(curso),
+                    () => deleteCourse(curso)
+                )
             ])
-        );
+        });
+    content.setAttribute('aria-busy', 'false');
     content.replaceChildren(bar, body);
 }
 
 function dateValue(value) {
     if (!value) return '';
     return String(value).slice(0, 10);
+}
+
+function formatDate(value) {
+    const normalized = dateValue(value);
+    if (!normalized) return '';
+    const [year, month, day] = normalized.split('-').map(Number);
+    return new Intl.DateTimeFormat('pt-BR').format(new Date(year, month - 1, day));
 }
 
 function classFields(turma = null) {
@@ -508,7 +759,12 @@ function openEditClass(turma) {
 }
 
 async function deleteClass(turma) {
-    if (!window.confirm(`Excluir a turma “${turma.nome_turma}”?`)) return;
+    const confirmed = await confirmAction({
+        title: 'Excluir turma',
+        message: `Excluir a turma “${turma.nome_turma}”? Turmas com matrículas permanecem protegidas.`,
+        confirmLabel: 'Excluir turma'
+    });
+    if (!confirmed) return;
     try {
         await mutate(
             () => api(`/api/turmas/${turma.id_turma}`, { method: 'DELETE' }),
@@ -527,10 +783,16 @@ function renderClasses() {
         return (!term || haystack.includes(term)) && (!filter.status || turma.status === filter.status);
     });
     const bar = toolbar({
+        sectionLabel: 'turmas',
         query: filter.query,
         onQuery: (value) => { filter.query = value; renderClasses(); },
         filter: filter.status,
         onFilter: (value) => { filter.status = value; renderClasses(); },
+        onClear: () => {
+            filter.query = '';
+            filter.status = '';
+            renderClasses();
+        },
         filterOptions: [
             { value: '', label: 'Todos os status' },
             { value: 'ABERTA', label: 'Inscrições abertas' },
@@ -541,30 +803,53 @@ function renderClasses() {
         onAdd: openCreateClass
     });
     const body = classes.length === 0
-        ? emptyState('Nenhuma turma encontrada.')
-        : makeTable(
-            ['Turma', 'Curso', 'Professor', 'Período', 'Status', 'Ações'],
-            classes.map((turma) => [
+        ? (state.turmas.length === 0
+            ? emptyState('Nenhuma turma cadastrada', 'Cadastre a primeira turma após criar curso e professor.')
+            : emptyState('Nenhum resultado', 'Nenhuma turma corresponde à busca ou ao status selecionado.'))
+        : makeTable({
+            caption: 'Turmas cadastradas na plataforma',
+            regionLabel: 'Tabela de turmas cadastradas',
+            headers: ['Turma', 'Curso', 'Professor', 'Período', 'Status', 'Ações'],
+            rows: classes.map((turma) => [
                 turma.nome_turma,
                 turma.nome_curso,
                 turma.nome_professor,
-                `${dateValue(turma.data_inicio)} — ${dateValue(turma.data_fim) || 'sem término'}`,
-                turma.status,
-                rowActions(() => openEditClass(turma), () => deleteClass(turma))
+                `${formatDate(turma.data_inicio)} — ${formatDate(turma.data_fim) || 'sem término'}`,
+                statusBadge(
+                    turma.status,
+                    {
+                        ABERTA: 'Inscrições abertas',
+                        FECHADA: 'Inscrições fechadas',
+                        ENCERRADA: 'Encerrada'
+                    }[turma.status] || turma.status
+                ),
+                rowActions(
+                    'turma',
+                    turma.nome_turma,
+                    () => openEditClass(turma),
+                    () => deleteClass(turma)
+                )
             ])
-        );
+        });
+    content.setAttribute('aria-busy', 'false');
     content.replaceChildren(bar, body);
 }
 
 async function loadActive() {
+    const currentLoad = ++loadSequence;
     state.loading = true;
+    root.setAttribute('aria-busy', 'true');
     renderLoading(state.active);
     try {
         if (state.active === 'usuarios') {
-            state.usuarios = await api('/api/admin/usuarios');
+            const usuarios = await api('/api/admin/usuarios');
+            if (currentLoad !== loadSequence) return;
+            state.usuarios = usuarios;
             renderUsers();
         } else if (state.active === 'cursos') {
-            state.cursos = await api('/api/cursos');
+            const cursos = await api('/api/cursos');
+            if (currentLoad !== loadSequence) return;
+            state.cursos = cursos;
             renderCourses();
         } else {
             const [turmas, cursos, usuarios] = await Promise.all([
@@ -572,40 +857,85 @@ async function loadActive() {
                 api('/api/cursos'),
                 api('/api/admin/usuarios')
             ]);
+            if (currentLoad !== loadSequence) return;
             state.turmas = turmas;
             state.cursos = cursos;
             state.usuarios = usuarios;
             renderClasses();
         }
     } catch (error) {
+        if (currentLoad !== loadSequence) return;
         renderError(error);
     } finally {
-        state.loading = false;
+        if (currentLoad === loadSequence) {
+            state.loading = false;
+            root.setAttribute('aria-busy', 'false');
+        }
     }
 }
 
+export function getAdminTabTargetIndex(key, currentIndex, total) {
+    if (!Number.isInteger(currentIndex) || currentIndex < 0 || total < 1) return null;
+    if (key === 'Home') return 0;
+    if (key === 'End') return total - 1;
+    if (key === 'ArrowRight') return (currentIndex + 1) % total;
+    if (key === 'ArrowLeft') return (currentIndex - 1 + total) % total;
+    return null;
+}
+
+function updateTabs() {
+    tabsBySection.forEach((tab, section) => {
+        const selected = section === state.active;
+        tab.classList.toggle('active', selected);
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+    });
+    content?.setAttribute('aria-labelledby', `admin-tab-${state.active}`);
+}
+
+async function activateTab(section) {
+    if (!tabsBySection.has(section) || state.active === section) return;
+    state.active = section;
+    clearFeedback();
+    updateTabs();
+    await loadActive();
+}
+
+function handleTabKeydown(event) {
+    const tabs = [...tabsBySection.values()];
+    const currentIndex = tabs.indexOf(event.currentTarget);
+    const targetIndex = getAdminTabTargetIndex(event.key, currentIndex, tabs.length);
+    if (targetIndex === null) return;
+    event.preventDefault();
+    const target = tabs[targetIndex];
+    target.focus();
+    activateTab(target.dataset.adminSection);
+}
+
 function renderShell() {
-    root.setAttribute('aria-busy', 'false');
-    const header = el('header', { className: 'admin-header' });
+    root.setAttribute('aria-labelledby', 'admin-panel-heading');
+    const header = el('header', { className: 'admin-header academic-panel__header' });
     const identity = el('div');
     identity.append(
-        el('h2', { text: 'Gestão administrativa' }),
+        el('p', { className: 'academic-section-label', text: 'Operações protegidas' }),
+        el('h2', { id: 'admin-panel-heading', text: 'Gestão administrativa' }),
         el('p', { text: `${state.user.nome_completo} · papel confirmado pelo servidor: ADMIN` })
     );
-    header.appendChild(identity);
+    header.append(identity, statusBadge('ADMIN', 'Administrador'));
 
-    const tabs = el('nav', { className: 'admin-tabs' });
+    const tabs = el('div', { className: 'admin-tabs' });
+    tabs.setAttribute('role', 'tablist');
     tabs.setAttribute('aria-label', 'Módulos administrativos');
     const labels = { usuarios: 'Usuários', cursos: 'Cursos', turmas: 'Turmas' };
+    tabsBySection = new Map();
     Object.entries(labels).forEach(([key, label]) => {
-        const tab = actionButton(label, `admin-tab${state.active === key ? ' active' : ''}`, async () => {
-            if (state.loading || state.active === key) return;
-            state.active = key;
-            clearFeedback();
-            renderShell();
-            await loadActive();
-        });
-        tab.setAttribute('aria-current', state.active === key ? 'page' : 'false');
+        const tab = actionButton(label, 'admin-tab', () => activateTab(key));
+        tab.id = `admin-tab-${key}`;
+        tab.dataset.adminSection = key;
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', 'admin-panel-content');
+        tab.addEventListener('keydown', handleTabKeydown);
+        tabsBySection.set(key, tab);
         tabs.appendChild(tab);
     });
 
@@ -614,7 +944,10 @@ function renderShell() {
     feedback.tabIndex = -1;
     feedback.setAttribute('role', 'status');
     feedback.setAttribute('aria-live', 'polite');
-    content = el('section', { className: 'admin-content' });
+    content = el('section', { className: 'admin-content', id: 'admin-panel-content' });
+    content.setAttribute('role', 'tabpanel');
+    content.tabIndex = 0;
+    updateTabs();
     root.replaceChildren(header, tabs, feedback, content);
 }
 

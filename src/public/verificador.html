@@ -3,304 +3,302 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificador com IA — Plágio</title>
+  <title>Verificador de similaridade — Plágio</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layouts.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/utilities.css">
 </head>
-<body class="verificador-page" data-session-state="loading">
+<body class="academic-page verificador-page" data-session-state="loading" data-analysis-state="idle">
+  <a href="#verifier-form" class="skip-link">Pular para o formulário de análise</a>
 
-<!-- Skip link acessibilidade -->
-<a href="#editor" class="skip-link">Pular para o editor</a>
+  <header class="verifier-header">
+    <a class="nav-brand verifier-brand" href="/index.html" aria-label="Plágio — página inicial">
+      <span class="brand-mark" aria-hidden="true">🧠</span>
+      <span class="brand-texts">
+        <span class="brand-name">Plágio</span>
+        <span class="brand-sub">Não copie essa ideia</span>
+      </span>
+    </a>
 
-<!-- Toast container -->
-<div id="toast-container" role="status" aria-live="polite"></div>
+    <nav class="verifier-nav" aria-label="Navegação principal">
+      <a href="/index.html">Catálogo</a>
+      <a href="/sala-virtual.html" id="link-sala" hidden>Sala Virtual</a>
+      <a href="/verificador.html" aria-current="page">Verificador</a>
+    </nav>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-brand" href="/index.html">
-    <div class="brand-mark">🧠</div>
-    <div class="brand-texts">
-      <span class="brand-name">Plágio</span>
-      <span class="brand-sub">Nao Copie Essa Ideia</span>
-    </div>
-  </a>
-
-  <div class="nav-links">
-    <a href="/index.html">Catalogo</a>
-    <a href="/sala-virtual.html" id="link-sala" hidden>Sala Virtual</a>
-    <a href="/verificador.html" class="active">Verificador</a>
-  </div>
-
-  <div class="nav-right">
-    <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar tema">
-      <span class="icon-moon">🌙</span>
-      <span class="icon-sun">☀️</span>
-    </button>
-    <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
-    <a href="/login.html" class="btn btn-ghost" id="link-login" hidden>Entrar</a>
-  </div>
-</nav>
-
-<nav aria-label="Trilha de navegação" class="breadcrumb">
-  <ol class="bc-list">
-    <li><a href="/index.html">Catálogo</a></li>
-    <li aria-current="page">Verificador com IA</li>
-  </ol>
-</nav>
-
-<!-- TOPBAR -->
-<div class="topbar" role="toolbar" aria-label="Barra de ferramentas do verificador">
-  <div class="topbar-l">
-    <span class="pg-label" aria-label="Página atual: verificador">/ verificador</span>
-    <div class="tsep" aria-hidden="true"></div>
-    <div class="status-row" role="status" aria-live="polite" aria-atomic="true">
-      <div class="sdot idle" id="sdot" aria-hidden="true"></div>
-      <span id="stxt">Pronto para analisar</span>
-    </div>
-    <div class="tsep" aria-hidden="true"></div>
-    <div class="shortcut-hint" aria-label="Dica: pressione ? para ver atalhos">
-      <kbd>?</kbd> atalhos &nbsp;·&nbsp; <kbd>Ctrl</kbd><kbd>↵</kbd> analisar
-    </div>
-  </div>
-  <div class="topbar-r">
-    <span class="wc-badge" id="wcBadge" aria-live="polite">0 palavras</span>
-    <button class="btn btn-o" id="btnClear" aria-label="Limpar editor (Ctrl+Del)">Limpar</button>
-    <button class="btn btn-primary" id="btnExport" disabled aria-label="Exportar relatório">↓ Exportar</button>
-  </div>
-</div>
-
-<!-- WORKSPACE -->
-<main class="workspace" id="main-content">
-
-  <!-- EDITOR COL -->
-  <section class="editor-col" aria-label="Editor de texto para verificação">
-
-    <!-- Toolbar -->
-    <div class="ed-bar" role="toolbar" aria-label="Formatação de texto">
-      <button class="tb" id="tbBold" aria-label="Negrito (Ctrl+B)" title="Negrito"><b>B</b></button>
-      <button class="tb" id="tbItal" aria-label="Itálico (Ctrl+I)" title="Itálico"><i style="font-style:italic">I</i></button>
-      <button class="tb" id="tbUnder" aria-label="Sublinhado (Ctrl+U)" title="Sublinhado"><u>U</u></button>
-      <div class="tbsep" aria-hidden="true"></div>
-      <button class="tb" id="tbUndo" aria-label="Desfazer (Ctrl+Z)" title="Desfazer">↩</button>
-      <button class="tb" id="tbRedo" aria-label="Refazer (Ctrl+Y)" title="Refazer">↪</button>
-      <div class="tspace" aria-hidden="true"></div>
-      <button class="analyze-btn" id="btnAnalyze"
-        aria-label="Analisar originalidade (Ctrl+Enter)"
-        title="Ctrl + Enter">
-        <span class="a-icon" aria-hidden="true">⚡</span>
-        <div class="spinner" aria-hidden="true"></div>
-        <span id="analyzeLabel">Analisar texto</span>
+    <div class="verifier-header-actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema">
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+        <span class="icon-sun" aria-hidden="true">☀️</span>
       </button>
+      <button class="avatar" id="avatar" type="button" hidden aria-label="Abrir menu do perfil">?</button>
+      <a href="/login.html" class="btn btn-ghost" id="link-login" hidden>Entrar</a>
     </div>
+  </header>
 
-    <!-- Editor wrap -->
-    <div class="ed-wrap">
-      <div class="ed-skeleton" id="edSkeleton" aria-hidden="true" role="presentation">
-        <div class="sk sk-line w80"></div>
-        <div class="sk sk-line"></div>
-        <div class="sk sk-line w60"></div>
-        <div class="sk sk-line"></div>
-        <div class="sk sk-line w45"></div>
-        <div class="sk sk-line w80"></div>
-        <div class="sk sk-line"></div>
-      </div>
-      <div class="hl-layer" id="hlLayer" aria-hidden="true"></div>
-      <textarea class="ed-ta" id="textoOriginal" aria-label="Texto original de referência"
-        maxlength="15000" spellcheck="true" placeholder="Cole aqui o texto original de referência…"
-        style="bottom:auto;height:48%;border-bottom:1px solid var(--border);"></textarea>
-      <textarea
-        class="ed-ta" id="editor"
-        aria-label="Área de texto para verificação de originalidade"
-        aria-describedby="editorHint"
-        maxlength="15000"
-        spellcheck="true"
-        style="top:52%;height:48%;"
-        placeholder="Cole aqui o texto suspeito para comparar com a referência...
+  <nav aria-label="Trilha de navegação" class="breadcrumb verifier-breadcrumb">
+    <ol class="bc-list">
+      <li><a href="/index.html">Catálogo</a></li>
+      <li aria-current="page">Verificador de similaridade</li>
+    </ol>
+  </nav>
 
-A análise semântica (MiniLM + similaridade cosseno) detecta semelhança de ideia, mesmo quando as palavras são diferentes das fontes originais.
-
-Análise automática após 2 segundos de pausa · ou pressione Ctrl+Enter."
-      ></textarea>
-    </div>
-
-    <div class="ed-foot" role="status" aria-live="polite">
-      <span class="foot-info" id="footInfo" aria-label="Contagem de palavras e caracteres">0 palavras · 0 / 15.000 caracteres</span>
-      <span class="foot-info" id="editorHint" aria-live="off">Debounce 2s · MiniLM · FastAPI :8000</span>
-    </div>
-
-    <!-- Upload -->
-    <div class="upload-strip" id="uploadStrip"
-      role="button" tabindex="0"
-      aria-label="Anexar documento PDF, DOCX ou TXT">
-      <input type="file" id="fileInput" accept=".pdf,.docx,.txt" aria-hidden="true" style="display:none;">
-      <div class="us-ic" aria-hidden="true">📎</div>
+  <main class="verifier-main" id="main-content">
+    <section class="verifier-intro" aria-labelledby="verifier-title">
       <div>
-        <div class="us-name" id="usName">Anexar documento</div>
-        <div class="us-hint">PDF, DOCX ou TXT — extração automática via Python</div>
+        <p class="verifier-eyebrow">Análise semântica</p>
+        <h1 id="verifier-title">Compare dois textos com clareza</h1>
+        <p class="verifier-lead">
+          Informe o texto de referência e o texto suspeito. O resultado apresenta
+          a similaridade calculada pelo motor, sem determinar plágio isoladamente.
+        </p>
       </div>
-      <span class="us-tag" aria-hidden="true">FastAPI / Python</span>
-    </div>
-  </section>
+      <button class="btn btn-ghost verifier-help-button" id="helpButton" type="button"
+        aria-haspopup="dialog" aria-controls="shortcutsDialog">
+        Ver atalhos
+      </button>
+    </section>
 
-  <!-- AI PANEL COL -->
-  <aside class="ai-col" aria-label="Painel de análise de IA">
-
-    <div class="panel-head" role="tablist" aria-label="Seções do painel">
-      <button class="ptab active" data-tab="score" role="tab"
-        aria-selected="true" aria-controls="pane-score" id="tab-score"
-        title="Alt+1" aria-label="Aba Score (Alt+1)">
-        📊 Score
-      </button>
-      <button class="ptab" data-tab="detect" role="tab"
-        aria-selected="false" aria-controls="pane-detect" id="tab-detect"
-        title="Alt+2" aria-label="Aba Detecções (Alt+2)">
-        Detecções <span class="pbadge muted" id="detBadge" aria-label="0 detecções">0</span>
-      </button>
-      <button class="ptab" data-tab="tips" role="tab"
-        aria-selected="false" aria-controls="pane-tips" id="tab-tips"
-        title="Alt+3" aria-label="Aba ABNT (Alt+3)">
-        💡 ABNT
-      </button>
+    <div class="verifier-status" id="analysisStatus" role="status" aria-live="polite" aria-atomic="true">
+      <span class="verifier-status-dot" aria-hidden="true"></span>
+      <span id="analysisStatusText">Aguardando os textos para análise.</span>
     </div>
 
-    <div class="panel-scroll">
+    <div class="verifier-workspace">
+      <form class="verifier-card verifier-form" id="verifier-form" novalidate aria-busy="false">
+        <header class="verifier-card-header">
+          <div>
+            <p class="verifier-step">Etapa 1</p>
+            <h2>Textos para comparação</h2>
+          </div>
+          <span class="verifier-limit">Até 15.000 caracteres por campo</span>
+        </header>
 
-      <!-- SCORE PANE -->
-      <div class="tab-pane active" id="pane-score" role="tabpanel" aria-labelledby="tab-score">
-        <div class="panel-skeleton" id="scoreSkeleton" style="display:none;" aria-hidden="true">
-          <div class="sk-score-wrap">
-            <div class="sk sk-gauge"></div>
-            <div class="sk-score-rows">
-              <div class="sk sk-row"></div>
-              <div class="sk sk-row"></div>
-              <div class="sk sk-row"></div>
+        <div class="verifier-field">
+          <div class="verifier-field-heading">
+            <label for="textoOriginal">Texto original <span aria-hidden="true">*</span></label>
+            <span id="originalCount" class="verifier-counter" aria-live="polite">0 / 15.000</span>
+          </div>
+          <p class="verifier-help" id="originalHelp">
+            Cole o conteúdo que será usado como referência.
+          </p>
+          <textarea id="textoOriginal" name="texto_original" rows="9" maxlength="15000"
+            required spellcheck="true" aria-describedby="originalHelp originalError"
+            placeholder="Cole aqui o texto original de referência…"></textarea>
+          <p class="verifier-field-error" id="originalError" hidden></p>
+        </div>
+
+        <div class="verifier-field">
+          <div class="verifier-field-heading">
+            <label for="textoSuspeito">Texto suspeito <span aria-hidden="true">*</span></label>
+            <span id="suspectCount" class="verifier-counter" aria-live="polite">0 / 15.000</span>
+          </div>
+          <p class="verifier-help" id="suspectHelp">
+            Insira o texto que deseja comparar com a referência.
+          </p>
+          <textarea id="textoSuspeito" name="texto_suspeito" rows="9" maxlength="15000"
+            required spellcheck="true" aria-describedby="suspectHelp suspectError"
+            placeholder="Cole aqui o texto suspeito…"></textarea>
+          <p class="verifier-field-error" id="suspectError" hidden></p>
+        </div>
+
+        <p class="verifier-form-error" id="formError" role="alert" tabindex="-1" hidden></p>
+
+        <div class="verifier-form-actions">
+          <button class="btn btn-primary verifier-analyze-button" id="btnAnalyze" type="submit">
+            <span class="verifier-spinner" aria-hidden="true"></span>
+            <span id="analyzeLabel">Analisar similaridade</span>
+          </button>
+          <button class="btn btn-ghost" id="btnClear" type="button">Limpar textos</button>
+        </div>
+
+        <p class="verifier-form-note">
+          A análise também pode iniciar após uma pausa na digitação. Use
+          <kbd>Ctrl</kbd> + <kbd>Enter</kbd> para analisar imediatamente.
+        </p>
+      </form>
+
+      <section class="verifier-card verifier-results" aria-labelledby="results-title">
+        <header class="verifier-card-header verifier-results-header">
+          <div>
+            <p class="verifier-step">Etapa 2</p>
+            <h2 id="results-title">Resultado da análise</h2>
+          </div>
+        </header>
+
+        <div class="verifier-tabs" role="tablist" aria-label="Seções do resultado">
+          <button class="verifier-tab" id="tab-result" type="button" role="tab"
+            aria-selected="true" aria-controls="panel-result" tabindex="0" data-tab="result">
+            Resultado
+          </button>
+          <button class="verifier-tab" id="tab-details" type="button" role="tab"
+            aria-selected="false" aria-controls="panel-details" tabindex="-1" data-tab="details">
+            Detalhes
+          </button>
+          <button class="verifier-tab" id="tab-guidance" type="button" role="tab"
+            aria-selected="false" aria-controls="panel-guidance" tabindex="-1" data-tab="guidance">
+            Orientações
+          </button>
+        </div>
+
+        <div class="verifier-panel" id="panel-result" role="tabpanel"
+          aria-labelledby="tab-result" tabindex="0">
+          <div class="verifier-empty" id="resultEmpty">
+            <span class="verifier-empty-icon" aria-hidden="true">↔</span>
+            <h3>Aguardando comparação</h3>
+            <p>Preencha os dois campos para visualizar o score real retornado pelo motor.</p>
+          </div>
+
+          <div class="verifier-loading" id="resultLoading" role="status" hidden>
+            <span class="verifier-loading-mark" aria-hidden="true"></span>
+            <div>
+              <strong>Analisando os textos</strong>
+              <p>O motor está calculando a similaridade semântica.</p>
             </div>
           </div>
-          <div class="sk sk-row" style="height:80px;border-radius:10px;"></div>
-        </div>
 
-        <div class="empty" id="scoreEmpty" aria-label="Aguardando análise">
-          <div class="empty-ic" aria-hidden="true">📄</div>
-          <p>Analise um texto para ver o índice de originalidade</p>
-        </div>
-
-        <div id="scoreContent" style="display:none;flex-direction:column;gap:12px;">
-          <div class="score-card" aria-label="Resultado da análise semântica">
-            <div class="gw" role="img" aria-labelledby="gNumLabel">
-              <svg class="gsv" viewBox="0 0 100 100" aria-hidden="true">
-                <defs>
-                  <linearGradient id="gG" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#22c55e"/><stop offset="100%" stop-color="#86efac"/>
-                  </linearGradient>
-                </defs>
-                <circle class="g-tr" cx="50" cy="50" r="42"/>
-                <circle class="g-fi green" id="gFill" cx="50" cy="50" r="42"/>
-              </svg>
-              <div class="gi">
-                <span class="g-num" id="gNum" aria-label="Porcentagem de originalidade">--%</span>
-                <span class="g-lbl" id="gLbl">—</span>
+          <div class="verifier-result-content" id="resultContent" role="status"
+            aria-live="polite" aria-atomic="true" tabindex="-1" hidden>
+            <div class="verifier-score-heading">
+              <div>
+                <span class="verifier-score-label">Similaridade retornada</span>
+                <output class="verifier-score-value" id="scoreValue">—</output>
               </div>
+              <span class="verifier-score-level" id="scoreLevel">Aguardando</span>
             </div>
-            <div class="srows">
-              <div class="srow"><span>Originalidade</span><span class="chip cb" id="sO" aria-live="polite">--%</span></div>
-              <div class="srow"><span>Plágio direto</span><span class="chip cr" id="sP" aria-live="polite">--%</span></div>
-              <div class="srow"><span>Paráfrases</span><span class="chip ca" id="sA" aria-live="polite">--%</span></div>
-              <div class="srow"><span>Veredito</span><span class="chip" id="sV" aria-live="polite">—</span></div>
-            </div>
-          </div>
-          <div class="dist-card" aria-label="Distribuição por segmento">
-            <div class="dist-hd">Distribuição por segmento</div>
-            <div class="drow">
-              <span class="dlbl">Original</span>
-              <div class="dtrk" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                <div class="dfil dfg" id="dO"></div>
-              </div>
-              <span class="dval" id="dvO">--%</span>
-            </div>
-            <div class="drow">
-              <span class="dlbl">Paráfrase</span>
-              <div class="dtrk" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                <div class="dfil dfa" id="dA"></div>
-              </div>
-              <span class="dval" id="dvA">--%</span>
-            </div>
-            <div class="drow">
-              <span class="dlbl">Alta simil.</span>
-              <div class="dtrk" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                <div class="dfil dfr" id="dP"></div>
-              </div>
-              <span class="dval" id="dvP">--%</span>
-            </div>
-          </div>
-        </div>
-      </div>
+            <progress class="verifier-score-progress" id="scoreProgress" max="100" value="0">
+              0%
+            </progress>
+            <p class="verifier-score-explanation" id="scoreExplanation"></p>
 
-      <!-- DETECT PANE -->
-      <div class="tab-pane" id="pane-detect" role="tabpanel" aria-labelledby="tab-detect">
-        <div class="empty" id="detEmpty">
-          <div class="empty-ic" aria-hidden="true">✅</div>
-          <p>Nenhuma detecção ainda. Analise um texto para ver os resultados.</p>
-        </div>
-        <div id="detList" class="det-list-wrap" style="display:none;" role="list"></div>
-      </div>
+            <dl class="verifier-result-list">
+              <div>
+                <dt>Status do motor</dt>
+                <dd id="motorStatus">—</dd>
+              </div>
+              <div>
+                <dt>Resposta da plataforma</dt>
+                <dd id="httpStatus">—</dd>
+              </div>
+            </dl>
 
-      <!-- TIPS PANE -->
-      <div class="tab-pane" id="pane-tips" role="tabpanel" aria-labelledby="tab-tips">
-        <div class="tip-blk">
-          <div class="tip-hd">
-            <div class="tip-bar" style="background:var(--purple);" aria-hidden="true"></div>
-            <div><h4>Citação Direta</h4><p>ABNT NBR 10520 — reprodução literal</p></div>
-          </div>
-          <div class="tip-bd">
-            Até 3 linhas: aspas duplas inline. Mais de 3 linhas: bloco recuado 4 cm, sem aspas.
-            <div class="code-blk">(SOBRENOME, Ano, p. XX)<br>Ex: (FREIRE, 1996, p. 25)</div>
+            <p class="verifier-caution">
+              Similaridade é um indicador de apoio. O resultado não confirma plágio por si só.
+            </p>
           </div>
         </div>
-        <div class="tip-blk">
-          <div class="tip-hd">
-            <div class="tip-bar" style="background:var(--purple-3);" aria-hidden="true"></div>
-            <div><h4>Citação Indireta</h4><p>Paráfrase legítima com atribuição</p></div>
-          </div>
-          <div class="tip-bd">
-            Reescreva com estrutura e vocabulário próprios — mas sempre referencie.
-            <div class="code-blk">Segundo Freire (1996), a educação...<br>A pedagogia crítica... (FREIRE, 1996).</div>
-          </div>
-        </div>
-        <div class="tip-blk">
-          <div class="tip-hd">
-            <div class="tip-bar" style="background:var(--success);" aria-hidden="true"></div>
-            <div><h4>Como a IA detecta</h4><p>Similaridade semântica via MiniLM</p></div>
-          </div>
-          <div class="tip-bd">
-            Frases → embeddings → cosseno. Detecta semelhança de <em>ideia</em>, não de palavras.
-            <div class="rule-blk">≥ 80% → Vermelho · 60–79% → Âmbar · &lt;60% → Original</div>
-          </div>
-        </div>
-      </div>
 
+        <div class="verifier-panel" id="panel-details" role="tabpanel"
+          aria-labelledby="tab-details" tabindex="0" hidden>
+          <div class="verifier-detail-state" id="detailsEmpty">
+            <h3>Detalhes ainda indisponíveis</h3>
+            <p>Conclua uma análise para revisar os textos comparados e as fontes retornadas.</p>
+          </div>
+
+          <div id="detailsContent" hidden>
+            <section class="verifier-comparison" aria-labelledby="comparison-title">
+              <h3 id="comparison-title">Textos comparados</h3>
+              <div class="verifier-comparison-grid">
+                <article>
+                  <h4>Original</h4>
+                  <p id="resultOriginal"></p>
+                </article>
+                <article>
+                  <h4>Suspeito</h4>
+                  <p id="resultSuspect"></p>
+                </article>
+              </div>
+            </section>
+
+            <section class="verifier-sources" aria-labelledby="sources-title">
+              <h3 id="sources-title">Fontes retornadas</h3>
+              <div id="sourcesContent"></div>
+            </section>
+          </div>
+        </div>
+
+        <div class="verifier-panel" id="panel-guidance" role="tabpanel"
+          aria-labelledby="tab-guidance" tabindex="0" hidden>
+          <div class="verifier-guidance">
+            <article>
+              <h3>Como interpretar</h3>
+              <p>
+                O score representa a proximidade semântica calculada entre os dois textos.
+                Valores maiores indicam maior similaridade, não uma conclusão automática.
+              </p>
+            </article>
+            <article>
+              <h3>Faixas visuais preservadas</h3>
+              <ul>
+                <li><strong>Menor que 60%:</strong> baixa similaridade.</li>
+                <li><strong>De 60% a 79,99%:</strong> similaridade moderada.</li>
+                <li><strong>A partir de 80%:</strong> alta similaridade.</li>
+              </ul>
+              <p>Essas faixas organizam a leitura da interface e não alteram o cálculo do motor.</p>
+            </article>
+            <article>
+              <h3>Uso acadêmico responsável</h3>
+              <p>
+                Revise contexto, citações e referências conforme as normas adotadas pela
+                instituição antes de tomar qualquer decisão.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
     </div>
-  </aside>
-</main>
+  </main>
 
-<!-- SHORTCUT OVERLAY -->
-<div id="shortcutOverlay" class="shortcut-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Atalhos de teclado">
-  <div class="shortcut-box">
-    <h3>⌨️ Atalhos de teclado <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px;">Pressione Esc para fechar</span></h3>
-    <div class="sk-row-item"><span class="sk-desc">Analisar texto</span><div class="sk-keys"><kbd>Ctrl</kbd><kbd>↵</kbd></div></div>
-    <div class="sk-row-item"><span class="sk-desc">Limpar editor</span><div class="sk-keys"><kbd>Ctrl</kbd><kbd>Del</kbd></div></div>
-    <div class="sk-row-item"><span class="sk-desc">Ir para Score</span><div class="sk-keys"><kbd>Alt</kbd><kbd>1</kbd></div></div>
-    <div class="sk-row-item"><span class="sk-desc">Ir para Detecções</span><div class="sk-keys"><kbd>Alt</kbd><kbd>2</kbd></div></div>
-    <div class="sk-row-item"><span class="sk-desc">Ir para ABNT</span><div class="sk-keys"><kbd>Alt</kbd><kbd>3</kbd></div></div>
-    <div class="sk-row-item"><span class="sk-desc">Alternar tema</span><div class="sk-keys"><kbd>Alt</kbd><kbd>T</kbd></div></div>
-    <div class="sk-row-item"><span class="sk-desc">Abrir atalhos</span><div class="sk-keys"><kbd>?</kbd></div></div>
-    <div class="sk-row-item"><span class="sk-desc">Fechar / Cancelar</span><div class="sk-keys"><kbd>Esc</kbd></div></div>
-  </div>
-</div>
+  <div class="verifier-feedback" id="feedback" role="status"
+    aria-live="polite" aria-atomic="true" tabindex="-1" hidden></div>
 
-<script src="/js/security-utils.js" defer></script>
-<script type="module" src="/js/verificador.js"></script>
-<script type="module" src="/js/theme.js"></script>
+  <dialog class="verificador-dialog" id="shortcutsDialog"
+    aria-labelledby="shortcutsTitle" aria-describedby="shortcutsDescription">
+    <header class="verifier-dialog-header">
+      <div>
+        <p class="verifier-step">Ajuda</p>
+        <h2 id="shortcutsTitle">Atalhos de teclado</h2>
+      </div>
+      <button class="verifier-dialog-close" id="closeShortcuts" type="button"
+        aria-label="Fechar atalhos">×</button>
+    </header>
+    <p id="shortcutsDescription">Use os atalhos abaixo em qualquer área da página.</p>
+    <dl class="verifier-shortcuts">
+      <div><dt>Analisar</dt><dd><kbd>Ctrl</kbd> + <kbd>Enter</kbd></dd></div>
+      <div><dt>Limpar</dt><dd><kbd>Ctrl</kbd> + <kbd>Delete</kbd></dd></div>
+      <div><dt>Resultado</dt><dd><kbd>Alt</kbd> + <kbd>1</kbd></dd></div>
+      <div><dt>Detalhes</dt><dd><kbd>Alt</kbd> + <kbd>2</kbd></dd></div>
+      <div><dt>Orientações</dt><dd><kbd>Alt</kbd> + <kbd>3</kbd></dd></div>
+      <div><dt>Fechar diálogo</dt><dd><kbd>Escape</kbd></dd></div>
+    </dl>
+  </dialog>
+
+  <dialog class="verificador-dialog verifier-confirm-dialog" id="clearDialog"
+    aria-labelledby="clearDialogTitle" aria-describedby="clearDialogDescription">
+    <header class="verifier-dialog-header">
+      <div>
+        <p class="verifier-step">Confirmação</p>
+        <h2 id="clearDialogTitle">Limpar os textos?</h2>
+      </div>
+      <button class="verifier-dialog-close" id="closeClearDialog" type="button"
+        aria-label="Fechar confirmação">×</button>
+    </header>
+    <p id="clearDialogDescription">
+      Os dois campos e o resultado atual serão removidos desta página.
+    </p>
+    <div class="verifier-dialog-actions">
+      <button class="btn btn-ghost" id="cancelClear" type="button">Cancelar</button>
+      <button class="btn btn-danger" id="confirmClear" type="button">Sim, limpar</button>
+    </div>
+  </dialog>
+
+  <script src="/js/security-utils.js" defer></script>
+  <script type="module" src="/js/verificador.js"></script>
+  <script type="module" src="/js/theme.js"></script>
 </body>
 </html>

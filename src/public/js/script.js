@@ -74,14 +74,7 @@ function mostrarMensagemPorMotivo() {
 
 // Icones para cursos baseado no indice
 const COURSE_ICONS = ['🧠', '✍️', '🎨', '📜', '💡', '📚'];
-const COURSE_COLORS = [
-    'rgba(124,58,237,.12)',
-    'rgba(244,114,182,.1)',
-    'rgba(34,211,238,.08)',
-    'rgba(74,222,128,.08)',
-    'rgba(167,139,250,.12)',
-    'rgba(251,191,36,.1)'
-];
+const COURSE_COLOR_CLASS_COUNT = 6;
 
 /**
  * Renderiza lista de cursos no DOM com novo design
@@ -115,9 +108,8 @@ function renderizarCursos(cursos) {
 
         // Icone do curso
         const icon = document.createElement('div');
-        icon.className = 'course-icon';
+        icon.className = `course-icon course-icon--tone-${index % COURSE_COLOR_CLASS_COUNT}`;
         icon.setAttribute('aria-hidden', 'true');
-        icon.style.background = COURSE_COLORS[index % COURSE_COLORS.length];
         icon.textContent = COURSE_ICONS[index % COURSE_ICONS.length];
 
         // Info

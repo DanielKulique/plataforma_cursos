@@ -1,7 +1,64 @@
 import { getToken } from './auth.js';
 import { initSessionUI } from './session-ui.js';
+import { lockPageScroll } from './page-scroll.js';
 
 'use strict';
+
+const ANALYSIS_ENDPOINT = '/api/plagio/analisar';
+const MAX_CHARS = 15000;
+const AUTO_ANALYZE_DELAY = 2200;
+
+export function getVerifierTabTargetIndex(key, currentIndex, total) {
+  if (!Number.isInteger(total) || total < 1) return null;
+  if (key === 'ArrowRight') return (currentIndex + 1) % total;
+  if (key === 'ArrowLeft') return (currentIndex - 1 + total) % total;
+  if (key === 'Home') return 0;
+  if (key === 'End') return total - 1;
+  return null;
+}
+
+export function getSimilarityPresentation(score) {
+  const numericScore = Number(score);
+  if (numericScore >= 80) {
+    return {
+      level: 'high',
+      label: 'Alta similaridade',
+      explanation: 'Os textos apresentam alta proximidade semântica segundo a faixa visual existente.'
+    };
+  }
+  if (numericScore >= 60) {
+    return {
+      level: 'moderate',
+      label: 'Similaridade moderada',
+      explanation: 'Os textos apresentam proximidade semântica moderada segundo a faixa visual existente.'
+    };
+  }
+  return {
+    level: 'low',
+    label: 'Baixa similaridade',
+    explanation: 'Os textos apresentam baixa proximidade semântica segundo a faixa visual existente.'
+  };
+}
+
+export function getVerifierErrorMessage(status, error = {}) {
+  const detail = typeof error.detail === 'string' ? error.detail.trim() : '';
+  if (detail) return detail;
+  if (error.name === 'TimeoutError' || error.code === 'timeout') {
+    return 'A análise excedeu o tempo limite de 10 segundos. Tente novamente.';
+  }
+  if (status === 400 || status === 422) {
+    return 'Os textos enviados não atendem aos critérios de validação.';
+  }
+  if (status === 401) return 'Sua sessão expirou. Entre novamente para analisar.';
+  if (status === 403) return 'Seu perfil não possui permissão para executar esta análise.';
+  if (status === 500) return 'O servidor encontrou um erro interno ao processar a análise.';
+  if (status === 502) return 'A plataforma recebeu uma resposta inválida do motor de similaridade.';
+  if (status === 503) return 'O motor de similaridade está indisponível no momento.';
+  if (error.name === 'TypeError') {
+    return 'Não foi possível conectar ao serviço. Verifique a conexão e tente novamente.';
+  }
+  return 'Não foi possível concluir a análise. Tente novamente.';
+}
 
 function createElement(tag, className = '', text = '') {
   const element = document.createElement(tag);
@@ -10,485 +67,460 @@ function createElement(tag, className = '', text = '') {
   return element;
 }
 
-/* ══════════════════════════════════════════════════════
-   TOAST SYSTEM
-   ══════════════════════════════════════════════════════ */
-const toast = (() => {
-  const container = document.getElementById('toast-container');
-  const STYLES = {
-    success:{ bg:'rgba(34,197,94,.12)',  brd:'rgba(34,197,94,.35)',  icon:'✅', color:'#86efac' },
-    error:  { bg:'rgba(239,68,68,.12)',  brd:'rgba(239,68,68,.4)',   icon:'❌', color:'#fca5a5' },
-    warn:   { bg:'rgba(245,158,11,.1)',  brd:'rgba(245,158,11,.35)', icon:'⚠️', color:'#fde68a' },
-    info:   { bg:'rgba(124,58,237,.1)',  brd:'rgba(124,58,237,.3)',  icon:'ℹ️', color:'#c4b5fd' },
-  };
-  function show(msg, type='info', dur=4200) {
-    const s = STYLES[type] || STYLES.info;
-    const el = document.createElement('div');
-    el.className = 'toast';
-    el.setAttribute('role','alert');
-    el.style.cssText = `background:${s.bg};border:1px solid ${s.brd};color:${s.color};`;
-    const icon = createElement('span', '', s.icon);
-    icon.setAttribute('aria-hidden', 'true');
-    el.append(icon, createElement('span', '', msg));
-    el.addEventListener('click', () => dismiss(el));
-    container.appendChild(el);
-    setTimeout(() => dismiss(el), dur);
+function formatScore(score) {
+  return String(score).replace('.', ',');
+}
+
+function getResponseDetail(payload) {
+  if (!payload || typeof payload !== 'object') return '';
+  if (typeof payload.mensagem === 'string') return payload.mensagem;
+  if (typeof payload.message === 'string') return payload.message;
+  if (typeof payload.detail === 'string') return payload.detail;
+  if (Array.isArray(payload.detail)) {
+    return payload.detail
+      .map((item) => item && typeof item.msg === 'string' ? item.msg : '')
+      .filter(Boolean)
+      .join(' ');
   }
-  function dismiss(el) {
-    el.style.animation = 'toastOut .2s ease forwards';
-    setTimeout(() => el.remove(), 220);
+  if (Array.isArray(payload.errors)) {
+    return payload.errors
+      .map((item) => item && typeof item.msg === 'string' ? item.msg : '')
+      .filter(Boolean)
+      .join(' ');
   }
-  return {
-    success:(m,d)=>show(m,'success',d), error:(m,d)=>show(m,'error',d),
-    warn:(m,d)=>show(m,'warn',d),       info:(m,d)=>show(m,'info',d),
-  };
-})();
-
-/* ══════════════════════════════════════════════════════
-   CONFIRM MODAL
-   ══════════════════════════════════════════════════════ */
-function confirmar({ titulo, mensagem, labelOk='Confirmar', tipo='danger' }) {
-  return new Promise(resolve => {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.setAttribute('role','dialog');
-    overlay.setAttribute('aria-modal','true');
-    overlay.setAttribute('aria-labelledby','modal-title');
-    const box = createElement('div', 'modal-box');
-    const title = createElement('div', 'modal-title', titulo);
-    title.id = 'modal-title';
-    const message = createElement('div', 'modal-msg', mensagem);
-    const actions = createElement('div', 'modal-btns');
-    const cancel = createElement('button', 'modal-cancel', 'Cancelar');
-    cancel.id = 'mCancel';
-    cancel.type = 'button';
-    cancel.setAttribute('aria-label', 'Cancelar');
-    const confirm = createElement('button', tipo === 'danger' ? 'modal-ok-danger' : 'modal-ok', labelOk);
-    confirm.id = 'mOk';
-    confirm.type = 'button';
-    confirm.setAttribute('aria-label', 'Confirmar');
-    actions.append(cancel, confirm);
-    box.append(title, message, actions);
-    overlay.append(box);
-    document.body.appendChild(overlay);
-    overlay.querySelector('#mCancel').focus();
-    overlay.querySelector('#mOk').addEventListener('click', () => { overlay.remove(); resolve(true); });
-    overlay.querySelector('#mCancel').addEventListener('click', () => { overlay.remove(); resolve(false); });
-    overlay.addEventListener('keydown', e => { if(e.key==='Escape'){ overlay.remove(); resolve(false); } });
-  });
+  return '';
 }
 
-/* ══════════════════════════════════════════════════════
-   DOUBLE-SUBMIT GUARD
-   ══════════════════════════════════════════════════════ */
-function withLoading(btn, labelEl, loadingLabel, handler) {
-  return async (...args) => {
-    if (btn.disabled) return;
-    const orig = labelEl.textContent;
-    btn.disabled = true;
-    btn.classList.add('loading');
-    labelEl.textContent = loadingLabel;
-    try { await handler(...args); }
-    finally {
-      btn.disabled = false;
-      btn.classList.remove('loading');
-      labelEl.textContent = orig;
-    }
-  };
-}
-
-/* ══════════════════════════════════════════════════════
-   MENSAGENS DE ERRO HUMANIZADAS
-   ══════════════════════════════════════════════════════ */
-const ERROS = {
-  offline:     'Sem conexão. Verifique sua internet e tente novamente.',
-  timeout:     'O servidor demorou mais que o esperado. Tente novamente em instantes.',
-  too_long:    'O texto é muito longo. Use até 15.000 caracteres por análise.',
-  too_short:   'O texto é curto demais para análise. Insira pelo menos 50 caracteres.',
-  upload_type: 'Tipo de arquivo não suportado. Use PDF, DOCX ou TXT.',
-  upload_size: 'O arquivo é muito grande. O limite é de 10 MB.',
-  server:      'Algo deu errado no servidor. Nossa equipe foi notificada.',
-  session:     'Sua sessão expirou. Faça login novamente.',
-};
-
-/* ══════════════════════════════════════════════════════
-   SKELETON HELPERS
-   ══════════════════════════════════════════════════════ */
-function showSkeleton() {
-  document.getElementById('edSkeleton').classList.add('visible');
-  document.getElementById('scoreSkeleton').style.display = 'flex';
-  document.getElementById('scoreEmpty').style.display = 'none';
-  document.getElementById('scoreContent').style.display = 'none';
-}
-function hideSkeleton() {
-  document.getElementById('edSkeleton').classList.remove('visible');
-  document.getElementById('scoreSkeleton').style.display = 'none';
-}
-
-/* ══════════════════════════════════════════════════════
-   STATUS BAR
-   ══════════════════════════════════════════════════════ */
-function setStatus(type, txt) {
-  const dot = document.getElementById('sdot');
-  const label = document.getElementById('stxt');
-  dot.className = 'sdot ' + type;
-  label.textContent = txt;
-}
-
-/* ══════════════════════════════════════════════════════
-   TABS
-   ══════════════════════════════════════════════════════ */
-function switchTab(tabName) {
-  document.querySelectorAll('.ptab').forEach(b => {
-    const isActive = b.dataset.tab === tabName;
-    b.classList.toggle('active', isActive);
-    b.setAttribute('aria-selected', isActive);
-  });
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('pane-' + tabName).classList.add('active');
-}
-document.querySelectorAll('.ptab').forEach(btn =>
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
-
-/* ══════════════════════════════════════════════════════
-   EDITOR — WORD COUNT + CHAR LIMIT
-   ══════════════════════════════════════════════════════ */
-const editor    = document.getElementById('editor');
+const form = document.getElementById('verifier-form');
 const textoOriginal = document.getElementById('textoOriginal');
-const wcBadge   = document.getElementById('wcBadge');
-const footInfo  = document.getElementById('footInfo');
-const MAX_CHARS = 15000;
-
-function updateCount() {
-  const txt   = editor.value.trim();
-  const words = txt ? txt.split(/\s+/).length : 0;
-  const chars = editor.value.length;
-  const pct   = chars / MAX_CHARS;
-
-  wcBadge.textContent = words + ' palavras';
-  wcBadge.classList.toggle('has-text', words > 0);
-  footInfo.textContent = `${words} palavras · ${chars.toLocaleString('pt-BR')} / ${MAX_CHARS.toLocaleString('pt-BR')} caracteres`;
-
-  footInfo.className = 'foot-info' + (pct > .9 ? ' danger' : pct > .75 ? ' warn' : '');
-  editor.className   = 'ed-ta' + (pct > .9 ? ' at-limit' : pct > .75 ? ' near-limit' : '');
-}
-editor.addEventListener('input', updateCount);
-
-/* ══════════════════════════════════════════════════════
-   ANÁLISE — DEBOUNCE AUTOMÁTICO
-   ══════════════════════════════════════════════════════ */
-let debounceTimer;
-editor.addEventListener('input', () => {
-  clearTimeout(debounceTimer);
-  if (editor.value.trim().length > 80) {
-    setStatus('idle', 'Aguardando pausa...');
-    debounceTimer = setTimeout(() => runAnalysis(), 2200);
-  }
-});
-
-/* ══════════════════════════════════════════════════════
-   BOTÃO ANALISAR
-   ══════════════════════════════════════════════════════ */
-const btnAnalyze  = document.getElementById('btnAnalyze');
+const textoSuspeito = document.getElementById('textoSuspeito');
+const originalCount = document.getElementById('originalCount');
+const suspectCount = document.getElementById('suspectCount');
+const originalError = document.getElementById('originalError');
+const suspectError = document.getElementById('suspectError');
+const formError = document.getElementById('formError');
+const btnAnalyze = document.getElementById('btnAnalyze');
 const analyzeLabel = document.getElementById('analyzeLabel');
-const guardedAnalyze = withLoading(btnAnalyze, analyzeLabel, 'Analisando...', async () => {
-  await runAnalysis();
-});
-btnAnalyze.addEventListener('click', guardedAnalyze);
+const btnClear = document.getElementById('btnClear');
+const feedback = document.getElementById('feedback');
+const resultEmpty = document.getElementById('resultEmpty');
+const resultLoading = document.getElementById('resultLoading');
+const resultContent = document.getElementById('resultContent');
+const detailsEmpty = document.getElementById('detailsEmpty');
+const detailsContent = document.getElementById('detailsContent');
+const scoreValue = document.getElementById('scoreValue');
+const scoreProgress = document.getElementById('scoreProgress');
+const scoreLevel = document.getElementById('scoreLevel');
+const scoreExplanation = document.getElementById('scoreExplanation');
+const motorStatus = document.getElementById('motorStatus');
+const httpStatus = document.getElementById('httpStatus');
+const sourcesContent = document.getElementById('sourcesContent');
+const statusText = document.getElementById('analysisStatusText');
+const shortcutsDialog = document.getElementById('shortcutsDialog');
+const clearDialog = document.getElementById('clearDialog');
 
-/* ══════════════════════════════════════════════════════
-   LIMPAR
-   ══════════════════════════════════════════════════════ */
-document.getElementById('btnClear').addEventListener('click', async () => {
-  if (!editor.value.trim()) return;
-  const ok = await confirmar({
-    titulo: 'Limpar o editor?',
-    mensagem: 'O texto e todos os resultados de análise serão removidos. Tem certeza?',
-    labelOk: 'Sim, limpar tudo',
-    tipo: 'danger',
-  });
-  if (!ok) return;
-  editor.value = '';
-  document.getElementById('hlLayer').replaceChildren();
-  updateCount();
-  resetPanel();
-  toast.info('Editor limpo.');
-});
+let isAnalyzing = false;
+let hasResult = false;
+let autoAnalyzeTimer = null;
 
-/* ══════════════════════════════════════════════════════
-   UPLOAD
-   ══════════════════════════════════════════════════════ */
-const uploadStrip = document.getElementById('uploadStrip');
-const fileInput   = document.getElementById('fileInput');
-
-function handleUploadTrigger() { fileInput.click(); }
-uploadStrip.addEventListener('click', handleUploadTrigger);
-uploadStrip.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') handleUploadTrigger(); });
-
-fileInput.addEventListener('change', async e => {
-  const f = e.target.files[0];
-  if (!f) return;
-
-  const EXT_OK = ['.pdf','.docx','.txt'];
-  const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
-  if (!EXT_OK.includes(ext)) { toast.error(ERROS.upload_type); return; }
-  if (f.size > 10 * 1024 * 1024) { toast.error(ERROS.upload_size); return; }
-
-  document.getElementById('usName').textContent = '📄 ' + f.name;
-  uploadStrip.classList.add('uploading');
-  toast.info(`Extraindo texto de "${f.name}"...`);
-
-  await new Promise(r => setTimeout(r, 900));
-  uploadStrip.classList.remove('uploading');
-
-  editor.value = `[Texto extraído de "${f.name}" pelo script Python (POST /api/extract) apareceria aqui.\n\nO backend FastAPI converte o arquivo, limpa o texto e retorna o conteúdo puro para análise.]`;
-  updateCount();
-  toast.success('Texto extraído com sucesso! Pronto para análise.');
-  fileInput.value = '';
-});
-
-/* ══════════════════════════════════════════════════════
-   RESET PANEL
-   ══════════════════════════════════════════════════════ */
-function resetPanel() {
-  document.getElementById('scoreEmpty').style.display = 'flex';
-  document.getElementById('scoreContent').style.display = 'none';
-  document.getElementById('detEmpty').style.display = 'flex';
-  const dl = document.getElementById('detList');
-  dl.style.display = 'none'; dl.replaceChildren();
-  document.getElementById('detBadge').textContent = '0';
-  document.getElementById('detBadge').className = 'pbadge muted';
-  document.getElementById('btnExport').disabled = true;
-  setStatus('idle', 'Pronto para analisar');
+function setAnalysisState(state, message) {
+  document.body.dataset.analysisState = state;
+  statusText.textContent = message;
 }
 
-/* ══════════════════════════════════════════════════════
-   ANÁLISE PRINCIPAL
-   ══════════════════════════════════════════════════════ */
-async function runAnalysis() {
-  const txt = editor.value.trim();
+function setFeedback(message = '', type = 'status') {
+  feedback.textContent = message;
+  feedback.hidden = !message;
+  feedback.dataset.type = type;
+  feedback.setAttribute('role', type === 'error' ? 'alert' : 'status');
+}
+
+function updateCounter(field, counter) {
+  counter.textContent = `${field.value.length.toLocaleString('pt-BR')} / ${MAX_CHARS.toLocaleString('pt-BR')}`;
+  counter.dataset.limitState = field.value.length > MAX_CHARS * 0.9
+    ? 'danger'
+    : field.value.length > MAX_CHARS * 0.75 ? 'warning' : 'normal';
+}
+
+function updateCounters() {
+  updateCounter(textoOriginal, originalCount);
+  updateCounter(textoSuspeito, suspectCount);
+}
+
+function clearFieldErrors() {
+  [
+    [textoOriginal, originalError],
+    [textoSuspeito, suspectError]
+  ].forEach(([field, error]) => {
+    field.removeAttribute('aria-invalid');
+    error.textContent = '';
+    error.hidden = true;
+  });
+  formError.textContent = '';
+  formError.hidden = true;
+}
+
+function setFieldError(field, error, message) {
+  field.setAttribute('aria-invalid', 'true');
+  error.textContent = message;
+  error.hidden = false;
+}
+
+function validateForm({ focusInvalid = true } = {}) {
+  clearFieldErrors();
+  const invalidFields = [];
   const original = textoOriginal.value.trim();
+  const suspect = textoSuspeito.value.trim();
 
-  if (!txt || !original) { toast.warn('Informe os textos original e suspeito.'); return; }
-  if (txt.length < 50) { toast.warn(ERROS.too_short); return; }
-  if (editor.value.length > MAX_CHARS) { toast.warn(ERROS.too_long); return; }
+  if (!original) {
+    setFieldError(textoOriginal, originalError, 'Informe o texto original de referência.');
+    invalidFields.push(textoOriginal);
+  }
+  if (!suspect) {
+    setFieldError(textoSuspeito, suspectError, 'Informe o texto suspeito para comparação.');
+    invalidFields.push(textoSuspeito);
+  } else if (suspect.length < 50) {
+    setFieldError(textoSuspeito, suspectError, 'O texto suspeito deve possuir pelo menos 50 caracteres.');
+    invalidFields.push(textoSuspeito);
+  }
+  if (textoOriginal.value.length > MAX_CHARS) {
+    setFieldError(textoOriginal, originalError, 'O texto original excede 15.000 caracteres.');
+    invalidFields.push(textoOriginal);
+  }
+  if (textoSuspeito.value.length > MAX_CHARS) {
+    setFieldError(textoSuspeito, suspectError, 'O texto suspeito excede 15.000 caracteres.');
+    invalidFields.push(textoSuspeito);
+  }
 
-  setStatus('busy', 'Analisando…');
-  showSkeleton();
+  if (invalidFields.length > 0) {
+    formError.textContent = 'Revise os campos indicados antes de iniciar a análise.';
+    formError.hidden = false;
+    if (focusInvalid) invalidFields[0].focus();
+    return false;
+  }
+  return true;
+}
+
+function setBusy(busy) {
+  isAnalyzing = busy;
+  form.setAttribute('aria-busy', String(busy));
+  btnAnalyze.disabled = busy;
+  btnClear.disabled = busy;
+  analyzeLabel.textContent = busy ? 'Analisando…' : 'Analisar similaridade';
+}
+
+function showLoading() {
+  document.body.dataset.analysisState = 'loading';
+  resultEmpty.hidden = true;
+  resultContent.hidden = true;
+  resultLoading.hidden = false;
+  setAnalysisState('loading', 'Análise em andamento. Aguarde o retorno do motor.');
+}
+
+function restoreResultAfterError() {
+  resultLoading.hidden = true;
+  resultContent.hidden = !hasResult;
+  resultEmpty.hidden = hasResult;
+}
+
+function resetResult() {
+  hasResult = false;
+  resultEmpty.hidden = false;
+  resultLoading.hidden = true;
+  resultContent.hidden = true;
+  detailsEmpty.hidden = false;
+  detailsContent.hidden = true;
+  scoreValue.textContent = '—';
+  delete scoreValue.dataset.rawScore;
+  scoreProgress.value = 0;
+  scoreProgress.textContent = '0%';
+  scoreLevel.textContent = 'Aguardando';
+  scoreLevel.dataset.level = 'idle';
+  scoreExplanation.textContent = '';
+  motorStatus.textContent = '—';
+  httpStatus.textContent = '—';
+  document.getElementById('resultOriginal').textContent = '';
+  document.getElementById('resultSuspect').textContent = '';
+  sourcesContent.replaceChildren();
+  setAnalysisState('idle', 'Aguardando os textos para análise.');
+}
+
+function renderSources(sources) {
+  sourcesContent.replaceChildren();
+  if (!Array.isArray(sources) || sources.length === 0) {
+    sourcesContent.appendChild(createElement(
+      'p',
+      'verifier-no-sources',
+      'O motor não retornou fontes ou trechos segmentados nesta análise.'
+    ));
+    return;
+  }
+
+  const list = createElement('ul', 'verifier-source-list');
+  sources.forEach((source, index) => {
+    const item = createElement('li');
+    if (source && typeof source === 'object') {
+      const label = source.trecho ?? source.texto ?? source.nome ?? source.fonte ?? `Fonte ${index + 1}`;
+      item.appendChild(createElement('span', '', label));
+      const safeUrl = window.SecurityUtils?.toSafeUrl(source.url, { baseUrl: location.origin });
+      if (safeUrl) {
+        const link = createElement('a', '', 'Abrir fonte');
+        link.href = safeUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        item.appendChild(link);
+      }
+    } else {
+      item.appendChild(createElement('span', '', source));
+    }
+    list.appendChild(item);
+  });
+  sourcesContent.appendChild(list);
+}
+
+function renderResult(payload, original, suspect, responseStatus) {
+  const rawScore = payload?.resultado?.score_similaridade;
+  const numericScore = Number(rawScore);
+  if (
+    rawScore === null ||
+    rawScore === undefined ||
+    rawScore === '' ||
+    !Number.isFinite(numericScore) ||
+    numericScore < 0 ||
+    numericScore > 100
+  ) {
+    const error = new Error('O motor retornou um resultado vazio ou inválido.');
+    error.code = 'empty_result';
+    throw error;
+  }
+
+  const presentation = getSimilarityPresentation(numericScore);
+  const returnedStatus = payload?.resultado?.bruto?.status ?? payload?.status;
+  const sources = payload?.resultado?.fontes_encontradas;
+
+  scoreValue.textContent = `${formatScore(rawScore)}%`;
+  scoreValue.dataset.rawScore = String(rawScore);
+  scoreProgress.value = numericScore;
+  scoreProgress.textContent = `${formatScore(rawScore)}%`;
+  scoreLevel.textContent = presentation.label;
+  scoreLevel.dataset.level = presentation.level;
+  scoreExplanation.textContent = presentation.explanation;
+  motorStatus.textContent = returnedStatus ? String(returnedStatus) : 'Não informado';
+  httpStatus.textContent = `HTTP ${responseStatus}`;
+  document.getElementById('resultOriginal').textContent = original;
+  document.getElementById('resultSuspect').textContent = suspect;
+  renderSources(sources);
+
+  hasResult = true;
+  resultLoading.hidden = true;
+  resultEmpty.hidden = true;
+  resultContent.hidden = false;
+  detailsEmpty.hidden = true;
+  detailsContent.hidden = false;
+  setAnalysisState('success', 'Análise concluída com sucesso.');
+  setFeedback(`Análise concluída. Similaridade retornada: ${formatScore(rawScore)}%.`, 'status');
+  resultContent.focus({ preventScroll: true });
+}
+
+async function runAnalysis() {
+  if (isAnalyzing) return;
+  if (!validateForm()) {
+    setAnalysisState('invalid', 'Existem campos que precisam ser revisados.');
+    return;
+  }
+
+  clearTimeout(autoAnalyzeTimer);
+  setFeedback();
+  setBusy(true);
+  showLoading();
+  const original = textoOriginal.value.trim();
+  const suspect = textoSuspeito.value.trim();
 
   try {
-    const response = await fetch('/api/plagio/analisar', {
+    const response = await fetch(ANALYSIS_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken() || ''}` },
-      body: JSON.stringify({ texto_original: original, texto_suspeito: txt })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getToken() || ''}`
+      },
+      body: JSON.stringify({
+        texto_original: original,
+        texto_suspeito: suspect
+      })
     });
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) { const error = new Error(payload.mensagem || 'Falha na análise.'); error.status = response.status; throw error; }
-    const similaridade = Math.max(0, Math.min(100, Number(payload.resultado.score_similaridade) || 0));
-    const data = { orig: Math.round(100 - similaridade), plag: Math.round(similaridade), para: 0, dets: [] };
-
-    hideSkeleton();
-    renderScore(data);
-    renderDets(data.dets);
-    renderHL(data.dets);
-    document.getElementById('btnExport').disabled = false;
-    setStatus('done', 'Análise concluída');
-
-    const verdict = data.orig >= 80 ? '✅ Texto aprovado!' :
-                    data.orig >= 60 ? '⚠️ Atenção: revisar trechos identificados.' :
-                                      '❌ Alto índice de similaridade detectado.';
-    toast[data.orig >= 80 ? 'success' : data.orig >= 60 ? 'warn' : 'error'](verdict);
-
-    if (data.dets.length > 0) {
-      setTimeout(() => {
-        switchTab('detect');
-        toast.info('Clique em um card para ver a fonte e navegar no texto.');
-      }, 1200);
+    if (!response.ok) {
+      const error = new Error('Falha na análise.');
+      error.status = response.status;
+      error.detail = getResponseDetail(payload);
+      throw error;
     }
-
-  } catch(err) {
-    hideSkeleton();
-    setStatus('error', 'Erro na análise');
-    const errorKey = typeof err === 'object' && err && 'code' in err ? err.code : null;
-    const msg = err.status === 401 ? 'Sua sessão expirou. Faça login novamente.' : err.status === 403 ? 'Você não tem permissão para analisar.' : err.status === 503 ? 'O motor de IA está indisponível no momento.' : ((errorKey && ERROS[errorKey]) ? ERROS[errorKey] : err.message || ERROS.server);
-    toast.error(msg);
+    renderResult(payload, original, suspect, response.status);
+  } catch (error) {
+    restoreResultAfterError();
+    const message = error.code === 'empty_result'
+      ? error.message
+      : getVerifierErrorMessage(error.status, error);
+    setAnalysisState('error', message);
+    setFeedback(message, 'error');
+    feedback.focus();
+  } finally {
+    setBusy(false);
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   RENDER SCORE
-   ══════════════════════════════════════════════════════ */
-function renderScore(d) {
-  document.getElementById('scoreEmpty').style.display = 'none';
-  const sc = document.getElementById('scoreContent');
-  sc.style.display = 'flex';
-  const C = 2 * Math.PI * 42;
-  const fill = document.getElementById('gFill');
-  fill.style.strokeDasharray  = C;
-  fill.style.strokeDashoffset = C - (C * d.orig / 100);
-  fill.className = 'g-fi ' + (d.orig >= 80 ? 'green' : d.orig >= 60 ? 'amber' : 'red');
-  document.getElementById('gNum').textContent = d.orig + '%';
-  document.getElementById('gLbl').textContent = d.orig >= 80 ? 'ORIGINAL' : d.orig >= 60 ? 'ATENÇÃO' : 'CRÍTICO';
-  document.getElementById('sO').textContent = d.orig + '%';
-  document.getElementById('sP').textContent = d.plag + '%';
-  document.getElementById('sA').textContent = d.para + '%';
-  const v = document.getElementById('sV');
-  v.textContent = d.orig >= 80 ? 'Aprovado' : d.orig >= 60 ? 'Revisar' : 'Reprovado';
-  v.className = 'chip ' + (d.orig >= 80 ? 'cg' : d.orig >= 60 ? 'ca' : 'cr');
-  setTimeout(() => {
-    [['O', d.orig], ['A', d.para], ['P', d.plag]].forEach(([k, val]) => {
-      const bar = document.getElementById('d'+k);
-      bar.style.width = val + '%';
-      bar.parentElement.setAttribute('aria-valuenow', val);
-      document.getElementById('dv'+k).textContent = val + '%';
-    });
-  }, 80);
+function scheduleAutomaticAnalysis() {
+  clearTimeout(autoAnalyzeTimer);
+  if (
+    isAnalyzing ||
+    !textoOriginal.value.trim() ||
+    textoSuspeito.value.trim().length <= 80
+  ) return;
+  setAnalysisState('idle', 'Aguardando uma pausa na digitação para analisar.');
+  autoAnalyzeTimer = setTimeout(runAnalysis, AUTO_ANALYZE_DELAY);
 }
 
-/* ══════════════════════════════════════════════════════
-   RENDER DETECTIONS
-   ══════════════════════════════════════════════════════ */
-function renderDets(dets) {
-  document.getElementById('detEmpty').style.display = 'none';
-  const list = document.getElementById('detList');
-  list.style.display = 'flex'; list.replaceChildren();
-  const reds = dets.filter(d => d.lvl === 'red').length;
-  const badge = document.getElementById('detBadge');
-  badge.textContent = dets.length;
-  badge.setAttribute('aria-label', `${dets.length} detecções`);
-  badge.className = 'pbadge ' + (reds > 0 ? 'red' : 'amber');
-
-  dets.forEach((det, i) => {
-    const el = document.createElement('div');
-    el.className = 'det ' + det.lvl;
-    el.dataset.id = det.id;
-    el.setAttribute('role', 'listitem');
-    el.setAttribute('tabindex', '0');
-    el.setAttribute('aria-label', `Detecção ${i+1}: ${det.lvl === 'red' ? 'Alta similaridade' : 'Paráfrase'} — ${det.sim}%`);
-    const top = createElement('div', 'det-top');
-    const toggle = createElement('span', 'det-toggle', '›');
-    toggle.setAttribute('aria-hidden', 'true');
-    top.append(
-      createElement('span', 'det-badge', det.lvl === 'red' ? 'Alta sim.' : 'Paráfrase'),
-      createElement('span', 'det-txt', det.txt),
-      createElement('span', 'det-pct', `${Number(det.sim) || 0}%`),
-      toggle
-    );
-
-    const body = createElement('div', 'det-body');
-    body.setAttribute('role', 'region');
-    body.setAttribute('aria-label', 'Detalhes da detecção');
-    const comparison = createElement('div', 'cmp');
-    const student = createElement('div', 'cbox stu');
-    student.append(createElement('span', 'clbl', 'Seu texto'), createElement('span', 'ctxt', det.stu));
-    const source = createElement('div', 'cbox ori');
-    source.append(createElement('span', 'clbl', 'Fonte suspeita'), createElement('span', 'ctxt', det.ori));
-    const safeSourceUrl = window.SecurityUtils?.toSafeUrl(det.url, { baseUrl: location.origin });
-    if (safeSourceUrl) {
-      const sourceLink = createElement('a', 'src-a', `🔗 ${det.src || 'Abrir fonte'}`);
-      sourceLink.href = safeSourceUrl;
-      sourceLink.target = '_blank';
-      sourceLink.rel = 'noopener noreferrer';
-      source.append(createElement('br'), sourceLink);
-    }
-    comparison.append(student, source);
-    body.append(comparison);
-    el.append(top, body);
-
-    function toggleCard() {
-      const wasOpen = el.classList.contains('open');
-      document.querySelectorAll('.det.open').forEach(d => d.classList.remove('open'));
-      document.querySelectorAll('.det.focused').forEach(d => d.classList.remove('focused'));
-      if (!wasOpen) {
-        el.classList.add('open', 'focused');
-        scrollToSnippet(det.txt, det.id);
-      }
-    }
-
-    top.addEventListener('click', toggleCard);
-    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); toggleCard(); } });
-    list.appendChild(el);
+[textoOriginal, textoSuspeito].forEach((field) => {
+  field.addEventListener('input', () => {
+    updateCounters();
+    if (field.getAttribute('aria-invalid') === 'true') clearFieldErrors();
+    scheduleAutomaticAnalysis();
   });
-}
-
-/* ══════════════════════════════════════════════════════
-   RENDER HIGHLIGHTS
-   ══════════════════════════════════════════════════════ */
-function renderHL(dets) {
-  const layer = document.getElementById('hlLayer');
-  window.SecurityUtils.renderHighlightedText(layer, editor.value, dets, document);
-
-  layer.querySelectorAll('mark').forEach(m => {
-    function activate() {
-      switchTab('detect');
-      const card = [...document.querySelectorAll('.det')].find((item) => item.dataset.id === m.dataset.id);
-      if (card) {
-        document.querySelectorAll('.det.open').forEach(d => d.classList.remove('open'));
-        document.querySelectorAll('.det.focused').forEach(d => d.classList.remove('focused'));
-        card.classList.add('open', 'focused');
-        card.scrollIntoView({ behavior:'smooth', block:'nearest' });
-      }
-    }
-    m.addEventListener('click', activate);
-    m.addEventListener('keydown', e => { if(e.key==='Enter') activate(); });
-  });
-}
-
-/* Scroll to snippet */
-function scrollToSnippet(txt, id) {
-  const idx = editor.value.toLowerCase().indexOf(txt.toLowerCase().slice(0, 30));
-  if (idx > -1) {
-    editor.focus();
-    editor.setSelectionRange(idx, idx + txt.length);
-    document.querySelectorAll('mark.hl-focus').forEach(m => m.classList.remove('hl-focus'));
-    document.querySelectorAll('mark[data-id]').forEach((mark) => {
-      if (mark.dataset.id === String(id)) mark.classList.add('hl-focus');
-    });
-  }
-}
-
-/* Sync scroll */
-editor.addEventListener('scroll', () => {
-  document.getElementById('hlLayer').scrollTop = editor.scrollTop;
 });
 
-/* ══════════════════════════════════════════════════════
-   ATALHOS DE TECLADO
-   ══════════════════════════════════════════════════════ */
-document.addEventListener('keydown', e => {
-  const inInput = ['INPUT','SELECT'].includes(e.target.tagName);
-  const mod = e.ctrlKey || e.metaKey;
-  const inEditor = e.target === editor;
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  runAnalysis();
+});
 
-  if (mod && e.key === 'Enter') {
-    e.preventDefault();
-    guardedAnalyze();
+const tabs = [...document.querySelectorAll('.verifier-tab')];
+const panels = [...document.querySelectorAll('.verifier-panel')];
+
+function activateTab(tabName, { focus = false } = {}) {
+  tabs.forEach((tab) => {
+    const selected = tab.dataset.tab === tabName;
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    if (selected && focus) tab.focus();
+  });
+  panels.forEach((panel) => {
+    panel.hidden = panel.id !== `panel-${tabName}`;
+  });
+}
+
+tabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+  tab.addEventListener('keydown', (event) => {
+    const targetIndex = getVerifierTabTargetIndex(event.key, index, tabs.length);
+    if (targetIndex === null) return;
+    event.preventDefault();
+    activateTab(tabs[targetIndex].dataset.tab, { focus: true });
+  });
+});
+
+function getFocusable(dialog) {
+  return [...dialog.querySelectorAll(
+    'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )].filter((element) => !element.hidden);
+}
+
+function openDialog(dialog, initialFocus) {
+  if (dialog.open) return;
+  const returnFocus = document.activeElement;
+  const restorePageScroll = lockPageScroll(document);
+
+  function containFocus(event) {
+    if (event.key !== 'Tab') return;
+    const focusable = getFocusable(dialog);
+    if (focusable.length === 0) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function cleanup() {
+    dialog.removeEventListener('keydown', containFocus);
+    restorePageScroll();
+    if (returnFocus && typeof returnFocus.focus === 'function') returnFocus.focus();
+  }
+
+  dialog.addEventListener('keydown', containFocus);
+  dialog.addEventListener('close', cleanup, { once: true });
+  dialog.showModal();
+  requestAnimationFrame(() => (initialFocus || getFocusable(dialog)[0] || dialog).focus());
+}
+
+document.getElementById('helpButton').addEventListener('click', (event) => {
+  openDialog(shortcutsDialog, document.getElementById('closeShortcuts'));
+  event.currentTarget.setAttribute('aria-expanded', 'true');
+});
+
+shortcutsDialog.addEventListener('close', () => {
+  document.getElementById('helpButton').setAttribute('aria-expanded', 'false');
+});
+document.getElementById('closeShortcuts').addEventListener('click', () => shortcutsDialog.close());
+
+btnClear.addEventListener('click', () => {
+  if (!textoOriginal.value && !textoSuspeito.value && !hasResult) {
+    textoOriginal.focus();
     return;
   }
-  if (mod && e.key === 'Delete' && !inInput) {
-    document.getElementById('btnClear').click();
+  openDialog(clearDialog, document.getElementById('cancelClear'));
+});
+
+document.getElementById('closeClearDialog').addEventListener('click', () => clearDialog.close());
+document.getElementById('cancelClear').addEventListener('click', () => clearDialog.close());
+document.getElementById('confirmClear').addEventListener('click', () => {
+  clearTimeout(autoAnalyzeTimer);
+  textoOriginal.value = '';
+  textoSuspeito.value = '';
+  clearFieldErrors();
+  updateCounters();
+  resetResult();
+  setFeedback('Os textos e o resultado foram removidos.', 'status');
+  clearDialog.close();
+});
+
+document.addEventListener('keydown', (event) => {
+  const modifier = event.ctrlKey || event.metaKey;
+  const editable = ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName);
+
+  if (modifier && event.key === 'Enter') {
+    event.preventDefault();
+    runAnalysis();
     return;
   }
-  if (inInput || inEditor) return;
-
-  if (e.altKey && e.key === '1') { e.preventDefault(); switchTab('score'); }
-  if (e.altKey && e.key === '2') { e.preventDefault(); switchTab('detect'); }
-  if (e.altKey && e.key === '3') { e.preventDefault(); switchTab('tips'); }
-  if (e.altKey && e.key.toLowerCase() === 't') {
-    e.preventDefault();
+  if (modifier && event.key === 'Delete') {
+    event.preventDefault();
+    btnClear.click();
+    return;
+  }
+  if (event.altKey && ['1', '2', '3'].includes(event.key)) {
+    event.preventDefault();
+    activateTab(['result', 'details', 'guidance'][Number(event.key) - 1], { focus: true });
+    return;
+  }
+  if (event.altKey && event.key.toLowerCase() === 't') {
+    event.preventDefault();
     document.getElementById('theme-toggle').click();
+    return;
   }
-  if (e.key === '?') {
-    const ov = document.getElementById('shortcutOverlay');
-    ov.style.display = ov.style.display === 'none' ? 'flex' : 'none';
-  }
-  if (e.key === 'Escape') {
-    document.getElementById('shortcutOverlay').style.display = 'none';
+  if (event.key === '?' && !editable && !shortcutsDialog.open && !clearDialog.open) {
+    event.preventDefault();
+    openDialog(shortcutsDialog, document.getElementById('closeShortcuts'));
   }
 });
 
-document.getElementById('shortcutOverlay').addEventListener('click', function(e) {
-  if (e.target === this) this.style.display = 'none';
-});
-
+updateCounters();
+resetResult();
 initSessionUI();

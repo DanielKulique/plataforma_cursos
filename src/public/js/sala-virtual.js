@@ -72,7 +72,8 @@ function criarProgresso(percentual) {
     track.setAttribute('aria-valuemax', '100');
     track.setAttribute('aria-valuenow', String(valor));
     const fill = criarElemento('div', 'progress-bar-fill');
-    fill.style.width = `${valor}%`;
+    // Exceção dinâmica documentada: o percentual real não cabe em classes fixas.
+    fill.style.setProperty('--progress-value', `${valor}%`);
     track.append(fill);
     wrapper.append(header, track);
     return wrapper;

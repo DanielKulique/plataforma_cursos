@@ -65,7 +65,7 @@ async function clearDatabase() {
         
         // Limpa tabelas na ordem correta (ignora se não existir)
         const tables = [
-            'AnalisesPlagio', 'ConteudosProgresso', 'ProgressoAluno', 'Conteudos', 'Modulos',
+            'AnalisesContextuais', 'AnalisesPlagio', 'ConteudosProgresso', 'ProgressoAluno', 'Conteudos', 'Modulos',
             'Q_Respostas', 'Q_Tentativas', 'Q_Opcoes', 'Q_Perguntas', 'Questionarios',
             'Matriculas', 'Turmas', 'Cursos', 'EmailVerificacoes', 'Usuarios'
         ];

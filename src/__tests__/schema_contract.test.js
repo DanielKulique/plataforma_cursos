@@ -32,7 +32,7 @@ function canonicalConnection(overrides = {}) {
 describe('contrato do schema canônico', () => {
     it('aceita todas as tabelas, colunas, enums e índices esperados', async () => {
         await expect(assertCanonicalSchema(canonicalConnection(), 'plataforma_cursos_dev'))
-            .resolves.toEqual({ database: 'plataforma_cursos_dev', tables: 14 });
+            .resolves.toEqual({ database: 'plataforma_cursos_dev', tables: 15 });
     });
 
     it('detecta o drift legado id_usuario em Matriculas', async () => {

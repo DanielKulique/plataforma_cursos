@@ -14,7 +14,8 @@ const EXPECTED_COLUMNS = Object.freeze({
     Modulos: ['id_modulo', 'id_turma', 'titulo', 'descricao', 'ordem'],
     Conteudos: ['id_conteudo', 'id_turma', 'id_modulo', 'titulo', 'descricao', 'tipo', 'url', 'corpo', 'duracao_minutos', 'ordem'],
     ConteudosProgresso: ['id_progresso', 'id_aluno', 'id_conteudo', 'status', 'iniciado_em', 'concluido_em'],
-    AnalisesPlagio: ['id', 'usuario_id', 'trecho_texto', 'score_similaridade', 'fontes_encontradas', 'criado_em']
+    AnalisesPlagio: ['id', 'usuario_id', 'trecho_texto', 'score_similaridade', 'fontes_encontradas', 'criado_em'],
+    AnalisesContextuais: ['id', 'id_usuario', 'status', 'total_segmentos', 'segmentos_analisados', 'total_alertas', 'gravidade_maxima', 'versao_contrato', 'tempo_total_ms', 'parametros_json', 'criado_em']
 });
 
 const EXPECTED_ENUMS = Object.freeze({

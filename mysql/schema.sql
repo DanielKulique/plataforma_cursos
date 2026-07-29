@@ -201,3 +201,21 @@ CREATE TABLE `AnalisesPlagio` (
   KEY `idx_analises_usuario` (`usuario_id`),
   CONSTRAINT `fk_analises_plagio_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `Usuarios` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `AnalisesContextuais` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `id_usuario` INT NOT NULL,
+  `status` VARCHAR(30) NOT NULL,
+  `total_segmentos` INT UNSIGNED NOT NULL,
+  `segmentos_analisados` INT UNSIGNED NOT NULL,
+  `total_alertas` INT UNSIGNED NOT NULL,
+  `gravidade_maxima` ENUM('INFORMATIVA', 'BAIXA', 'MEDIA', 'ALTA') NULL,
+  `versao_contrato` VARCHAR(20) NOT NULL,
+  `tempo_total_ms` DECIMAL(12,3) NULL,
+  `parametros_json` JSON NOT NULL,
+  `criado_em` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_analises_contextuais_usuario_criado` (`id_usuario`, `criado_em`),
+  CONSTRAINT `fk_analises_contextuais_usuario`
+    FOREIGN KEY (`id_usuario`) REFERENCES `Usuarios` (`id_usuario`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

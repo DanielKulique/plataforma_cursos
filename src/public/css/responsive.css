@@ -246,6 +246,23 @@
   }
 }
 
+/* Goal Detector 4 — formulário e relatório contextual em telas estreitas. */
+@media (max-width: 640px) {
+  .verificador-page .verifier-form-grid,
+  .verificador-page .verifier-summary-grid,
+  .verificador-page .verifier-score-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .verificador-page .verifier-panel { padding: var(--space-4); }
+
+  .verificador-page .verifier-summary,
+  .verificador-page .verifier-result-section,
+  .verificador-page .verifier-disclosure { padding: var(--space-4); }
+
+  .verificador-page .verifier-alert-header { align-items: flex-start; flex-direction: column; }
+}
+
 @media (max-height: 680px) and (min-width: 641px) {
   .auth-page .auth-shell {
     place-items: start center;

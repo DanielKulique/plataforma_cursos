@@ -32,7 +32,7 @@ function contrast(first, second) {
 }
 
 describe('Goal Visual 1 - fundação visual', () => {
-    it('carrega a fundação antes das camadas incrementais em todas as onze páginas', () => {
+    it('carrega a cascata correta nas páginas da plataforma e na landing isolada', () => {
         const pages = fs.readdirSync(publicDir).filter((file) => file.endsWith('.html'));
         const incrementalPages = new Set([
             'index.html',
@@ -47,12 +47,19 @@ describe('Goal Visual 1 - fundação visual', () => {
             'admin.html',
             'verificador.html'
         ]);
-        expect(pages).toHaveLength(11);
+        expect(pages).toHaveLength(12);
 
         pages.forEach((page) => {
             const html = fs.readFileSync(path.join(publicDir, page), 'utf8');
             const localStyles = [...html.matchAll(/<link\s+rel="stylesheet"\s+href="(\/css\/[^"]+)">/g)]
                 .map((match) => match[1]);
+            if (page === 'landing.html') {
+                expect(localStyles).toEqual([
+                    '/css/landing/landing.css',
+                    '/css/landing/landing-responsive.css'
+                ]);
+                return;
+            }
             const expectedStyles = [
                 '/css/tokens.css',
                 '/css/base.css',

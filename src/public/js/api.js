@@ -147,7 +147,8 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
         retries = MAX_RETRIES,
         timeout = DEFAULT_TIMEOUT,
         useCache = false,
-        cacheDuration = 5 * 60 * 1000
+        cacheDuration = 5 * 60 * 1000,
+        signal: externalSignal
     } = config;
 
     const method = getMethod(options);
@@ -182,6 +183,11 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
         // nunca pode contaminar uma tentativa posterior.
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
+        const abortFromCaller = () => controller.abort();
+        if (externalSignal) {
+            if (externalSignal.aborted) controller.abort();
+            else externalSignal.addEventListener('abort', abortFromCaller, { once: true });
+        }
 
         try {
             const response = await fetch(url, {
@@ -212,7 +218,9 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
             return data;
         } catch (error) {
             if (error.name === 'AbortError') {
-                lastError = new APIError('Tempo limite excedido. Tente novamente.', 408);
+                lastError = externalSignal?.aborted
+                    ? new APIError('Requisição cancelada.', 499)
+                    : new APIError('Tempo limite excedido. Tente novamente.', 408);
             } else if (error instanceof APIError) {
                 lastError = error;
             } else {
@@ -234,6 +242,7 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
             }
         } finally {
             clearTimeout(timeoutId);
+            externalSignal?.removeEventListener('abort', abortFromCaller);
         }
     }
 

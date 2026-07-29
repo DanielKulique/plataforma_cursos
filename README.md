@@ -135,6 +135,23 @@ O frontend ainda guarda JWT em `localStorage`; isso preserva compatibilidade nes
 
 Quando o envio de e-mail estiver desabilitado em desenvolvimento, a API informa que a mensagem não foi enviada, mas nunca devolve o código de verificação. Autoria de conteúdos/questionários permanece fora do escopo atual, e o detector de plágio depende de um motor externo ainda em desenvolvimento.
 
+## Detector contextual
+
+A rota autenticada `POST /api/analises/contextual` integra a plataforma ao endpoint experimental
+`POST /api/v1/detectar` do motor externo e permanece compatível. Os contratos atuais adicionam
+`POST /api/analises/contextual/segmento` e `/documento`, encaminhados aos endpoints FastAPI 2.0.
+O incremental possui timeout curto, cancelamento e não persiste versões; somente a ação completa
+pode persistir resumo técnico. O navegador nunca acessa diretamente o FastAPI.
+
+### Interface contextual
+
+O verificador autenticado em `/verificador.html` é um editor que analisa o parágrafo alterado
+depois de 900 ms de pausa. IDs e versões vivem somente na memória, requisições anteriores são
+canceladas e respostas obsoletas são descartadas. Fonte manual, busca automática e modo híbrido
+estão previstos; sem provider autorizado, a busca informa indisponibilidade e não simula
+resultados. A análise completa permanece disponível por botão. Consulte
+`docs/ROADMAP_DETECTOR_INCREMENTAL_FONTES.md` para arquitetura, contratos, privacidade e gates.
+
 ### Rotação obrigatória de segredos
 
 Como `.env.test` já esteve no histórico Git, rotacione manualmente `JWT_SECRET`, a senha do banco e qualquer outro valor que tenha sido armazenado no arquivo. Remover o arquivo do índice atual não apaga versões antigas do histórico. A reescrita do histórico não é executada automaticamente e exige coordenação com todos os clones e ambientes.

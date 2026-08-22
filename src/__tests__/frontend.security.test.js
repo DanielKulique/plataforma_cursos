@@ -71,6 +71,7 @@ describe('proteções XSS do frontend', () => {
             .toBe('https://www.youtube.com/embed/video');
         expect(SecurityUtils.toSafeUrl('javascript:alert(1)', { baseUrl: 'https://curso.example' })).toBeNull();
         expect(SecurityUtils.toSafeUrl('data:text/html,<script>alert(1)</script>', { baseUrl: 'https://curso.example' })).toBeNull();
+        expect(SecurityUtils.toSafeUrl('https://usuario:senha@www.youtube.com/embed/video', { baseUrl: 'https://curso.example' })).toBeNull();
         expect(SecurityUtils.toSafeUrl('https://evil.example/payload', { baseUrl: 'https://curso.example' })).toBeNull();
     });
 

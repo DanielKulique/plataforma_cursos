@@ -14,6 +14,10 @@ const COMPLETE_ENDPOINT = '/analises/contextual/documento';
 const LIMITS = Object.freeze({ documento: 100000, fonte: 50000, autores: 20 });
 const DEFAULT_PARAMETERS = Object.freeze({ semantico: '0.8', reproducao: '0.7', parafrase: '0.2' });
 const SEVERITY_ORDER = Object.freeze({ ALTA: 0, MEDIA: 1, BAIXA: 2, INFORMATIVA: 3 });
+const ALLOWED_REFERENCE_ORIGINS = Object.freeze([
+  'https://doi.org',
+  'https://www.youtube.com'
+]);
 
 export const RULE_GUIDANCE = Object.freeze({
   'REG-01': { title: 'Possível reprodução sem atribuição', guidance: 'Revise o trecho e confirme se a fonte deve ser citada ou se a reprodução exige marcação de citação direta.' },
@@ -187,6 +191,41 @@ function normalizeCompleteData(data) {
   };
 }
 
+export function buildSegmentHighlightModel(segment) {
+  const text = typeof segment?.texto === 'string' && segment.texto.trim()
+    ? segment.texto.trim()
+    : 'Trecho não informado.';
+  const alerts = Array.isArray(segment?.alertas) ? segment.alertas : [];
+  const alert = [...alerts].sort(
+    (a, b) => (SEVERITY_ORDER[a?.gravidade] ?? 9) - (SEVERITY_ORDER[b?.gravidade] ?? 9)
+  )[0];
+  return {
+    text,
+    detections: alert ? [{
+      id: String(alert.codigo_regra || segment?.segmento_id || segment?.id || ''),
+      lvl: alert.gravidade === 'ALTA' ? 'red' : 'amber',
+      txt: text
+    }] : []
+  };
+}
+
+export function safeExternalUrl(value, {
+  baseUrl = globalThis.location?.origin || 'http://localhost',
+  allowedOrigins = ALLOWED_REFERENCE_ORIGINS
+} = {}) {
+  try {
+    const base = new URL(baseUrl);
+    const url = new URL(String(value || '').trim(), base);
+    if (url.username || url.password) return null;
+    const sameOrigin = url.origin === base.origin;
+    const allowedExternalOrigin = url.protocol === 'https:' && allowedOrigins.includes(url.origin);
+    if (!sameOrigin && !allowedExternalOrigin) return null;
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 function element(tag, className, value) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -198,13 +237,29 @@ function textOrFallback(value, fallback = 'Não informado') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
-function safeExternalUrl(value) {
-  try {
-    const url = new URL(String(value));
-    return ['http:', 'https:'].includes(url.protocol) ? url.href : null;
-  } catch {
-    return null;
+function renderSegmentText(segment) {
+  const paragraph = element('p', 'verifier-segment-text');
+  const model = buildSegmentHighlightModel(segment);
+  const renderer = globalThis.SecurityUtils?.renderHighlightedText;
+  if (typeof renderer !== 'function') {
+    paragraph.textContent = model.text;
+    return paragraph;
   }
+
+  renderer(paragraph, model.text, model.detections, document);
+  paragraph.querySelectorAll('mark').forEach((mark) => {
+    const openAlerts = () => {
+      activateTab('summary');
+      byId('alertsContent').scrollIntoView({ block: 'start' });
+    };
+    mark.addEventListener('click', openAlerts);
+    mark.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      openAlerts();
+    });
+  });
+  return paragraph;
 }
 
 function createMetric(label, value) {
@@ -398,7 +453,7 @@ function renderSegments(data) {
     const details = element('details', 'verifier-segment');
     const summary = element('summary', '', `Segmento ${Number(segment?.indice) + 1 || index + 1}`);
     const body = element('div', 'verifier-segment-body');
-    body.append(element('p', 'verifier-segment-text', textOrFallback(segment?.texto, 'Trecho não informado.')));
+    body.append(renderSegmentText(segment));
     if (segment?.metricas) body.append(element('div', 'verifier-score-grid'), renderScore('Similaridade semântica', segment.metricas.score_semantico), renderScore('Sobreposição lexical', segment.metricas.score_lexical));
     const citations = Array.isArray(segment?.citacoes) && segment.citacoes.length ? segment.citacoes.join(' · ') : 'Nenhuma citação identificada neste segmento.';
     body.append(element('p', 'verifier-segment-citations', `Citações identificadas: ${citations}`));

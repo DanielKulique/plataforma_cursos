@@ -26,6 +26,7 @@ const plagioRoutes = require('./src/api/routes/plagio.routes');
 const questoesRoutes = require('./src/api/routes/questoes.routes');
 const conteudosRoutes = require('./src/api/routes/conteudos.routes');
 const analisesContextuaisRoutes = require('./src/api/routes/analises-contextuais.routes');
+const indexedAnalysisRoutes = require('./src/api/routes/indexed-analysis.routes');
 
 const app = express();
 const PORTA = process.env.PORT || 3000;
@@ -71,6 +72,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/plagio', plagioRoutes);
 app.use('/api/analises', analisesContextuaisRoutes);
+app.use('/api', indexedAnalysisRoutes);
 app.use('/api', questoesRoutes);
 app.use('/api', conteudosRoutes);
 

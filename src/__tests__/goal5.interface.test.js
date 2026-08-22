@@ -8,10 +8,10 @@ const components = fs.readFileSync(path.join(publicDir, 'css', 'components.css')
 const responsive = fs.readFileSync(path.join(publicDir, 'css', 'responsive.css'), 'utf8');
 
 function helpers() {
-    const start = script.indexOf('export const RULE_GUIDANCE');
+    const start = script.indexOf('const ALLOWED_REFERENCE_ORIGINS');
     const end = script.indexOf('\nfunction element', start);
     const source = script.slice(start, end).replace(/\bexport\s+/g, '');
-    return new Function(`${source}\nreturn { RULE_GUIDANCE, formatPercent, getContextualErrorMessage, buildContextualPayload, isContextualResponse, getVerifierTabTargetIndex };`)();
+    return new Function(`${source}\nreturn { RULE_GUIDANCE, formatPercent, getContextualErrorMessage, buildContextualPayload, isContextualResponse, getVerifierTabTargetIndex, buildSegmentHighlightModel, safeExternalUrl };`)();
 }
 
 function validResponse() {
@@ -83,6 +83,23 @@ describe('Goal Detector 4 — interface contextual e relatório de alertas', () 
         expect(script).toContain('Similaridade não é percentual de plágio.');
         expect(script).toContain('Prioridades de revisão: Informativa, Baixa, Média e Alta.');
         expect(script).toContain('Mais de uma referência pode corresponder a esta citação.');
+
+        const { buildSegmentHighlightModel } = helpers();
+        expect(buildSegmentHighlightModel({
+            texto: '<svg onload="globalThis.pwned=true"></svg>',
+            alertas: [{ codigo_regra: 'REG-01', gravidade: 'ALTA' }]
+        })).toEqual({
+            text: '<svg onload="globalThis.pwned=true"></svg>',
+            detections: [{
+                id: 'REG-01',
+                lvl: 'red',
+                txt: '<svg onload="globalThis.pwned=true"></svg>'
+            }]
+        });
+        expect(script).toContain('SecurityUtils?.renderHighlightedText');
+        expect(script).toContain("mark.addEventListener('click', openAlerts)");
+        expect(script).toContain("activateTab('summary')");
+        expect(components).toContain('.verificador-page .verifier-segment-text mark.hl-red');
     });
 
     it('mapeia as sete regras para orientação educativa e não acusatória', () => {
@@ -121,6 +138,20 @@ describe('Goal Detector 4 — interface contextual e relatório de alertas', () 
         expect(html).not.toMatch(/\son[a-z]+\s*=/i);
         expect(html).not.toMatch(/<script(?![^>]*\bsrc=)/i);
         expect(html).toContain('Evite inserir informações pessoais ou sigilosas.');
+
+        const { safeExternalUrl } = helpers();
+        expect(safeExternalUrl('/resultado/1', { baseUrl: 'https://curso.example' }))
+            .toBe('https://curso.example/resultado/1');
+        expect(safeExternalUrl('https://doi.org/10.1000/teste', { baseUrl: 'https://curso.example' }))
+            .toBe('https://doi.org/10.1000/teste');
+        expect(safeExternalUrl('http://doi.org/10.1000/teste', { baseUrl: 'https://curso.example' }))
+            .toBeNull();
+        expect(safeExternalUrl('https://usuario:senha@doi.org/10.1000/teste', { baseUrl: 'https://curso.example' }))
+            .toBeNull();
+        expect(safeExternalUrl('https://evil.example/payload', { baseUrl: 'https://curso.example' }))
+            .toBeNull();
+        expect(safeExternalUrl('javascript:alert(1)', { baseUrl: 'https://curso.example' }))
+            .toBeNull();
     });
 
     it('mantém teclado, foco, live regions, diálogos e responsividade', () => {

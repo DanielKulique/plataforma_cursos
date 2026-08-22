@@ -23,6 +23,8 @@ jobs:
       DB_NAME: plataforma_cursos_test
       JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}
       TEST_SEED_PASSWORD: ${{ secrets.CI_TEST_SEED_PASSWORD }}
+      MOTOR_IA_INTERNAL_API_TOKEN: ci-ephemeral-internal-token
+      MOTOR_IA_API_URL: http://127.0.0.1:8000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -96,5 +98,7 @@ jobs:
         run: npm run db:test:seed
       - name: Executar regressões de segurança
         run: npm run test:security
+      - name: Executar contratos do gateway de recuperação
+        run: npx jest --runInBand --coverage=false --runTestsByPath src/__tests__/indexed-analysis.service.test.js src/__tests__/indexed-analysis.routes.test.js
       - name: Executar cobertura, unitários e integrações
         run: npm run test:all

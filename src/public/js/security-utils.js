@@ -19,6 +19,7 @@
         try {
             const base = new URL(baseUrl);
             const parsed = new URL(raw, base);
+            if (parsed.username || parsed.password) return null;
             const sameOrigin = parsed.origin === base.origin;
             const allowedExternal = parsed.protocol === 'https:' && allowedOrigins.includes(parsed.origin);
             if (!sameOrigin && !allowedExternal) return null;

@@ -32,8 +32,10 @@ revisão humana. REG-05 é explicitamente tratado como inconsistência documenta
 
 Os textos são enviados ao serviço de análise e a plataforma persiste somente o resumo técnico
 documentado no Goal 3. A interface constrói o DOM com `createElement`, `textContent` e
-`DocumentFragment`; não interpreta HTML da API. Links de referência aceitam somente HTTP/HTTPS e
-usam `target="_blank"` com `rel="noopener noreferrer"`.
+`DocumentFragment`; não interpreta HTML da API. Segmentos com alertas usam `<mark>` criado pelo
+renderizador de nós de texto e levam, por teclado ou clique, à aba de alertas. Links de referência
+aceitam a mesma origem ou origens HTTPS presentes na allowlist explícita e usam `target="_blank"`
+com `rel="noopener noreferrer"`.
 
 ## Acessibilidade e responsividade
 

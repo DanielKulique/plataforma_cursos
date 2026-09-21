@@ -46,12 +46,20 @@ describe('Turmas Controller', () => {
                 }
             ];
 
-            turmasModel.buscarTodasTurmas.mockResolvedValue(turmasMock);
+            turmasModel.buscarTodasTurmas.mockResolvedValue({ items: turmasMock, total: 2 });
 
             const response = await request(app).get('/api/turmas');
 
             expect(response.status).toBe(200);
-            expect(response.body).toEqual(turmasMock);
+            expect(response.body).toEqual({ items: turmasMock, page: 1, limit: 50, total: 2 });
+        });
+
+        it('limita paginação excessiva e calcula offset', async () => {
+            turmasModel.buscarTodasTurmas.mockResolvedValue({ items: [], total: 101 });
+            const response = await request(app).get('/api/turmas?page=2&limit=100000');
+            expect(response.status).toBe(200);
+            expect(turmasModel.buscarTodasTurmas).toHaveBeenCalledWith({ page: 2, limit: 100, offset: 100 });
+            expect(response.body).toEqual({ items: [], page: 2, limit: 100, total: 101 });
         });
 
         it('deve retornar erro 500 quando houver falha no servidor', async () => {

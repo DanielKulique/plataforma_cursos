@@ -1,0 +1,690 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/admin/corpus/index/reload",
+    "source": "src/api/routes/indexed-analysis.routes.js",
+    "line": 17,
+    "handler": "reload",
+    "permission": "ADMIN + detector ativo"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/corpus/index/status",
+    "source": "src/api/routes/indexed-analysis.routes.js",
+    "line": 16,
+    "handler": "status",
+    "permission": "ADMIN + detector ativo"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/metrics",
+    "source": "src/api/routes/admin.routes.js",
+    "line": 25,
+    "handler": "metrics",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/usuarios",
+    "source": "src/api/routes/admin.routes.js",
+    "line": 43,
+    "handler": "buscarTodosUsuarios",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/usuarios",
+    "source": "src/api/routes/admin.routes.js",
+    "line": 24,
+    "handler": "criarUsuarioAdmin",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/admin/usuarios/:id",
+    "source": "src/api/routes/admin.routes.js",
+    "line": 72,
+    "handler": "deletarUsuario",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/usuarios/:id",
+    "source": "src/api/routes/admin.routes.js",
+    "line": 50,
+    "handler": "buscarUsuarioPorId",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/admin/usuarios/:id",
+    "source": "src/api/routes/admin.routes.js",
+    "line": 58,
+    "handler": "atualizarUsuarioAdmin",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/analises/contextual",
+    "source": "src/api/routes/analises-contextuais.routes.js",
+    "line": 14,
+    "handler": "analisar",
+    "permission": "Sessão + detector ativo"
+  },
+  {
+    "method": "POST",
+    "path": "/api/analises/contextual/documento",
+    "source": "src/api/routes/analises-contextuais.routes.js",
+    "line": 16,
+    "handler": "analisarDocumento",
+    "permission": "Sessão + detector ativo"
+  },
+  {
+    "method": "POST",
+    "path": "/api/analises/contextual/segmento",
+    "source": "src/api/routes/analises-contextuais.routes.js",
+    "line": 15,
+    "handler": "analisarSegmento",
+    "permission": "Sessão + detector ativo"
+  },
+  {
+    "method": "POST",
+    "path": "/api/analises/similaridade",
+    "source": "src/api/routes/indexed-analysis.routes.js",
+    "line": 15,
+    "handler": "analisar",
+    "permission": "Sessão + detector ativo"
+  },
+  {
+    "method": "GET",
+    "path": "/api/auth/csrf",
+    "source": "src/api/routes/auth.routes.js",
+    "line": 26,
+    "handler": "csrf",
+    "permission": "Sessão"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/enviar-codigo-verificacao",
+    "source": "src/api/routes/auth.routes.js",
+    "line": 45,
+    "handler": "enviarCodigoVerificacao",
+    "permission": "Público"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/login",
+    "source": "src/api/routes/auth.routes.js",
+    "line": 24,
+    "handler": "login",
+    "permission": "Público"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/logout",
+    "source": "src/api/routes/auth.routes.js",
+    "line": 25,
+    "handler": "logout",
+    "permission": "Sessão"
+  },
+  {
+    "method": "GET",
+    "path": "/api/auth/me",
+    "source": "src/api/routes/auth.routes.js",
+    "line": 47,
+    "handler": "me",
+    "permission": "Sessão"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/recuperar-senha",
+    "source": "src/api/routes/auth.routes.js",
+    "line": 27,
+    "handler": "recuperarSenha",
+    "permission": "Público"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/redefinir-senha",
+    "source": "src/api/routes/auth.routes.js",
+    "line": 33,
+    "handler": "redefinirSenha",
+    "permission": "Público"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/verificar-codigo-email",
+    "source": "src/api/routes/auth.routes.js",
+    "line": 46,
+    "handler": "verificarCodigoEmail",
+    "permission": "Público"
+  },
+  {
+    "method": "GET",
+    "path": "/api/capabilities",
+    "source": "src/api/routes/capabilities.routes.js",
+    "line": 7,
+    "handler": "listar",
+    "permission": "Sessão"
+  },
+  {
+    "method": "GET",
+    "path": "/api/certificados/:id_certificado/historico",
+    "source": "src/api/routes/certificados.routes.js",
+    "line": 34,
+    "handler": "historico",
+    "permission": "Próprio ALUNO, professor responsável ou ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/certificados/:id_certificado/pdf",
+    "source": "src/api/routes/certificados.routes.js",
+    "line": 13,
+    "handler": "pdf",
+    "permission": "Aluno dono, professor responsável ou ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/certificados/:id_certificado/reemitir",
+    "source": "src/api/routes/certificados.routes.js",
+    "line": 35,
+    "handler": "reemitir",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/certificados/:id_certificado/revogar",
+    "source": "src/api/routes/certificados.routes.js",
+    "line": 20,
+    "handler": "revogar",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/certificados/matriculas/:id_matricula/emitir",
+    "source": "src/api/routes/certificados.routes.js",
+    "line": 11,
+    "handler": "emitir",
+    "permission": "Gestor"
+  },
+  {
+    "method": "GET",
+    "path": "/api/certificados/meus",
+    "source": "src/api/routes/certificados.routes.js",
+    "line": 12,
+    "handler": "meus",
+    "permission": "ALUNO"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/conteudos/:id_conteudo",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 121,
+    "handler": "remover",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/conteudos/:id_conteudo",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 111,
+    "handler": "atualizar",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "GET",
+    "path": "/api/conteudos/:id_conteudo/material",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 110,
+    "handler": "material",
+    "permission": "Leitor acadêmico"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/conteudos/:id_conteudo/pdf",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 112,
+    "handler": "substituirPdf",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/conteudos/:id_conteudo/progresso",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 122,
+    "handler": "progresso",
+    "permission": "ALUNO matriculado; turma não ENCERRADA"
+  },
+  {
+    "method": "GET",
+    "path": "/api/cursos",
+    "source": "src/api/routes/cursos.routes.js",
+    "line": 8,
+    "handler": "listarTodos",
+    "permission": "Público"
+  },
+  {
+    "method": "POST",
+    "path": "/api/cursos",
+    "source": "src/api/routes/cursos.routes.js",
+    "line": 13,
+    "handler": "criarCurso",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/cursos/:id",
+    "source": "src/api/routes/cursos.routes.js",
+    "line": 11,
+    "handler": "deletarCurso",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/cursos/:id",
+    "source": "src/api/routes/cursos.routes.js",
+    "line": 9,
+    "handler": "listarCursoPorId",
+    "permission": "Público"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/cursos/:id",
+    "source": "src/api/routes/cursos.routes.js",
+    "line": 23,
+    "handler": "atualizarCurso",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/health",
+    "source": "src/api/routes/health.routes.js",
+    "line": 7,
+    "handler": "status",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/matriculas",
+    "source": "src/api/routes/matricula.routes.js",
+    "line": 24,
+    "handler": "criarMatricula",
+    "permission": "ALUNO"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/matriculas/:id",
+    "source": "src/api/routes/matricula.routes.js",
+    "line": 80,
+    "handler": "cancelarMatricula",
+    "permission": "Aluno dono ou ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/matriculas/:id",
+    "source": "src/api/routes/matricula.routes.js",
+    "line": 59,
+    "handler": "buscarMatriculaPorId",
+    "permission": "Aluno dono, professor responsável ou ADMIN"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/matriculas/:id",
+    "source": "src/api/routes/matricula.routes.js",
+    "line": 68,
+    "handler": "atualizarMatricula",
+    "permission": "Gestor"
+  },
+  {
+    "method": "GET",
+    "path": "/api/matriculas/aluno/:id",
+    "source": "src/api/routes/matricula.routes.js",
+    "line": 33,
+    "handler": "buscarMatriculasDoAluno",
+    "permission": "Próprio ID ou ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/matriculas/minha-sala",
+    "source": "src/api/routes/matricula.routes.js",
+    "line": 42,
+    "handler": "buscarMinhaSalaVirtual",
+    "permission": "ALUNO"
+  },
+  {
+    "method": "GET",
+    "path": "/api/matriculas/turma/:id_turma",
+    "source": "src/api/routes/matricula.routes.js",
+    "line": 50,
+    "handler": "buscarMatriculasDaTurma",
+    "permission": "Gestor"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/modulos/:id_modulo",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 99,
+    "handler": "removerModulo",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/modulos/:id_modulo",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 98,
+    "handler": "atualizarModulo",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/opcoes/:id_opcao",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 116,
+    "handler": "removerOpcao",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/opcoes/:id_opcao",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 103,
+    "handler": "atualizarOpcao",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/perguntas/:id_pergunta",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 147,
+    "handler": "removerPergunta",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/perguntas/:id_pergunta",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 134,
+    "handler": "atualizarPergunta",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "POST",
+    "path": "/api/perguntas/:id_pergunta/opcoes",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 92,
+    "handler": "criarOpcao",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "POST",
+    "path": "/api/plagio/analisar",
+    "source": "src/api/routes/plagio.routes.js",
+    "line": 9,
+    "handler": "verificarTexto",
+    "permission": "ALUNO + detector ativo"
+  },
+  {
+    "method": "GET",
+    "path": "/api/public/certificados/:codigo",
+    "source": "src/api/routes/public-certificados.routes.js",
+    "line": 70,
+    "handler": "validarCodigo",
+    "permission": "Público"
+  },
+  {
+    "method": "POST",
+    "path": "/api/public/certificados/validar-arquivo",
+    "source": "src/api/routes/public-certificados.routes.js",
+    "line": 64,
+    "handler": "validarArquivo",
+    "permission": "Público"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/questionarios/:id_questionario",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 60,
+    "handler": "removerQuestionario",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/questionarios/:id_questionario",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 38,
+    "handler": "atualizarQuestionario",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "POST",
+    "path": "/api/questionarios/:id_questionario/perguntas",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 67,
+    "handler": "criarPergunta",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "POST",
+    "path": "/api/questionarios/:id_questionario/submissoes",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 149,
+    "handler": "submeter",
+    "permission": "ALUNO matriculado, turma não ENCERRADA"
+  },
+  {
+    "method": "GET",
+    "path": "/api/questionarios/historico",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 169,
+    "handler": "historico",
+    "permission": "ALUNO"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas",
+    "source": "src/api/routes/turmas.routes.js",
+    "line": 26,
+    "handler": "buscarTodasTurmas",
+    "permission": "Público"
+  },
+  {
+    "method": "POST",
+    "path": "/api/turmas",
+    "source": "src/api/routes/turmas.routes.js",
+    "line": 73,
+    "handler": "criarTurma",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/turmas/:id",
+    "source": "src/api/routes/turmas.routes.js",
+    "line": 104,
+    "handler": "deletarTurma",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas/:id",
+    "source": "src/api/routes/turmas.routes.js",
+    "line": 57,
+    "handler": "buscarTurmaPorId",
+    "permission": "Público"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/turmas/:id",
+    "source": "src/api/routes/turmas.routes.js",
+    "line": 88,
+    "handler": "atualizarTurma",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas/:id_turma/conteudos",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 96,
+    "handler": "listar",
+    "permission": "Leitor acadêmico"
+  },
+  {
+    "method": "POST",
+    "path": "/api/turmas/:id_turma/conteudos",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 100,
+    "handler": "criar",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "POST",
+    "path": "/api/turmas/:id_turma/conteudos/pdf",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 101,
+    "handler": "criarPdf",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "POST",
+    "path": "/api/turmas/:id_turma/modulos",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 97,
+    "handler": "criarModulo",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas/:id_turma/progresso",
+    "source": "src/api/routes/conteudos.routes.js",
+    "line": 123,
+    "handler": "turma",
+    "permission": "Gestor"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas/:id_turma/questionarios",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 118,
+    "handler": "listarMetadados",
+    "permission": "Aluno matriculado ou Gestor"
+  },
+  {
+    "method": "POST",
+    "path": "/api/turmas/:id_turma/questionarios",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 24,
+    "handler": "criarQuestionario",
+    "permission": "Gestor, turma editável"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas/:id_turma/questionarios/disponivel",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 125,
+    "handler": "listar",
+    "permission": "ALUNO matriculado, turma não ENCERRADA"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas/:id_turma/questionarios/resultados",
+    "source": "src/api/routes/questoes.routes.js",
+    "line": 177,
+    "handler": "resultados",
+    "permission": "Gestor"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas/:id/replicacao-resumo",
+    "source": "src/api/routes/turmas.routes.js",
+    "line": 29,
+    "handler": "buscarResumoReplicacao",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/turmas/:id/replicar",
+    "source": "src/api/routes/turmas.routes.js",
+    "line": 38,
+    "handler": "replicarTurma",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/turmas/professor/:id",
+    "source": "src/api/routes/turmas.routes.js",
+    "line": 64,
+    "handler": "buscarTurmasDoProfessor",
+    "permission": "PROFESSOR com ID próprio; ADMIN não aceito"
+  },
+  {
+    "method": "GET",
+    "path": "/api/usuarios",
+    "source": "src/api/routes/usuarios.routes.js",
+    "line": 68,
+    "handler": "buscarTodosUsuarios",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/usuarios",
+    "source": "src/api/routes/usuarios.routes.js",
+    "line": 19,
+    "handler": "criarUsuario",
+    "permission": "Público"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/usuarios/:id",
+    "source": "src/api/routes/usuarios.routes.js",
+    "line": 73,
+    "handler": "deletarUsuario",
+    "permission": "ADMIN"
+  },
+  {
+    "method": "GET",
+    "path": "/api/usuarios/:id",
+    "source": "src/api/routes/usuarios.routes.js",
+    "line": 62,
+    "handler": "buscarUsuarioPorId",
+    "permission": "Próprio usuário ou ADMIN"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/usuarios/:id",
+    "source": "src/api/routes/usuarios.routes.js",
+    "line": 38,
+    "handler": "atualizarUsuario",
+    "permission": "Próprio usuário ou ADMIN"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/usuarios/:id/senha",
+    "source": "src/api/routes/usuarios.routes.js",
+    "line": 49,
+    "handler": "alterarSenha",
+    "permission": "Próprio usuário, inclusive ADMIN"
+  },
+  {
+    "method": "POST",
+    "path": "/api/usuarios/verificar-disponibilidade",
+    "source": "src/api/routes/usuarios.routes.js",
+    "line": 33,
+    "handler": "verificarDisponibilidadeCadastro",
+    "permission": "Público"
+  },
+  {
+    "method": "GET",
+    "path": "/healthz",
+    "source": "index.js",
+    "line": 87,
+    "handler": "inline",
+    "permission": "Público"
+  },
+  {
+    "method": "GET",
+    "path": "/readyz",
+    "source": "index.js",
+    "line": 92,
+    "handler": "readyStatus",
+    "permission": "Público"
+  }
+]

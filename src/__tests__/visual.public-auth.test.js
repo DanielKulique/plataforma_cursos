@@ -348,8 +348,12 @@ describe('Goal Visual 2 - formulários acessíveis', () => {
         const pendingAvailability = deferred();
         const fetch = jest.fn()
             .mockImplementationOnce(() => pendingAvailability.promise)
-            .mockResolvedValueOnce(response({ payload: { id_usuario: 10 } }))
-            .mockResolvedValueOnce(response({ payload: { mensagem: 'Código enviado.' } }));
+            .mockResolvedValueOnce(response({ payload: {
+                id_usuario: 10,
+                email: 'ana@example.test',
+                mensagem: 'Cadastro realizado. Enviamos o código de verificação por e-mail.',
+                verificacao: { estado: 'PENDENTE', email_enviado: true }
+            } }));
         const { form, submit } = createForm({
             nome_completo: createField('Ana Aluna'),
             cpf: createField('12345678901'),
@@ -378,11 +382,10 @@ describe('Goal Visual 2 - formulários acessíveis', () => {
         }));
         await firstSubmit;
 
-        expect(fetch).toHaveBeenCalledTimes(3);
+        expect(fetch).toHaveBeenCalledTimes(2);
         expect(fetch.mock.calls.map(([url]) => url)).toEqual([
             '/api/usuarios/verificar-disponibilidade',
-            '/api/usuarios',
-            '/api/auth/enviar-codigo-verificacao'
+            '/api/usuarios'
         ]);
         const registrationPayload = JSON.parse(fetch.mock.calls[1][1].body);
         expect(registrationPayload).toEqual({

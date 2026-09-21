@@ -6,7 +6,8 @@ jest.mock('../config/database', () => ({ getConnection: jest.fn(), query: jest.f
 function createConnection(queryImplementation) {
     return {
         beginTransaction: jest.fn().mockResolvedValue(undefined),
-        query: jest.fn(queryImplementation),
+        query: jest.fn((sql, params) => sql.startsWith('SELECT id_turma FROM Matriculas WHERE id_matricula') || sql === 'SELECT * FROM Turmas WHERE id_turma = ? FOR UPDATE'
+            ? Promise.resolve([[{ id_turma: 7 }]]) : queryImplementation(sql, params)),
         commit: jest.fn().mockResolvedValue(undefined),
         rollback: jest.fn().mockResolvedValue(undefined),
         release: jest.fn()
@@ -37,7 +38,7 @@ describe('modelo transacional de matrícula', () => {
     it('reativa a mesma linha cancelada e reinicia avaliação e progresso', async () => {
         const connection = createConnection(async (sql) => {
             if (sql.includes('FROM Turmas')) return [[{ id_turma: 7, status: 'ABERTA' }]];
-            if (sql.includes('FROM Matriculas')) return [[{ id_matricula: 21, status_aprovacao: 'CANCELADO' }]];
+            if (sql.includes('FROM Matriculas')) return [[{ id_matricula: 21, status_aprovacao: 'CANCELADO', ciclo_atual: 4 }]];
             if (sql.includes('DELETE progresso')) return [{ affectedRows: 2 }];
             if (sql.includes('UPDATE Matriculas')) return [{ affectedRows: 1 }];
             throw new Error(`SQL inesperado: ${sql}`);
@@ -46,11 +47,13 @@ describe('modelo transacional de matrícula', () => {
 
         const result = await matriculaModel.matricularAluno(3, 7);
 
-        expect(result).toMatchObject({ id_matricula: 21, reativada: true, nota_final: null, progresso_percentual: 0 });
+        expect(result).toMatchObject({ id_matricula: 21, reativada: true, nota_final: null, progresso_percentual: 0, ciclo_atual: 5 });
         const updateSql = connection.query.mock.calls.find(([sql]) => sql.includes('UPDATE Matriculas'))[0];
         expect(updateSql).toContain("status_aprovacao = 'CURSANDO'");
         expect(updateSql).toContain('nota_final = NULL');
         expect(updateSql).toContain('progresso_percentual = 0');
+        expect(updateSql).toContain('ciclo_atual = ciclo_atual + 1');
+        expect(updateSql).toContain("status_aprovacao = 'CANCELADO'");
         expect(connection.query.mock.calls.some(([sql]) => sql.includes('DELETE progresso'))).toBe(true);
         expect(connection.commit).toHaveBeenCalledTimes(1);
     });
@@ -94,4 +97,69 @@ describe('modelo transacional de matrícula', () => {
             code: 'MATRICULA_DUPLICADA', status: 409
         });
     });
+});
+
+ describe('gate acadêmico exato', () => {
+    beforeEach(() => jest.clearAllMocks());
+    it.each([
+        [0, 0, 'APROVADO', 9, 'CONTEUDOS_PENDENTES'],
+        [201, 200, 'APROVADO', 9, 'CONTEUDOS_PENDENTES'],
+        [201, 200, 'REPROVADO', 3, 'CONTEUDOS_PENDENTES'],
+        [201, 201, 'APROVADO', null, null],
+        [201, 201, 'APROVADO', 0, null],
+        [201, 201, 'REPROVADO', 9, null]
+    ])('total=%i concluídos=%i status=%s nota=%s', async (total, concluidos, status, nota, erro) => {
+        const connection = createConnection(async (sql) => {
+            if (sql.includes('SELECT m.id_matricula')) return [[{
+                id_matricula: 1, id_aluno: 3, id_turma: 7, nota_final: null,
+                status_aprovacao: 'CURSANDO', progresso_percentual: 100
+            }]];
+            if (sql.includes('FROM Questionarios')) return [[{ prova_final_aprovada: 1 }]];
+            if (sql.includes('FROM Conteudos')) return [[{ total, concluidos }]];
+            if (sql.includes('UPDATE Matriculas')) return [{ affectedRows: 1 }];
+            throw new Error(`SQL inesperado: ${sql}`);
+        });
+        db.getConnection.mockResolvedValue(connection);
+        const promise = matriculaModel.atualizarMatricula(1, { status_aprovacao: status, nota_final: nota }, { id_usuario: 1, tipo: 'ADMIN' });
+        if (erro) {
+            await expect(promise).rejects.toMatchObject({ code: erro, status: 409 });
+            expect(connection.commit).not.toHaveBeenCalled();
+        } else {
+            await expect(promise).resolves.toEqual({ affectedRows: 1 });
+        }
+    });
+});
+
+describe('máquina de estados da matrícula', () => {
+    beforeEach(() => jest.clearAllMocks());
+
+    it.each(['CURSANDO', 'APROVADO', 'REPROVADO'])(
+        'recusa CANCELADO → %s pelo PATCH acadêmico', async (status) => {
+            const connection = createConnection(async (sql) => {
+                if (sql.includes('SELECT m.id_matricula')) return [[{
+                    id_matricula: 1, id_aluno: 3, id_turma: 7, nota_final: null,
+                    status_aprovacao: 'CANCELADO', ciclo_atual: 2
+                }]];
+                throw new Error(`SQL inesperado: ${sql}`);
+            });
+            db.getConnection.mockResolvedValue(connection);
+
+            await expect(matriculaModel.atualizarMatricula(1, { status_aprovacao: status }, { id_usuario: 1, tipo: 'ADMIN' }))
+                .rejects.toMatchObject({ code: 'REMATRICULA_OBRIGATORIA', status: 409 });
+            expect(connection.commit).not.toHaveBeenCalled();
+            expect(connection.rollback).toHaveBeenCalledTimes(1);
+        }
+    );
+});
+
+test('migration e imagem de staging incluem o ciclo acadêmico e seu smoke', () => {
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const migration = fs.readFileSync(path.join(__dirname, '../../mysql/migrations/010_enrollment_cycles.sql'), 'utf8');
+    const dockerfile = fs.readFileSync(path.join(__dirname, '../../Dockerfile'), 'utf8');
+    expect(migration).toContain('enrollment_cycle_orphan_invalid');
+    expect(migration).toContain('ciclo_atual');
+    expect(migration).toContain('ciclo_matricula');
+    expect(migration).toContain('idx_tentativas_ciclo_atual');
+    expect(dockerfile).toContain('scripts/smoke_enrollment_lifecycle_staging.js');
 });

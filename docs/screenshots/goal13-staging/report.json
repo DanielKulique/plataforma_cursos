@@ -1,0 +1,384 @@
+{
+  "status": "INFORMATION_ARCHITECTURE_STAGING_SMOKE_OK",
+  "base_url": "https://plataforma-cursos-demo-dk-20260901.chilecentral.cloudapp.azure.com",
+  "verified_at": "2026-09-19T14:52:23.872Z",
+  "pages": [
+    {
+      "route": "/sala-virtual.html",
+      "viewport": 1440,
+      "title": "Sua trilha de estudos",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "aluno",
+      "message": null,
+      "courseLink": null,
+      "current": null,
+      "breadcrumb": []
+    },
+    {
+      "route": "/sala-aula.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Integridade Acadêmica — Demonstração",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "aluno",
+      "message": null,
+      "courseLink": "/sala-aulas.html?id_turma=8",
+      "current": "Visão geral",
+      "breadcrumb": [
+        "Sala Virtual",
+        "Integridade Acadêmica — Demonstração"
+      ]
+    },
+    {
+      "route": "/sala-aulas.html?id_turma=8",
+      "viewport": 768,
+      "title": "Aulas",
+      "width": 768,
+      "scrollWidth": 768,
+      "sessionState": "aluno",
+      "message": null,
+      "courseLink": null,
+      "current": "Aulas",
+      "breadcrumb": [
+        "Sala Virtual",
+        "Integridade Acadêmica — Demonstração",
+        "Aulas"
+      ]
+    },
+    {
+      "route": "/sala-aula-detalhe.html?id_turma=8&id_aula=7",
+      "viewport": 1440,
+      "title": "Módulo demonstrativo",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "aluno",
+      "message": null,
+      "courseLink": null,
+      "current": "Aulas",
+      "breadcrumb": [
+        "Sala Virtual",
+        "Integridade Acadêmica — Demonstração",
+        "Aulas",
+        "Módulo demonstrativo"
+      ]
+    },
+    {
+      "route": "/sala-avaliacoes.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Avaliações",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "aluno",
+      "message": null,
+      "courseLink": null,
+      "current": "Avaliações",
+      "breadcrumb": [
+        "Sala Virtual",
+        "Integridade Acadêmica — Demonstração",
+        "Avaliações"
+      ]
+    },
+    {
+      "route": "/sala-progresso.html?id_turma=8",
+      "viewport": 360,
+      "title": "Meu progresso",
+      "width": 360,
+      "scrollWidth": 360,
+      "sessionState": "aluno",
+      "message": "Carregando progresso.",
+      "courseLink": null,
+      "current": null,
+      "breadcrumb": []
+    },
+    {
+      "route": "/meus-certificados.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Certificado — Integridade Acadêmica — Demonstração",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "aluno",
+      "message": null,
+      "courseLink": null,
+      "current": "Certificado",
+      "breadcrumb": [
+        "Sala Virtual",
+        "Integridade Acadêmica — Demonstração",
+        "Certificado"
+      ]
+    },
+    {
+      "route": "/sala-aula.html?id_turma=8",
+      "viewport": 360,
+      "title": "Integridade Acadêmica — Demonstração",
+      "width": 360,
+      "scrollWidth": 360,
+      "sessionState": "aluno",
+      "message": null,
+      "courseLink": "/sala-aulas.html?id_turma=8",
+      "current": "Visão geral",
+      "breadcrumb": [
+        "Sala Virtual",
+        "Integridade Acadêmica — Demonstração"
+      ]
+    },
+    {
+      "route": "/sala-aula-detalhe.html?id_turma=8&id_aula=7",
+      "viewport": 1440,
+      "title": "Módulo demonstrativo",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "aluno",
+      "message": null,
+      "courseLink": null,
+      "current": "Aulas",
+      "breadcrumb": [
+        "Sala Virtual",
+        "Integridade Acadêmica — Demonstração",
+        "Aulas",
+        "Módulo demonstrativo"
+      ]
+    },
+    {
+      "route": "/sala-aula-detalhe.html?id_turma=8&id_aula=999999999",
+      "viewport": 1440,
+      "title": "Aula",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "aluno",
+      "message": "A aula informada não existe nesta turma.",
+      "courseLink": null,
+      "current": "Aulas",
+      "breadcrumb": [
+        "Sala Virtual",
+        "Integridade Acadêmica — Demonstração",
+        "Aula"
+      ]
+    },
+    {
+      "route": "/professor-turma.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "professor",
+      "message": "Escolha uma área para gerenciar esta turma.",
+      "courseLink": "/professor-turma-aulas.html?id_turma=8",
+      "current": "Visão geral",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec"
+      ]
+    },
+    {
+      "route": "/professor-turma-alunos.html?id_turma=8",
+      "viewport": 360,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 360,
+      "scrollWidth": 360,
+      "sessionState": "professor",
+      "message": null,
+      "courseLink": null,
+      "current": "Alunos",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Alunos"
+      ]
+    },
+    {
+      "route": "/professor-turma-aulas.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "professor",
+      "message": "Carregando aulas.",
+      "courseLink": null,
+      "current": "Aulas",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Aulas"
+      ]
+    },
+    {
+      "route": "/professor-turma-aula.html?id_turma=8&id_aula=7",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "professor",
+      "message": "Carregando conteúdos.",
+      "courseLink": null,
+      "current": "Aulas",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Aulas",
+        "Módulo demonstrativo"
+      ]
+    },
+    {
+      "route": "/professor-turma-avaliacoes.html?id_turma=8",
+      "viewport": 360,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 360,
+      "scrollWidth": 360,
+      "sessionState": "professor",
+      "message": "Carregando avaliações.",
+      "courseLink": null,
+      "current": "Avaliações",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Avaliações"
+      ]
+    },
+    {
+      "route": "/professor-turma-avaliacao.html?id_turma=8&id_questionario=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "professor",
+      "message": "Carregando estrutura.",
+      "courseLink": null,
+      "current": "Avaliações",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Avaliações",
+        "Prova demonstrativa"
+      ]
+    },
+    {
+      "route": "/professor-turma-certificados.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "professor",
+      "message": null,
+      "courseLink": null,
+      "current": "Certificados",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Certificados"
+      ]
+    },
+    {
+      "route": "/professor-turma-avaliacoes.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "professor",
+      "message": "Carregando avaliações.",
+      "courseLink": null,
+      "current": "Avaliações",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Avaliações"
+      ]
+    },
+    {
+      "route": "/professor-turma-avaliacao.html?id_turma=8&id_questionario=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "professor",
+      "message": "Carregando estrutura.",
+      "courseLink": null,
+      "current": "Avaliações",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Avaliações",
+        "Prova demonstrativa"
+      ]
+    },
+    {
+      "route": "/professor-turma.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "admin",
+      "message": "Escolha uma área para gerenciar esta turma.",
+      "courseLink": "/professor-turma-aulas.html?id_turma=8",
+      "current": "Visão geral",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec"
+      ]
+    },
+    {
+      "route": "/professor-turma-alunos.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "admin",
+      "message": null,
+      "courseLink": null,
+      "current": "Alunos",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Alunos"
+      ]
+    },
+    {
+      "route": "/professor-turma-aulas.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "admin",
+      "message": "Carregando aulas.",
+      "courseLink": null,
+      "current": "Aulas",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Aulas"
+      ]
+    },
+    {
+      "route": "/professor-turma-avaliacoes.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "admin",
+      "message": "Carregando avaliações.",
+      "courseLink": null,
+      "current": "Avaliações",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Avaliações"
+      ]
+    },
+    {
+      "route": "/professor-turma-certificados.html?id_turma=8",
+      "viewport": 1440,
+      "title": "Turma demonstração B mtmzm0lq-a42cec",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "sessionState": "admin",
+      "message": null,
+      "courseLink": null,
+      "current": "Certificados",
+      "breadcrumb": [
+        "Minhas turmas",
+        "Turma demonstração B mtmzm0lq-a42cec",
+        "Certificados"
+      ]
+    }
+  ]
+}

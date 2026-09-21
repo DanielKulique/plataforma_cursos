@@ -1,0 +1,54 @@
+{
+  "status": "CLASSROOM_LEARNING_PATH_READY",
+  "validado_em": "2026-09-06",
+  "bundle_sha256": "a9fdbcf0e4e2f61e0d1bdb20a229b46ba16dd5f5853253c5a51f470aaa117f5f",
+  "source_deployment": "2026-09-06T12:17:43Z revision=bundle-without-git source_sha256=770b6c064edc3583cb016891cc97d8c635abb4c00df2d242d70295c4118d1e05",
+  "gates": {
+    "npm run test:all": {
+      "status": "PASS",
+      "suites": [
+        53,
+        12
+      ],
+      "tests": [
+        499,
+        152
+      ]
+    },
+    "npm run test:stability": {
+      "status": "PASS",
+      "suites": [
+        53,
+        12,
+        53,
+        12
+      ],
+      "tests": [
+        499,
+        152,
+        499,
+        152
+      ]
+    },
+    "npm run lint": {
+      "status": "PASS",
+      "log": "lint.log"
+    },
+    "npm run build": {
+      "status": "PASS",
+      "log": "build.log"
+    },
+    "npm audit": {
+      "status": "PASS",
+      "log": "audit.txt"
+    },
+    "npm audit --omit=dev": {
+      "status": "PASS",
+      "log": "audit-prod.txt"
+    },
+    "git diff --check": {
+      "status": "PASS",
+      "log": "diff-check.log"
+    }
+  }
+}

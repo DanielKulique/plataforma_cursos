@@ -6,6 +6,8 @@ jest.mock('../config/database', () => ({
 const db = require('../config/database');
 const conteudos = require('../api/models/conteudos.models');
 const questoes = require('../api/models/questoes.models');
+const ADMIN = { id_usuario: 1, tipo: 'ADMIN' };
+const SUBMISSION_ID = '11111111-1111-4111-8111-111111111111';
 
 function conexaoMock() {
     return {
@@ -19,7 +21,8 @@ function conexaoMock() {
 
 describe('modelos do Goal 3', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        jest.resetAllMocks();
+        db.getConnection.mockImplementation(async () => ({ ...conexaoMock(), query: db.query }));
     });
 
     describe('conteúdos e progresso', () => {
@@ -50,24 +53,49 @@ describe('modelos do Goal 3', () => {
         });
 
         it('cria, atualiza, remove e lista progresso da turma', async () => {
-            db.query
+            const criar = conexaoMock();
+            criar.query
+                .mockResolvedValueOnce([[{ id_turma: 1 }]])
                 .mockResolvedValueOnce([{ insertId: 7 }])
+                .mockResolvedValueOnce([{ affectedRows: 1 }]);
+            const atualizar = conexaoMock();
+            atualizar.query
+                .mockResolvedValueOnce([[{ id_conteudo: 7, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[{
+                    id_conteudo: 7, id_turma: 1, id_modulo: null, titulo: 'Aula',
+                    descricao: null, tipo: 'TEXTO', url: null, corpo: null,
+                    duracao_minutos: null, ordem: 1
+                }]])
+                .mockResolvedValueOnce([{ affectedRows: 1 }]);
+            const remover = conexaoMock();
+            remover.query
+                .mockResolvedValueOnce([[{ id_conteudo: 7, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[{ id_conteudo: 7, id_turma: 1 }]])
+                .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([{ affectedRows: 1 }])
-                .mockResolvedValueOnce([{ affectedRows: 1 }])
-                .mockResolvedValueOnce([[{ id_aluno: 3, progresso_percentual: 25 }]]);
+                .mockResolvedValueOnce([{ affectedRows: 1 }]);
+            db.getConnection
+                .mockResolvedValueOnce(criar)
+                .mockResolvedValueOnce(atualizar)
+                .mockResolvedValueOnce(remover);
+            db.query.mockResolvedValueOnce([[{ id_aluno: 3, progresso_percentual: 25 }]]);
 
             await expect(conteudos.criar(1, {
                 titulo: 'Aula', tipo: 'TEXTO', ordem: 1
-            })).resolves.toMatchObject({ id_conteudo: 7, id_turma: 1 });
-            await expect(conteudos.atualizar(7, { titulo: 'Nova aula', intruso: true })).resolves.toBe(true);
-            await expect(conteudos.remover(7)).resolves.toBe(true);
+            }, ADMIN)).resolves.toMatchObject({ id_conteudo: 7, id_turma: 1 });
+            await expect(conteudos.atualizar(7, { titulo: 'Nova aula', intruso: true }, ADMIN)).resolves.toBe(true);
+            await expect(conteudos.remover(7, ADMIN)).resolves.toBe(true);
             await expect(conteudos.listarProgressoTurma(1)).resolves.toHaveLength(1);
-            await expect(conteudos.atualizar(7, { intruso: true })).resolves.toBe(false);
+            await expect(conteudos.atualizar(7, { intruso: true }, ADMIN)).resolves.toBe(false);
         });
 
         it('persiste conclusão e percentual na mesma transação', async () => {
             const conexao = conexaoMock();
             conexao.query
+                .mockResolvedValueOnce([[{ id_conteudo: 8, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
                 .mockResolvedValueOnce([[{ id_conteudo: 8, id_turma: 1 }]])
                 .mockResolvedValueOnce([[{ id_matricula: 9 }]])
                 .mockResolvedValueOnce([{ affectedRows: 1 }])
@@ -75,7 +103,9 @@ describe('modelos do Goal 3', () => {
                 .mockResolvedValueOnce([{ affectedRows: 1 }])
                 .mockResolvedValueOnce([[{
                     status: 'CONCLUIDO', iniciado_em: new Date(), concluido_em: new Date()
-                }]]);
+                }]])
+                .mockResolvedValueOnce([[{ total: 2, concluidos: 1 }]])
+                .mockResolvedValueOnce([[{ total_exercicios: 0, exercicios_realizados: 0, prova_final_aprovada: 0 }]]);
             db.getConnection.mockResolvedValue(conexao);
 
             const resultado = await conteudos.registrarProgresso(3, 8, 'CONCLUIDO');
@@ -97,6 +127,8 @@ describe('modelos do Goal 3', () => {
             const semMatricula = conexaoMock();
             semMatricula.query
                 .mockResolvedValueOnce([[{ id_conteudo: 8, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[{ id_conteudo: 8, id_turma: 1 }]])
                 .mockResolvedValueOnce([[]]);
             db.getConnection.mockResolvedValueOnce(semMatricula);
             await expect(conteudos.registrarProgresso(3, 8, 'INICIADO'))
@@ -113,14 +145,34 @@ describe('modelos do Goal 3', () => {
                 .mockResolvedValueOnce([[{ 1: 1 }]])
                 .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
                 .mockResolvedValueOnce([[{ id_pergunta: 5, id_turma: 1 }]])
-                .mockResolvedValueOnce([[{ id_questionario: 4, total_perguntas: 2 }]]);
+                .mockResolvedValueOnce([[{ id_questionario: 4, possui_historico: 0 }]])
+                .mockResolvedValueOnce([[
+                    { id_pergunta: 5, id_questionario: 4, texto_pergunta: 'Pergunta', ordem: 1 }
+                ]])
+                .mockResolvedValueOnce([[
+                    { id_opcao: 6, id_pergunta: 5, texto_opcao: 'Correta', ordem: 1, correta: 1 },
+                    { id_opcao: 7, id_pergunta: 5, texto_opcao: 'Incorreta', ordem: 2, correta: 0 }
+                ]]);
 
             await expect(questoes.buscarTurma(1)).resolves.toMatchObject({ id_turma: 1 });
             await expect(questoes.professorEhDaTurma(2, 1)).resolves.toBe(true);
             await expect(questoes.matriculado(3, 1)).resolves.toBe(true);
             await expect(questoes.escopoQuestionario(4)).resolves.toMatchObject({ id_turma: 1 });
             await expect(questoes.escopoPergunta(5)).resolves.toMatchObject({ id_turma: 1 });
-            await expect(questoes.listarMetadadosTurma(1)).resolves.toHaveLength(1);
+            await expect(questoes.listarMetadadosTurma(1)).resolves.toEqual([
+                expect.objectContaining({
+                    id_questionario: 4,
+                    possui_historico: false,
+                    total_perguntas: 1,
+                    perguntas: [expect.objectContaining({
+                        id_pergunta: 5,
+                        opcoes: [
+                            expect.objectContaining({ id_opcao: 6, correta: 1 }),
+                            expect.objectContaining({ id_opcao: 7, correta: 0 })
+                        ]
+                    })]
+                })
+            ]);
         });
 
         it('trata consultas ausentes e cria questionário somente para turma existente', async () => {
@@ -129,8 +181,12 @@ describe('modelos do Goal 3', () => {
                 .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([[]])
+                ;
+            const conexao = conexaoMock();
+            conexao.query.mockResolvedValueOnce([[{ id_turma: 1, status_turma: 'FECHADA' }]])
                 .mockResolvedValueOnce([{ affectedRows: 1, insertId: 10 }])
-                .mockResolvedValueOnce([{ affectedRows: 0, insertId: 0 }]);
+                .mockResolvedValueOnce([[]]);
+            db.getConnection.mockResolvedValue(conexao);
 
             await expect(questoes.buscarTurma(99)).resolves.toBeNull();
             await expect(questoes.professorEhDaTurma(2, 99)).resolves.toBe(false);
@@ -138,15 +194,20 @@ describe('modelos do Goal 3', () => {
             await expect(questoes.escopoQuestionario(99)).resolves.toBeNull();
             await expect(questoes.criarQuestionario(1, {
                 titulo: 'Exercício', tipo: 'EXERCICIO'
-            })).resolves.toMatchObject({ id_questionario: 10 });
+            }, ADMIN)).resolves.toMatchObject({ id_questionario: 10 });
             await expect(questoes.criarQuestionario(99, {
                 titulo: 'Exercício', tipo: 'EXERCICIO'
-            })).resolves.toBeNull();
+            }, ADMIN)).rejects.toMatchObject({ status: 404 });
         });
 
         it('cria pergunta e opções de forma transacional', async () => {
             const conexao = conexaoMock();
             conexao.query
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([{ insertId: 11 }])
                 .mockResolvedValueOnce([{ insertId: 12 }])
                 .mockResolvedValueOnce([{ insertId: 13 }]);
@@ -158,9 +219,9 @@ describe('modelos do Goal 3', () => {
                     { texto_opcao: 'A', ordem: 1, correta: true },
                     { texto_opcao: 'B', ordem: 2, correta: false }
                 ]
-            })).resolves.toEqual({ id_pergunta: 11 });
+            }, ADMIN)).resolves.toEqual({ id_pergunta: 11 });
             expect(conexao.commit).toHaveBeenCalled();
-            expect(conexao.query).toHaveBeenCalledTimes(3);
+            expect(conexao.query).toHaveBeenCalledTimes(8);
         });
 
         it('faz rollback quando falha a criação da pergunta', async () => {
@@ -170,7 +231,7 @@ describe('modelos do Goal 3', () => {
 
             await expect(questoes.criarPergunta(4, {
                 texto_pergunta: 'Pergunta', ordem: 1, opcoes: []
-            })).rejects.toThrow('falha SQL');
+            }, ADMIN)).rejects.toThrow('falha SQL');
             expect(conexao.rollback).toHaveBeenCalled();
             expect(conexao.release).toHaveBeenCalled();
         });
@@ -208,21 +269,90 @@ describe('modelos do Goal 3', () => {
         });
 
         it('atualiza, remove e mantém operações vazias explícitas', async () => {
-            db.query
+            const atualizar = conexaoMock();
+            atualizar.query
+                .mockResolvedValueOnce([[{ id_pergunta: 5, id_questionario: 4 }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_pergunta: 5 }]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([{ affectedRows: 1 }]);
+            const remover = conexaoMock();
+            remover.query
+                .mockResolvedValueOnce([[{ id_pergunta: 5, id_questionario: 4 }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_pergunta: 5 }]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([{ affectedRows: 1 }]);
+            db.getConnection
+                .mockResolvedValueOnce(atualizar)
+                .mockResolvedValueOnce(remover);
+
+            await expect(questoes.atualizarPergunta(5, { texto_pergunta: 'Nova', invasor: true }, ADMIN))
+                .resolves.toBe(true);
+            await expect(questoes.removerPergunta(5, ADMIN)).resolves.toBe(true);
+            await expect(questoes.atualizarPergunta(5, { invasor: true }, ADMIN)).resolves.toBe(false);
+        });
+
+        it('troca ordens ocupadas de perguntas e alternativas na mesma transação', async () => {
+            const pergunta = conexaoMock();
+            pergunta.query
+                .mockResolvedValueOnce([[{ id_pergunta: 5, id_questionario: 4, ordem: 1 }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_pergunta: 5, id_questionario: 4, ordem: 1 }]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([[{ id_pergunta: 8 }]])
+                .mockResolvedValueOnce([{ affectedRows: 1 }])
                 .mockResolvedValueOnce([{ affectedRows: 1 }])
                 .mockResolvedValueOnce([{ affectedRows: 1 }]);
 
-            await expect(questoes.atualizarPergunta(5, { texto_pergunta: 'Nova', invasor: true }))
-                .resolves.toBe(true);
-            await expect(questoes.removerPergunta(5)).resolves.toBe(true);
-            await expect(questoes.atualizarPergunta(5, { invasor: true })).resolves.toBe(false);
+            const opcao = conexaoMock();
+            opcao.query
+                .mockResolvedValueOnce([[{ id_opcao: 6, id_pergunta: 5 }]])
+                .mockResolvedValueOnce([[{ id_pergunta: 5, id_questionario: 4 }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_pergunta: 5, id_questionario: 4 }]])
+                .mockResolvedValueOnce([[{ id_opcao: 6, id_pergunta: 5, ordem: 1, correta: 0 }]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([[{ id_opcao: 7 }]])
+                .mockResolvedValueOnce([{ affectedRows: 1 }])
+                .mockResolvedValueOnce([{ affectedRows: 1 }])
+                .mockResolvedValueOnce([{ affectedRows: 1 }]);
+            db.getConnection.mockResolvedValueOnce(pergunta).mockResolvedValueOnce(opcao);
+
+            await expect(questoes.atualizarPergunta(5, { ordem: 2 }, ADMIN)).resolves.toBe(true);
+            await expect(questoes.atualizarOpcao(6, { ordem: 2 }, ADMIN)).resolves.toBe(true);
+            expect(pergunta.commit).toHaveBeenCalled();
+            expect(opcao.commit).toHaveBeenCalled();
+            expect(pergunta.query).toHaveBeenCalledWith(
+                'UPDATE Q_Perguntas SET ordem = ? WHERE id_pergunta = ?', [1, 8]
+            );
+            expect(opcao.query).toHaveBeenCalledWith(
+                'UPDATE Q_Opcoes SET ordem = ? WHERE id_opcao = ?', [1, 7]
+            );
         });
 
         it('submete, corrige e persiste uma tentativa completa', async () => {
             const conexao = conexaoMock();
             conexao.query
-                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1, ativo: 1 }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[
+                    { id_questionario: 4, id_turma: 1, ativo: 1, status_turma: 'ABERTA' }
+                ]])
                 .mockResolvedValueOnce([[{ id_matricula: 9 }]])
+                .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([[{
                     id_pergunta: 5, tipo_pergunta: 'MULTIPLA_ESCOLHA', pontos: '2.00'
                 }]])
@@ -232,7 +362,12 @@ describe('modelos do Goal 3', () => {
                 .mockResolvedValueOnce([{ affectedRows: 1 }]);
             db.getConnection.mockResolvedValue(conexao);
 
-            const resultado = await questoes.submeter(4, 3, [{ id_pergunta: 5, id_opcao: 6 }]);
+            const resultado = await questoes.submeter(
+                4,
+                3,
+                [{ id_pergunta: 5, id_opcao: 6 }],
+                SUBMISSION_ID
+            );
 
             expect(resultado).toMatchObject({
                 id_tentativa: 20, acertos: 1, total_perguntas: 1, pontuacao: 2, percentual: 100
@@ -243,14 +378,20 @@ describe('modelos do Goal 3', () => {
 
         it.each([
             ['questionário indisponível', [{ id_questionario: 4, id_turma: 1, ativo: 0 }], 404],
-            ['aluno sem matrícula', [{ id_questionario: 4, id_turma: 1, ativo: 1 }], 403]
+            ['aluno sem matrícula', [{
+                id_questionario: 4, id_turma: 1, ativo: 1, status_turma: 'ABERTA'
+            }], 403]
         ])('faz rollback para %s', async (caso, questionarioRows, status) => {
             const conexao = conexaoMock();
-            conexao.query.mockResolvedValueOnce([questionarioRows]);
+            conexao.query
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]]).mockResolvedValueOnce([questionarioRows]);
             if (status === 403) conexao.query.mockResolvedValueOnce([[]]);
             db.getConnection.mockResolvedValue(conexao);
 
-            await expect(questoes.submeter(4, 3, [{ id_pergunta: 5, id_opcao: 6 }]))
+            await expect(questoes.submeter(
+                4, 3, [{ id_pergunta: 5, id_opcao: 6 }], SUBMISSION_ID
+            ))
                 .rejects.toMatchObject({ status });
             expect(conexao.rollback).toHaveBeenCalled();
         });
@@ -258,19 +399,31 @@ describe('modelos do Goal 3', () => {
         it('rejeita pergunta sem suporte, duplicidade e opção cruzada com rollback', async () => {
             const naoSuportada = conexaoMock();
             naoSuportada.query
-                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1, ativo: 1 }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[
+                    { id_questionario: 4, id_turma: 1, ativo: 1, status_turma: 'ABERTA' }
+                ]])
                 .mockResolvedValueOnce([[{ id_matricula: 9 }]])
+                .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([[{
                     id_pergunta: 5, tipo_pergunta: 'RESPOSTA_CURTA', pontos: 1
                 }]]);
             db.getConnection.mockResolvedValueOnce(naoSuportada);
-            await expect(questoes.submeter(4, 3, [{ id_pergunta: 5, id_opcao: 6 }]))
+            await expect(questoes.submeter(
+                4, 3, [{ id_pergunta: 5, id_opcao: 6 }], SUBMISSION_ID
+            ))
                 .rejects.toMatchObject({ status: 409 });
 
             const duplicada = conexaoMock();
             duplicada.query
-                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1, ativo: 1 }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[
+                    { id_questionario: 4, id_turma: 1, ativo: 1, status_turma: 'ABERTA' }
+                ]])
                 .mockResolvedValueOnce([[{ id_matricula: 9 }]])
+                .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([[
                     { id_pergunta: 5, tipo_pergunta: 'MULTIPLA_ESCOLHA', pontos: 1 },
                     { id_pergunta: 8, tipo_pergunta: 'VERDADEIRO_FALSO', pontos: 1 }
@@ -279,30 +432,41 @@ describe('modelos do Goal 3', () => {
             await expect(questoes.submeter(4, 3, [
                 { id_pergunta: 5, id_opcao: 6 },
                 { id_pergunta: 5, id_opcao: 7 }
-            ])).rejects.toMatchObject({ status: 400, code: 'RESPOSTA_DUPLICADA' });
+            ], SUBMISSION_ID)).rejects.toMatchObject({ status: 400, code: 'RESPOSTA_DUPLICADA' });
 
             const cruzada = conexaoMock();
             cruzada.query
-                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1, ativo: 1 }]])
+                .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([[
+                    { id_questionario: 4, id_turma: 1, ativo: 1, status_turma: 'ABERTA' }
+                ]])
                 .mockResolvedValueOnce([[{ id_matricula: 9 }]])
+                .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([[{
                     id_pergunta: 5, tipo_pergunta: 'MULTIPLA_ESCOLHA', pontos: 1
                 }]])
                 .mockResolvedValueOnce([[{ id_opcao: 6, id_pergunta: 99, correta: 1 }]]);
             db.getConnection.mockResolvedValueOnce(cruzada);
-            await expect(questoes.submeter(4, 3, [{ id_pergunta: 5, id_opcao: 6 }]))
+            await expect(questoes.submeter(
+                4, 3, [{ id_pergunta: 5, id_opcao: 6 }], SUBMISSION_ID
+            ))
                 .rejects.toMatchObject({ status: 400, code: 'OPCAO_INVALIDA' });
         });
 
         it('consulta histórico com e sem filtro e resultados da turma', async () => {
             db.query
+                .mockResolvedValueOnce([[{ total: 1 }]])
                 .mockResolvedValueOnce([[{ id_tentativa: 1 }]])
+                .mockResolvedValueOnce([[{ total: 1 }]])
                 .mockResolvedValueOnce([[{ id_tentativa: 2 }]])
+                .mockResolvedValueOnce([[{ total: 1 }]])
                 .mockResolvedValueOnce([[{ id_tentativa: 3 }]]);
 
-            await expect(questoes.historico(3)).resolves.toHaveLength(1);
-            await expect(questoes.historico(3, 4)).resolves.toHaveLength(1);
-            await expect(questoes.resultadosTurma(1)).resolves.toHaveLength(1);
+            const pagination = { page: 1, limit: 50, offset: 0 };
+            await expect(questoes.historico(3, null, pagination)).resolves.toMatchObject({ total: 1 });
+            await expect(questoes.historico(3, 4, pagination)).resolves.toMatchObject({ total: 1 });
+            await expect(questoes.resultadosTurma(1, pagination)).resolves.toMatchObject({ total: 1 });
         });
     });
 });

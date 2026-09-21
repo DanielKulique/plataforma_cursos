@@ -1,0 +1,12 @@
+[Unit]
+Description=Plataforma Cursos operational health check
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/plataforma-cursos
+Environment=COMPOSE_ENV_FILE=.env.production
+EnvironmentFile=-/etc/default/plataforma-health-check
+ExecStart=/usr/bin/docker compose --env-file ${COMPOSE_ENV_FILE} -f compose.yaml exec -T app node scripts/operational_check.js
+SyslogIdentifier=plataforma-health-check

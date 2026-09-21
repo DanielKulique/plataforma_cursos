@@ -1,0 +1,18 @@
+{
+  "documents_checked": 101,
+  "local_links_checked": 504,
+  "http_operations_checked": 86,
+  "errors": [],
+  "scope": "Markdown paths/anchors, required guides/index, static route inventory; no runtime tests",
+  "date": "2026-09-19",
+  "git_diff_check": "passed",
+  "current_markdown_whitespace": "passed",
+  "validator_python_syntax": "passed",
+  "stale_moved_document_references": 0,
+  "protected_files_sha256_verified": 641,
+  "generated_files_removed": 110,
+  "files_moved": 54,
+  "markdownlint": "not available in PATH or local dependencies",
+  "runtime_suites": "not run: documentation and safe generated-output cleanup only",
+  "runtime_changed": false
+}

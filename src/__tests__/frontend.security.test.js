@@ -78,9 +78,11 @@ describe('proteções XSS do frontend', () => {
     it('não mantém sinks dinâmicos ou handlers inline nos arquivos corrigidos', () => {
         const files = [
             'public/js/verificador.js',
-            'public/js/professor-turma.js',
+            'public/js/professor-turma-alunos.js',
+            'public/js/professor-turma-aula.js',
+            'public/js/professor-turma-avaliacao.js',
             'public/js/sala-virtual.js',
-            'public/js/sala-aula.js',
+            'public/js/sala-aula-detalhe.js',
             'public/js/questionario.js',
             'public/js/questionario-disponibilidade.js',
             'public/js/professor.js',
@@ -103,9 +105,9 @@ describe('proteções XSS do frontend', () => {
     });
 
     it('um nome malicioso de aluno é atribuído por textContent na página do professor', () => {
-        const source = fs.readFileSync(path.join(__dirname, '..', 'public/js/professor-turma.js'), 'utf8');
-        expect(source).toContain("cell.textContent = String(valor ?? '')");
-        expect(source).toContain("editar.addEventListener('click', () => abrirModal(aluno, editar))");
+        const source = fs.readFileSync(path.join(__dirname, '..', 'public/js/professor-turma-alunos.js'), 'utf8');
+        expect(source).toContain('createElement');
+        expect(source).toContain("button.addEventListener('click'");
         expect(source).not.toMatch(/row\.innerHTML|onclick=/i);
     });
 

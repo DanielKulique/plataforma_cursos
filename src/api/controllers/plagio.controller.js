@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const plagioService = require('../services/plagio.service');
 const analiseModel = require('../models/analise.model');
 const logger = require('../../utils/logger');
+const { sendHttpError } = require('../../utils/http-response');
 
 async function verificarTexto(req, res) {
     const errors = validationResult(req);
@@ -51,12 +52,11 @@ async function verificarTexto(req, res) {
     } catch (error) {
         logger.error('plagio.analise.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
 
-        if (error.status) {
-            return res.status(error.status).json({ mensagem: error.message });
-        }
-
-        return res.status(500).json({
-            message: 'Ocorreu um erro no servidor ao processar a análise de plágio.'
+        return sendHttpError(res, error, {
+            legacyKey: 'mensagem',
+            internalMessage: error.status === 503
+                ? 'O serviço de análise está temporariamente indisponível.'
+                : 'Ocorreu um erro no servidor ao processar a análise de plágio.'
         });
     }
 }

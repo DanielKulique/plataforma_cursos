@@ -1,4 +1,10 @@
-import { clearToken, getCurrentUser, getRedirectByRole, getToken } from './auth.js';
+import {
+    clearToken,
+    getCapabilities,
+    getCurrentUser,
+    getRedirectByRole,
+    logout as endSession
+} from './auth.js';
 
 const ROLE_CONFIG = Object.freeze({
     ALUNO: { label: 'Aluno', areaLabel: 'Sala virtual', areaUrl: '/sala-virtual.html' },
@@ -47,9 +53,19 @@ function redirect(url) {
     window.location.href = url;
 }
 
-function logout() {
-    clearToken();
-    redirect('/index.html');
+async function logout() {
+    try {
+        await endSession();
+    } finally {
+        redirect('/index.html');
+    }
+}
+
+function applyCapabilities(capabilities) {
+    const detectorEnabled = capabilities?.features?.detector?.enabled === true;
+    document.querySelectorAll('a[href="/verificador.html"], [data-feature="detector"]').forEach((element) => {
+        element.hidden = !detectorEnabled;
+    });
 }
 
 function ensureAvatarMenu(avatar, user, roleConfig) {
@@ -208,8 +224,6 @@ export async function initSessionUI({
     unauthorizedRedirect = '/index.html?motivo=nao_autorizado'
 } = {}) {
     renderLoading();
-    const hadToken = Boolean(getToken());
-
     let user;
     try {
         user = await getCurrentUser();
@@ -219,10 +233,8 @@ export async function initSessionUI({
     }
 
     if (!user) {
-        const state = hadToken ? 'invalid' : 'anonymous';
-        const message = hadToken
-            ? 'Sua sessão expirou ou não é mais válida. Entre novamente.'
-            : 'Faça login para acessar sua área.';
+        const state = 'anonymous';
+        const message = 'Faça login para acessar sua área.';
         renderAnonymous(state, message);
         if (requiredRoles.length > 0) redirect(loginRedirect);
         return { state, user: null };
@@ -245,8 +257,10 @@ export async function initSessionUI({
     }
 
     renderAuthenticated(user);
+    const capabilities = await getCapabilities();
+    applyCapabilities(capabilities);
 
-    return { state: 'authenticated', user };
+    return { state: 'authenticated', user, capabilities };
 }
 
 export function redirectToCurrentArea(user) {

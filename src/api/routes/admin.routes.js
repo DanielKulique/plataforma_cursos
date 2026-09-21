@@ -4,6 +4,8 @@ const usuariosController = require('../controllers/usuarios.controller');
 const { body, param } = require('express-validator');
 const checkAuth = require('../../middlewares/checkAuth.middleware');
 const checkRole = require('../../middlewares/checkRole.middleware');
+const { normalizarEmail } = require('../../utils/identity');
+const healthController = require('../controllers/health.controller');
 
 function apenasCamposPermitidos(campos) {
     return body().custom((payload) => {
@@ -20,12 +22,14 @@ function apenasCamposPermitidos(campos) {
  * Todas requerem autenticação e papel ADMIN
  */
 
+router.get('/metrics', checkAuth, checkRole('ADMIN'), healthController.metrics);
+
 // POST /api/admin/usuarios - Criar novo usuário (ADMIN ou PROFESSOR)
 router.post('/usuarios',
     checkAuth,
     checkRole('ADMIN'),
     apenasCamposPermitidos(['nome_completo', 'cpf', 'email', 'telefone', 'senha', 'tipo']),
-    body('email').isEmail().withMessage('O e-mail fornecido não é válido.'),
+    body('email').customSanitizer(normalizarEmail).isEmail().withMessage('O e-mail fornecido não é válido.'),
     body('senha')
         .isLength({ min: 8 }).withMessage('A senha precisa ter no mínimo 8 caracteres')
         .matches(/[A-Z]/).withMessage('A senha precisa ter pelo menos uma letra maiúscula')

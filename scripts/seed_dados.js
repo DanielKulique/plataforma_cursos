@@ -4,8 +4,11 @@
  */
 
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { loadEnvironment } = require('../src/config/loadEnvironment');
+loadEnvironment('development', path.join(__dirname, '..'));
 const { assertDevelopmentDatabase } = require('./test_database_safety');
+const { databaseClientConfig } = require('../src/config/database-connection');
+const { assertVerifiedPool, printDatabaseTarget } = require('./lib/database-operations');
 assertDevelopmentDatabase(process.env);
 const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
 if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
@@ -16,16 +19,15 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 
 async function seed() {
-    const pool = mysql.createPool({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+    const pool = mysql.createPool(databaseClientConfig(process.env, {
         waitForConnections: true,
-        connectionLimit: 5
-    });
+        connectionLimit: 5,
+        queueLimit: 10
+    }));
 
-    console.log('Conectado ao banco de dados...\n');
+    await assertVerifiedPool(pool);
+    printDatabaseTarget();
+    console.log('Identidade do banco validada.\n');
 
     try {
         // 1. Criar Cursos
@@ -224,10 +226,12 @@ async function seed() {
 
     } catch (error) {
         console.error('Erro ao inserir dados:', error.message);
+        throw error;
     } finally {
         await pool.end();
-        process.exit(0);
     }
 }
 
-seed();
+seed().catch(() => {
+    process.exitCode = 1;
+});

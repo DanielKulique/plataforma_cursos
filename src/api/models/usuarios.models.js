@@ -1,5 +1,10 @@
 const bcrypt = require('bcrypt');
 const db = require('../../config/database');
+const {
+    calcularExpiracaoCodigo,
+    gerarCodigoVerificacao,
+    normalizarEmail
+} = require('../../utils/identity');
 
 const FATOR_CUSTO = 10;
 const TIPOS_USUARIO = ['ALUNO', 'PROFESSOR', 'ADMIN'];
@@ -25,7 +30,8 @@ function traduzirDuplicidade(error) {
 }
 
 async function criarUsuario(usuario) {
-    const { nome_completo, cpf, email, senha, telefone, tipo } = usuario;
+    const { nome_completo, cpf, senha, telefone, tipo } = usuario;
+    const email = normalizarEmail(usuario.email);
     const hash = await bcrypt.hash(senha, FATOR_CUSTO);
 
     try {
@@ -40,6 +46,56 @@ async function criarUsuario(usuario) {
     } catch (error) {
         throw traduzirDuplicidade(error);
     }
+}
+
+async function criarUsuarioComVerificacao(usuario, verificado) {
+    const { nome_completo, cpf, senha, telefone, tipo } = usuario;
+    const email = normalizarEmail(usuario.email);
+    const hash = await bcrypt.hash(senha, FATOR_CUSTO);
+    const codigo = gerarCodigoVerificacao();
+    const expiraEm = calcularExpiracaoCodigo();
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+        const [result] = await connection.query(
+            'INSERT INTO Usuarios (nome_completo, cpf, email, senha, telefone, tipo) VALUES (?, ?, ?, ?, ?, ?)',
+            [nome_completo, cpf, email, hash, telefone || null, tipo]
+        );
+        if (result.affectedRows !== 1) throw new Error('Erro ao criar usuário');
+
+        await connection.query(
+            `INSERT INTO EmailVerificacoes (email, codigo, verificado, expira_em)
+             VALUES (?, ?, ?, ?)`,
+            [email, codigo, verificado ? 1 : 0, expiraEm]
+        );
+        await connection.commit();
+
+        return {
+            usuario: {
+                id_usuario: result.insertId,
+                nome_completo,
+                cpf,
+                email,
+                telefone: telefone || null,
+                tipo
+            },
+            verificacao: { codigo, expira_em: expiraEm, verificado: Boolean(verificado) }
+        };
+    } catch (error) {
+        await connection.rollback();
+        throw traduzirDuplicidade(error);
+    } finally {
+        connection.release();
+    }
+}
+
+function criarAlunoComVerificacao(usuario) {
+    return criarUsuarioComVerificacao({ ...usuario, tipo: 'ALUNO' }, false);
+}
+
+function criarUsuarioAdministrativo(usuario) {
+    return criarUsuarioComVerificacao(usuario, true);
 }
 
 async function atualizarUsuario(id, dadosParaAtualizar) {
@@ -78,11 +134,14 @@ async function buscarUsuarioPorId(id) {
     return rows[0];
 }
 
-async function buscarTodosUsuarios() {
+async function buscarTodosUsuarios(pagination) {
+    const [[count]] = await db.query('SELECT COUNT(*) AS total FROM Usuarios');
     const [rows] = await db.query(
-        'SELECT id_usuario, nome_completo, cpf, email, telefone, tipo, data_cadastro FROM Usuarios ORDER BY nome_completo, id_usuario'
+        `SELECT id_usuario, nome_completo, cpf, email, telefone, tipo, data_cadastro
+         FROM Usuarios ORDER BY nome_completo, id_usuario LIMIT ? OFFSET ?`,
+        [pagination.limit, pagination.offset]
     );
-    return rows;
+    return { items: rows, total: Number(count.total) };
 }
 
 async function obterVinculos(connection, id) {
@@ -197,7 +256,10 @@ async function alterarSenha(id, atorId, senhaAtual, novaSenha) {
         }
 
         const hash = await bcrypt.hash(novaSenha, FATOR_CUSTO);
-        await connection.query('UPDATE Usuarios SET senha = ? WHERE id_usuario = ?', [hash, id]);
+        await connection.query(
+            'UPDATE Usuarios SET senha = ?, versao_sessao = versao_sessao + 1 WHERE id_usuario = ?',
+            [hash, id]
+        );
         await connection.commit();
         return true;
     } catch (error) {
@@ -256,7 +318,9 @@ async function verificarDisponibilidade(email, cpf) {
 }
 
 module.exports = {
+    criarAlunoComVerificacao,
     criarUsuario,
+    criarUsuarioAdministrativo,
     atualizarUsuario,
     atualizarUsuarioAdmin,
     alterarSenha,

@@ -515,6 +515,15 @@
     padding: var(--space-4);
   }
 
+  .admin-page .admin-replication-groups {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .admin-page .admin-replication-success > .admin-form-actions {
+    padding: var(--space-4);
+  }
+
   .academic-page .card-item {
     gap: var(--space-3);
     padding: var(--space-4);
@@ -635,6 +644,70 @@
   }
 
   .academic-dialog__actions .btn {
+    inline-size: 100%;
+  }
+
+  .academic-dialog .academic-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .academic-dialog .academic-form-grid__wide {
+    grid-column: auto;
+  }
+
+  .teacher-class-page .academic-panel__header,
+  .teacher-class-page .teacher-module__header,
+  .teacher-class-page .teacher-content-item__header,
+  .teacher-class-page .assessment-authoring__header,
+  .teacher-class-page .assessment-question__header {
+    flex-direction: column;
+  }
+
+  .teacher-class-page .teacher-content-toolbar,
+  .teacher-class-page .teacher-item-actions {
+    inline-size: 100%;
+    justify-content: flex-start;
+  }
+
+  .teacher-class-page .teacher-content-toolbar .btn,
+  .teacher-class-page .teacher-item-actions .action-button {
+    flex: 1 1 9rem;
+  }
+
+  .teacher-class-page .assessment-option {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .teacher-class-page .assessment-option > :where(.badge, .assessment-option__order) {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .teacher-class-page .assessment-option__actions {
+    grid-column: 2;
+    inline-size: 100%;
+    justify-content: flex-start;
+  }
+
+  .teacher-class-page .assessment-authoring,
+  .teacher-class-page .assessment-question {
+    padding: var(--space-3);
+  }
+
+  .certificate-validation-seal {
+    display: none;
+  }
+
+  .certificate-validation-methods {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .certificate-validation-method + .certificate-validation-method {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  .certificate-validation-method .btn {
     inline-size: 100%;
   }
 }
@@ -821,5 +894,36 @@
 @media (max-height: 600px) {
   .verificador-dialog {
     max-block-size: calc(100dvh - var(--space-4));
+  }
+}
+
+@media (max-width: 640px) {
+  .academic-page .hub-grid,
+  .academic-page .metric-list {
+    grid-template-columns: 1fr;
+  }
+
+  .academic-page .hub-card > a {
+    min-height: 8rem;
+    padding: var(--space-5);
+  }
+
+  .academic-page .course-masthead,
+  .academic-page .summary-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .academic-page .summary-row .action-button,
+  .academic-page .summary-row .btn {
+    width: 100%;
+  }
+
+  .academic-page .student-desktop-table {
+    display: none;
+  }
+
+  .academic-page .student-mobile-list {
+    display: grid;
   }
 }

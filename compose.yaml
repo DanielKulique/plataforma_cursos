@@ -1,0 +1,159 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:?Defina DB_NAME}
+      MYSQL_USER: ${DB_USER:?Defina DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Defina MYSQL_ROOT_PASSWORD}
+      PLATFORM_DB_IDENTITY: ${DB_ENVIRONMENT_IDENTITY:?Defina DB_ENVIRONMENT_IDENTITY}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - ./mysql/init/002-environment-identity.sh:/docker-entrypoint-initdb.d/002-environment-identity.sh:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      APP_ENV: ${APP_ENV:-production}
+      APP_PORT: ${APP_PORT:-3000}
+      APP_BASE_URL: ${APP_BASE_URL}
+      APP_NAME: ${APP_NAME}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:?Defina DB_NAME}
+      DB_ENVIRONMENT_IDENTITY: ${DB_ENVIRONMENT_IDENTITY:?Defina DB_ENVIRONMENT_IDENTITY}
+      DB_USER: ${DB_USER:?Defina DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD}
+      DB_POOL_MAX: ${DB_POOL_MAX:-10}
+      DB_POOL_QUEUE_LIMIT: ${DB_POOL_QUEUE_LIMIT:-50}
+      DB_POOL_WAIT_FOR_CONNECTIONS: ${DB_POOL_WAIT_FOR_CONNECTIONS:-true}
+      DB_CONNECT_TIMEOUT_MS: ${DB_CONNECT_TIMEOUT_MS:-10000}
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-28800}
+      AUTH_RATE_LIMIT_MAX: ${AUTH_RATE_LIMIT_MAX:-20}
+      EMAIL_VERIFICATION_TTL_MINUTES: ${EMAIL_VERIFICATION_TTL_MINUTES:-10}
+      EMAIL_PROVIDER_TIMEOUT_MS: ${EMAIL_PROVIDER_TIMEOUT_MS:-10000}
+      EMAIL_VERIFICATION_RATE_LIMIT_WINDOW_MS: ${EMAIL_VERIFICATION_RATE_LIMIT_WINDOW_MS:-900000}
+      EMAIL_CODE_SEND_IP_RATE_LIMIT_MAX: ${EMAIL_CODE_SEND_IP_RATE_LIMIT_MAX:-20}
+      EMAIL_CODE_SEND_IDENTITY_RATE_LIMIT_MAX: ${EMAIL_CODE_SEND_IDENTITY_RATE_LIMIT_MAX:-5}
+      EMAIL_CODE_VERIFY_IP_RATE_LIMIT_MAX: ${EMAIL_CODE_VERIFY_IP_RATE_LIMIT_MAX:-60}
+      EMAIL_CODE_VERIFY_IDENTITY_RATE_LIMIT_MAX: ${EMAIL_CODE_VERIFY_IDENTITY_RATE_LIMIT_MAX:-10}
+      PASSWORD_RESET_TTL_MINUTES: ${PASSWORD_RESET_TTL_MINUTES:-20}
+      PASSWORD_RECOVERY_RATE_LIMIT: ${PASSWORD_RECOVERY_RATE_LIMIT:-5}
+      PASSWORD_RESET_RATE_LIMIT: ${PASSWORD_RESET_RATE_LIMIT:-10}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM: ${MAIL_FROM}
+      EMAIL_DELIVERY_ENABLED: ${EMAIL_DELIVERY_ENABLED:-true}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      CSP_REPORT_ONLY: ${CSP_REPORT_ONLY:-false}
+      SLOW_REQUEST_MS: ${SLOW_REQUEST_MS:-2000}
+      DEFAULT_PAGE_SIZE: ${DEFAULT_PAGE_SIZE:-50}
+      MAX_PAGE_SIZE: ${MAX_PAGE_SIZE:-100}
+      DISK_WARNING_PERCENT: ${DISK_WARNING_PERCENT:-15}
+      DISK_CRITICAL_PERCENT: ${DISK_CRITICAL_PERCENT:-5}
+      BACKUP_STATUS_DIR: /app/backup-status
+      RPO_HOURS: ${RPO_HOURS:-24}
+      DETECTOR_ENABLED: ${DETECTOR_ENABLED:-false}
+      IA_ANALISE_URL: ${IA_ANALISE_URL:-http://motor-ia:8000/api/analisar}
+      IA_ANALISE_TIMEOUT_MS: ${IA_ANALISE_TIMEOUT_MS:-10000}
+      DETECTOR_API_URL: ${DETECTOR_API_URL:-http://motor-ia:8000}
+      DETECTOR_API_TIMEOUT_MS: ${DETECTOR_API_TIMEOUT_MS:-15000}
+      DETECTOR_API_TIMEOUT_INCREMENTAL_MS: ${DETECTOR_API_TIMEOUT_INCREMENTAL_MS:-8000}
+      DETECTOR_API_TIMEOUT_COMPLETE_MS: ${DETECTOR_API_TIMEOUT_COMPLETE_MS:-20000}
+      DETECTOR_RATE_LIMIT_MAX: ${DETECTOR_RATE_LIMIT_MAX:-60}
+      DETECTOR_RATE_LIMIT_WINDOW_MS: ${DETECTOR_RATE_LIMIT_WINDOW_MS:-60000}
+      MOTOR_IA_API_URL: ${MOTOR_IA_API_URL:-http://motor-ia:8000}
+      MOTOR_IA_INTERNAL_API_TOKEN: ${MOTOR_IA_INTERNAL_API_TOKEN:-}
+      INITIAL_ADMIN_NOME: ${INITIAL_ADMIN_NOME:-}
+      INITIAL_ADMIN_CPF: ${INITIAL_ADMIN_CPF:-}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-}
+      INITIAL_ADMIN_TELEFONE: ${INITIAL_ADMIN_TELEFONE:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+      INITIAL_ADMIN_ALLOW_ADDITIONAL: ${INITIAL_ADMIN_ALLOW_ADDITIONAL:-}
+      MATERIAL_STORAGE_DIR: /app/storage/materials
+      MATERIAL_RETENTION_DAYS: ${MATERIAL_RETENTION_DAYS:-90}
+      STORAGE_GRACE_HOURS: ${STORAGE_GRACE_HOURS:-48}
+      PDF_MAX_SIZE_MB: ${PDF_MAX_SIZE_MB:-20}
+      CERTIFICATE_STORAGE_DIR: /app/storage/certificates
+      CERTIFICATE_UPLOAD_MAX_SIZE_MB: ${CERTIFICATE_UPLOAD_MAX_SIZE_MB:-10}
+      CERTIFICATE_PUBLIC_RATE_LIMIT_MAX: ${CERTIFICATE_PUBLIC_RATE_LIMIT_MAX:-30}
+      CERTIFICATE_UPLOAD_RATE_LIMIT_MAX: ${CERTIFICATE_UPLOAD_RATE_LIMIT_MAX:-10}
+      CERTIFICATE_RATE_LIMIT_WINDOW_MS: ${CERTIFICATE_RATE_LIMIT_WINDOW_MS:-60000}
+      CERTIFICATE_INSTITUTION_NAME: ${CERTIFICATE_INSTITUTION_NAME:-Universidade Tecnológica Federal do Paraná}
+      CERTIFICATE_CAMPUS: ${CERTIFICATE_CAMPUS:-}
+      CERTIFICATE_RESPONSIBLE_ROLE: ${CERTIFICATE_RESPONSIBLE_ROLE:-Responsável acadêmico}
+    volumes:
+      - material_uploads:/app/storage/materials
+      - certificate_uploads:/app/storage/certificates
+      - ${BACKUP_DIR:-./backups}:/app/backup-status:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:' + process.env.APP_PORT + '/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      APP_PORT: ${APP_PORT:-3000}
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - backend
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  backend:
+    internal: false
+
+volumes:
+  mysql_data:
+  material_uploads:
+  certificate_uploads:
+  caddy_data:
+  caddy_config:

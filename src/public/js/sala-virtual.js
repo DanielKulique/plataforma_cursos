@@ -1,4 +1,5 @@
-import { clearToken, getToken } from './auth.js';
+import { clearToken } from './auth.js';
+import { getMinhaSala } from './api.js';
 import { initSessionUI } from './session-ui.js';
 import {
     createAcademicState,
@@ -95,8 +96,6 @@ function renderizarTurmas(turmas = []) {
         item.className = 'card-item sala-card';
 
         const linkSalaAula = `/sala-aula.html?id_turma=${encodeURIComponent(turma.id_turma)}`;
-        const linkProva = `/questionario.html?tipo=prova&id_turma=${encodeURIComponent(turma.id_turma)}`;
-        const linkExercicios = `/questionario.html?tipo=exercicio&id_turma=${encodeURIComponent(turma.id_turma)}`;
 
         const header = criarElemento('div', 'card-item__header');
         header.append(
@@ -110,16 +109,16 @@ function renderizarTurmas(turmas = []) {
         );
 
         const description = criarElemento('p', 'card-item__description');
-        description.append(
-            criarElemento('strong', '', 'Descrição: '),
-            document.createTextNode(turma.descricao_curso || 'Conteúdo do curso sem descrição cadastrada.')
-        );
+        const nextStep = Number(turma.progresso_percentual) >= 100
+            ? 'Trilha concluída. Consulte seu progresso e certificado.'
+            : Number(turma.progresso_percentual) > 0
+                ? 'Próximo passo: retomar suas aulas.'
+                : 'Próximo passo: começar a primeira aula.';
+        description.textContent = nextStep;
 
         const actions = criarElemento('div', 'card-actions');
         actions.append(
-            criarLink(linkSalaAula, 'action-button', 'Entrar na sala de aula'),
-            criarLink(linkProva, 'action-button action-button--ghost', 'Prova'),
-            criarLink(linkExercicios, 'action-button action-button--ghost', 'Exercícios')
+            criarLink(linkSalaAula, 'action-button', 'Continuar curso')
         );
         item.append(
             header,
@@ -133,56 +132,42 @@ function renderizarTurmas(turmas = []) {
     });
 }
 
-async function carregarSalaVirtual(usuario) {
-    const token = getToken();
+function redirecionarSessao(error) {
+    if (error?.status !== 401) return false;
+    clearToken();
+    window.location.href = '/login.html?motivo=auth';
+    return true;
+}
 
-    try {
-        if (listaTurmas) {
-            mostrarEstadoLista('Carregando suas turmas...', 'loading-state');
-        }
+async function carregarTurmas() {
+    const payload = await getMinhaSala({ retries: 1 });
+    renderizarTurmas(payload?.turmas || []);
+    setAcademicMessage(
+        mensagemSala,
+        payload?.total > 0
+            ? `Você possui ${payload.total} turma(s) com acesso ao conteúdo.`
+            : 'Sem turmas com acesso no momento. Faça inscrição em uma turma com vagas abertas.',
+        'info'
+    );
+}
 
-        if (statusUsuario) {
-            statusUsuario.textContent = `Aluno logado: ${usuario.nome_completo}`;
-        }
-
-        const response = await fetch('/api/matriculas/minha-sala', {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        if (response.status === 401) {
-            clearToken();
-            window.location.href = '/login.html?motivo=auth';
-            return;
-        }
-
-        if (response.status === 403) {
-            window.location.href = '/index.html?motivo=nao_autorizado';
-            return;
-        }
-
-        if (!response.ok) {
-            throw new Error('Não foi possível carregar sua sala virtual.');
-        }
-
-        const payload = await response.json();
-        renderizarTurmas(payload.turmas || []);
-
-        setAcademicMessage(
-            mensagemSala,
-            payload.total > 0
-                ? `Você possui ${payload.total} turma(s) com acesso ao conteúdo.`
-                : 'Sem turmas com acesso no momento. Faça inscrição em uma turma com vagas abertas.',
-            'info'
-        );
-    } catch (error) {
-        console.error('Erro ao carregar sala virtual:', error);
-        setAcademicMessage(mensagemSala, 'Erro ao carregar sala virtual. Tente novamente.', 'error');
-        if (listaTurmas) {
-            mostrarEstadoLista('Erro ao carregar turmas da sala virtual.', 'error-state');
-        }
+function tratarFalhaTurmas(error) {
+    if (redirecionarSessao(error)) return;
+    if (error?.status === 403) {
+        window.location.href = '/index.html?motivo=nao_autorizado';
+        return;
     }
+    console.error('Erro ao carregar turmas da sala virtual:', error);
+    setAcademicMessage(mensagemSala, 'Não foi possível carregar suas turmas agora.', 'error');
+    if (listaTurmas) {
+        mostrarEstadoLista('Não foi possível carregar suas turmas. Recarregue a página para tentar novamente.', 'error-state');
+    }
+}
+
+async function carregarSalaVirtual(usuario) {
+    if (listaTurmas) mostrarEstadoLista('Carregando suas turmas...', 'loading-state');
+    if (statusUsuario) statusUsuario.textContent = `Aluno logado: ${usuario.nome_completo}`;
+    try { await carregarTurmas(); } catch (error) { tratarFalhaTurmas(error); }
 }
 
 window.addEventListener('load', async () => {

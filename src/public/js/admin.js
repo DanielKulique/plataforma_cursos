@@ -1,4 +1,4 @@
-import { clearToken, getToken } from './auth.js';
+import { authenticatedFetch, clearToken } from './auth.js';
 import { initSessionUI } from './session-ui.js';
 import { showAdminDialog } from './admin-dialog.js';
 
@@ -50,11 +50,11 @@ function mensagemErro(payload, fallback) {
     return payload?.message || payload?.mensagem || fallback;
 }
 
-async function api(path, { method = 'GET', body } = {}) {
-    const headers = { Authorization: `Bearer ${getToken()}` };
+async function api(path, { method = 'GET', body, headers: customHeaders = {} } = {}) {
+    const headers = { ...customHeaders };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
 
-    const response = await fetch(path, {
+    const response = await authenticatedFetch(path, {
         method,
         headers,
         body: body === undefined ? undefined : JSON.stringify(body)
@@ -134,6 +134,7 @@ function inputControl({
     maxLength,
     min,
     pattern,
+    placeholder,
     options
 }, dialogId) {
     const wrapper = el('div', { className: 'admin-field' });
@@ -171,6 +172,7 @@ function inputControl({
     if (maxLength) control.maxLength = maxLength;
     if (min !== undefined) control.min = String(min);
     if (pattern) control.pattern = pattern;
+    if (placeholder) control.placeholder = placeholder;
     if (type === 'password') {
         control.autocomplete = name === 'senha_atual' ? 'current-password' : 'new-password';
     } else {
@@ -210,10 +212,15 @@ function openForm({
     description = 'Preencha os campos abaixo. Os campos marcados com asterisco são obrigatórios.',
     fields,
     submitLabel,
-    onSubmit
+    onSubmit,
+    onSuccess,
+    contentBeforeFields,
+    dialogClassName = '',
+    opener
 }) {
     const dialogId = `admin-dialog-${++dialogSequence}`;
     const dialog = el('dialog', { className: 'admin-dialog' });
+    if (dialogClassName) dialog.classList.add(dialogClassName);
     dialog.id = dialogId;
     dialog.setAttribute('aria-labelledby', `${dialogId}-title`);
     dialog.setAttribute('aria-describedby', `${dialogId}-description`);
@@ -239,6 +246,8 @@ function openForm({
     formError.setAttribute('role', 'alert');
     const controls = {};
     let submitting = false;
+
+    if (contentBeforeFields) form.appendChild(contentBeforeFields);
 
     fields.forEach((field) => {
         const built = inputControl(field, dialogId);
@@ -272,8 +281,9 @@ function openForm({
             const values = Object.fromEntries(
                 Object.entries(controls).map(([name, control]) => [name, control.value])
             );
-            await onSubmit(values);
+            const result = await onSubmit(values);
             if (dialog.open) dialog.close();
+            if (onSuccess) await onSuccess(result);
         } catch (error) {
             formError.textContent = error.message;
             if (error.status) formError.dataset.httpStatus = String(error.status);
@@ -287,7 +297,8 @@ function openForm({
         }
     });
 
-    showAdminDialog(dialog, { initialFocus: controls[fields[0]?.name] });
+    showAdminDialog(dialog, { initialFocus: controls[fields[0]?.name], opener });
+    return { dialog, form, controls };
 }
 
 function makeTable({ caption, headers, rows, regionLabel }) {
@@ -391,8 +402,11 @@ function toolbar({
     return bar;
 }
 
-function rowActions(itemType, itemLabel, onEdit, onDelete) {
+function rowActions(itemType, itemLabel, onEdit, onDelete, extraActions = []) {
     const actions = el('div', { className: 'admin-row-actions' });
+    extraActions.forEach(({ label, handler, ariaLabel, className = 'btn btn-ghost btn-sm' }) => {
+        actions.appendChild(actionButton(label, className, handler, { ariaLabel }));
+    });
     actions.append(
         actionButton('Editar', 'btn btn-ghost btn-sm', onEdit, {
             ariaLabel: `Editar ${itemType} ${itemLabel}`
@@ -503,7 +517,8 @@ function openPasswordChange() {
         submitLabel: 'Alterar senha',
         onSubmit: async (values) => {
             await api(`/api/usuarios/${state.user.id_usuario}/senha`, { method: 'PATCH', body: values });
-            showFeedback('Senha alterada com sucesso.');
+            clearToken();
+            window.location.href = '/login.html?motivo=senha_alterada';
         }
     });
 }
@@ -734,6 +749,163 @@ function classPayload(values) {
     };
 }
 
+function replicationFields(turma) {
+    const professores = state.usuarios.filter((usuario) => usuario.tipo === 'PROFESSOR');
+    return [
+        {
+            label: 'Nome da nova turma',
+            name: 'nome_turma',
+            required: true,
+            maxLength: 100,
+            placeholder: `${turma.nome_turma} — próxima edição`
+        },
+        {
+            label: 'Professor responsável', name: 'id_professor', required: true,
+            options: [
+                { value: '', label: 'Selecione um professor' },
+                ...professores.map((usuario) => ({ value: usuario.id_usuario, label: usuario.nome_completo }))
+            ]
+        },
+        { label: 'Data inicial', name: 'data_inicio', type: 'date', value: dateValue(turma.data_inicio), required: true },
+        { label: 'Data final', name: 'data_fim', type: 'date', value: dateValue(turma.data_fim) },
+        {
+            label: 'Status inicial', name: 'status', value: 'ABERTA', required: true,
+            options: [
+                { value: 'ABERTA', label: 'Inscrições abertas' },
+                { value: 'FECHADA', label: 'Inscrições fechadas' },
+                { value: 'ENCERRADA', label: 'Encerrada' }
+            ]
+        }
+    ];
+}
+
+function createReplicationKey() {
+    if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+    return `rep-${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function replicationSummaryShell(turma) {
+    const section = el('section', { className: 'admin-replication-summary' });
+    section.setAttribute('aria-live', 'polite');
+    const origin = el('div', { className: 'admin-replication-origin' });
+    origin.append(
+        el('span', { text: 'Turma de origem' }),
+        el('strong', { text: turma.nome_turma }),
+        el('small', { text: `${turma.nome_curso} · ${turma.status === 'ENCERRADA' ? 'encerrada, preservada como modelo' : 'estrutura atual preservada'}` })
+    );
+    const loading = el('p', { className: 'admin-replication-loading', text: 'Conferindo a estrutura acadêmica…' });
+    loading.setAttribute('role', 'status');
+    section.append(origin, loading);
+    return section;
+}
+
+function summaryList(title, items, className = '') {
+    const group = el('section', { className: `admin-replication-group ${className}`.trim() });
+    group.appendChild(el('h3', { text: title }));
+    const list = el('ul');
+    items.forEach((item) => list.appendChild(el('li', { text: item })));
+    group.appendChild(list);
+    return group;
+}
+
+function renderReplicationSummary(container, resumo) {
+    const origin = container.querySelector('.admin-replication-origin');
+    const copied = [
+        `${resumo.modulos} ${resumo.modulos === 1 ? 'módulo' : 'módulos'}`,
+        `${resumo.conteudos} conteúdos (${resumo.videos} vídeos, ${resumo.pdfs} PDFs, ${resumo.textos} textos)`,
+        `${resumo.links} links e ${resumo.atividades} atividades`,
+        `${resumo.questionarios} questionários e ${resumo.provas} provas`,
+        `${resumo.perguntas} perguntas e ${resumo.alternativas} alternativas`
+    ];
+    const excluded = [
+        'Alunos e matrículas',
+        'Progresso e conclusões',
+        'Tentativas, respostas e notas',
+        'Certificados e histórico individual'
+    ];
+    const groups = el('div', { className: 'admin-replication-groups' });
+    groups.append(
+        summaryList('Estrutura que será replicada', copied, 'admin-replication-group--copied'),
+        summaryList('Dados que ficarão de fora', excluded, 'admin-replication-group--excluded')
+    );
+    container.replaceChildren(origin, groups);
+}
+
+function renderReplicationSummaryError(container, turma) {
+    const origin = container.querySelector('.admin-replication-origin');
+    const warning = el('p', {
+        className: 'admin-replication-warning',
+        text: 'Não foi possível calcular o resumo agora. A replicação continuará protegida pelas mesmas regras do servidor.'
+    });
+    container.replaceChildren(origin, warning);
+    showFeedback(`Não foi possível conferir a estrutura de “${turma.nome_turma}”.`, 'error');
+}
+
+function showReplicationSuccess(novaTurma) {
+    const dialogId = `admin-dialog-${++dialogSequence}`;
+    const dialog = el('dialog', { className: 'admin-dialog admin-confirm-dialog admin-replication-success' });
+    dialog.id = dialogId;
+    dialog.setAttribute('aria-labelledby', `${dialogId}-title`);
+    dialog.setAttribute('aria-describedby', `${dialogId}-description`);
+    const header = el('header', { className: 'admin-dialog__header' });
+    const heading = el('h2', { id: `${dialogId}-title`, text: 'Turma replicada com sucesso' });
+    const close = actionButton('×', 'admin-dialog__close', () => dialog.close(), {
+        ariaLabel: 'Fechar confirmação da replicação'
+    });
+    header.append(heading, close);
+    const description = el('p', {
+        className: 'admin-dialog__description',
+        id: `${dialogId}-description`,
+        text: `“${novaTurma.nome_turma}” foi criada como uma turma independente e sem dados acadêmicos de alunos.`
+    });
+    const actions = el('div', { className: 'admin-form-actions' });
+    const done = actionButton('Concluir', 'btn btn-ghost', () => dialog.close());
+    const open = actionButton('Abrir nova turma', 'btn btn-primary', () => {
+        dialog.close();
+        setTimeout(() => openEditClass(novaTurma), 0);
+    });
+    actions.append(done, open);
+    dialog.append(header, description, actions);
+    document.body.appendChild(dialog);
+    showAdminDialog(dialog, { initialFocus: open });
+}
+
+function openReplicateClass(turma, opener) {
+    const summary = replicationSummaryShell(turma);
+    const replicationKey = createReplicationKey();
+    openForm({
+        title: 'Replicar estrutura da turma',
+        description: 'Crie uma nova turma independente usando somente a estrutura acadêmica da origem.',
+        fields: replicationFields(turma),
+        submitLabel: 'Replicar turma',
+        contentBeforeFields: summary,
+        dialogClassName: 'admin-dialog--replication',
+        opener,
+        onSubmit: async (values) => {
+            clearFeedback();
+            const result = await api(`/api/turmas/${turma.id_turma}/replicar`, {
+                method: 'POST',
+                headers: { 'Idempotency-Key': replicationKey },
+                body: {
+                    nome_turma: values.nome_turma,
+                    id_professor: Number(values.id_professor),
+                    data_inicio: values.data_inicio,
+                    data_fim: values.data_fim || null,
+                    status: values.status
+                }
+            });
+            showFeedback('Turma replicada com sucesso.');
+            await loadActive();
+            return result;
+        },
+        onSuccess: (result) => showReplicationSuccess(result.turma)
+    });
+
+    api(`/api/turmas/${turma.id_turma}/replicacao-resumo`)
+        .then((result) => renderReplicationSummary(summary, result.resumo))
+        .catch(() => renderReplicationSummaryError(summary, turma));
+}
+
 function openCreateClass() {
     openForm({
         title: 'Criar turma',
@@ -827,7 +999,16 @@ function renderClasses() {
                     'turma',
                     turma.nome_turma,
                     () => openEditClass(turma),
-                    () => deleteClass(turma)
+                    () => deleteClass(turma),
+                    [{
+                        label: 'Conteúdos',
+                        handler: () => { window.location.href = `/professor-turma.html?id_turma=${turma.id_turma}`; },
+                        ariaLabel: `Abrir painel da turma ${turma.nome_turma}`
+                    }, {
+                        label: 'Replicar',
+                        handler: (event) => openReplicateClass(turma, event.currentTarget),
+                        ariaLabel: `Replicar estrutura da turma ${turma.nome_turma}`
+                    }]
                 )
             ])
         });
@@ -842,9 +1023,9 @@ async function loadActive() {
     renderLoading(state.active);
     try {
         if (state.active === 'usuarios') {
-            const usuarios = await api('/api/admin/usuarios');
+            const usuarios = await api('/api/admin/usuarios?limit=100');
             if (currentLoad !== loadSequence) return;
-            state.usuarios = usuarios;
+            state.usuarios = usuarios.items;
             renderUsers();
         } else if (state.active === 'cursos') {
             const cursos = await api('/api/cursos');
@@ -853,14 +1034,14 @@ async function loadActive() {
             renderCourses();
         } else {
             const [turmas, cursos, usuarios] = await Promise.all([
-                api('/api/turmas'),
+                api('/api/turmas?limit=100'),
                 api('/api/cursos'),
-                api('/api/admin/usuarios')
+                api('/api/admin/usuarios?limit=100')
             ]);
             if (currentLoad !== loadSequence) return;
-            state.turmas = turmas;
+            state.turmas = turmas.items;
             state.cursos = cursos;
-            state.usuarios = usuarios;
+            state.usuarios = usuarios.items;
             renderClasses();
         }
     } catch (error) {

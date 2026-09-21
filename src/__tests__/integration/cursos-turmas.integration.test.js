@@ -12,7 +12,7 @@
  */
 
 const request = require('supertest');
-const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword } = require('./setup');
+const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword, getSessionToken } = require('./setup');
 const { app } = require('../../../index');
 const applicationDb = require('../../config/database');
 
@@ -37,7 +37,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
                 email: 'admin@teste.com',
                 senha: testPassword
             });
-        adminToken = adminLogin.body.token;
+        adminToken = getSessionToken(adminLogin);
 
         // Faz login como PROFESSOR
         const profLogin = await request(app)
@@ -46,7 +46,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
                 email: 'professor@teste.com',
                 senha: testPassword
             });
-        professorToken = profLogin.body.token;
+        professorToken = getSessionToken(profLogin);
 
         // Faz login como ALUNO
         const alunoLogin = await request(app)
@@ -55,7 +55,7 @@ describe('Testes de Integração - Cursos e Turmas', () => {
                 email: 'aluno@teste.com',
                 senha: testPassword
             });
-        alunoToken = alunoLogin.body.token;
+        alunoToken = getSessionToken(alunoLogin);
     });
 
     afterEach(async () => {
@@ -278,7 +278,9 @@ describe('Testes de Integração - Cursos e Turmas', () => {
                     .get('/api/turmas');
 
                 expect(response.status).toBe(200);
-                expect(Array.isArray(response.body)).toBe(true);
+                expect(Array.isArray(response.body.items)).toBe(true);
+                expect(response.body).toMatchObject({ page: 1, limit: 50 });
+                expect(response.body.total).toBeGreaterThan(0);
             });
 
             it('deve buscar turma por ID', async () => {

@@ -1,0 +1,24 @@
+{
+  "goal": "COURSE_PLATFORM_SECURITY_HARDENING",
+  "timestamp_utc": "2026-09-18T15:47:11Z",
+  "bundle_sha256": "65515fc5a54b3756cb75dfde4c6cb62d569301f81cc284998a43acfb2b35951b",
+  "deployment": "existing staging app image rebuilt and recreated; db and caddy kept running",
+  "smoke": {
+    "valid_material_upload": "passed",
+    "malformed_pdf_rejected": "passed",
+    "wrong_xref_offset_rejected": "passed",
+    "oversized_pdf_rejected": "passed",
+    "traversal_filename_rejected": "passed",
+    "private_material_download": "passed",
+    "private_certificate_download": "passed",
+    "public_certificate_hash_validation": "passed"
+  },
+  "final_health": {
+    "app": "healthy",
+    "db": "healthy",
+    "caddy": "healthy",
+    "detector_enabled": false
+  },
+  "migration_created": false,
+  "restore_performed": false
+}

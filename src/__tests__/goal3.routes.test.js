@@ -13,11 +13,16 @@ jest.mock('../api/models/conteudos.models', () => ({
     professorEhDaTurma: jest.fn(),
     alunoEstaMatriculado: jest.fn(),
     listarModulos: jest.fn(),
+    criarModulo: jest.fn(),
+    buscarEscopoModulo: jest.fn(),
+    atualizarModulo: jest.fn(),
+    removerModulo: jest.fn(),
     listar: jest.fn(),
     criar: jest.fn(),
     atualizar: jest.fn(),
     remover: jest.fn(),
     buscarEscopo: jest.fn(),
+    buscarMaterial: jest.fn(),
     registrarProgresso: jest.fn(),
     listarProgressoTurma: jest.fn()
 }));
@@ -28,6 +33,12 @@ jest.mock('../api/models/questoes.models', () => ({
     criarQuestionario: jest.fn(),
     criarPergunta: jest.fn(),
     escopoQuestionario: jest.fn(),
+    escopoOpcao: jest.fn(),
+    criarOpcao: jest.fn(),
+    atualizarOpcao: jest.fn(),
+    removerOpcao: jest.fn(),
+    atualizarQuestionario: jest.fn(),
+    removerQuestionario: jest.fn(),
     escopoPergunta: jest.fn(),
     listarMetadadosTurma: jest.fn(),
     listarAluno: jest.fn(),
@@ -67,7 +78,7 @@ describe('rotas do Goal 3', () => {
         questoesModel.buscarTurma.mockResolvedValue({ id_turma: 10, id_professor: 2 });
         questoesModel.professorEhDaTurma.mockResolvedValue(true);
         questoesModel.matriculado.mockResolvedValue(true);
-        questoesModel.historico.mockResolvedValue([]);
+        questoesModel.historico.mockResolvedValue({ items: [], total: 0 });
     });
 
     it('lista módulos e conteúdos reais para aluno matriculado', async () => {
@@ -135,6 +146,26 @@ describe('rotas do Goal 3', () => {
         expect(questoesModel.listarMetadadosTurma).not.toHaveBeenCalled();
     });
 
+    it('rejeita alternativas com ordem repetida antes de iniciar a criação', async () => {
+        const response = await request(app)
+            .post('/api/questionarios/5/perguntas')
+            .set('x-role', 'PROFESSOR')
+            .set('x-user-id', '2')
+            .send({
+                texto_pergunta: 'Pergunta válida?',
+                ordem: 1,
+                pontos: 1,
+                opcoes: [
+                    { texto_opcao: 'Sim', ordem: 1, correta: true },
+                    { texto_opcao: 'Não', ordem: 1, correta: false }
+                ]
+            });
+
+        expect(response.status).toBe(400);
+        expect(response.body.erros[0].msg).toContain('ordens diferentes');
+        expect(questoesModel.criarPergunta).not.toHaveBeenCalled();
+    });
+
     it('propaga erro de payload do modelo sem criar sucesso parcial', async () => {
         const error = new Error('Cada pergunta aceita no máximo uma resposta.');
         error.status = 400;
@@ -142,7 +173,10 @@ describe('rotas do Goal 3', () => {
 
         const response = await request(app)
             .post('/api/questionarios/5/submissoes')
-            .send({ respostas: [{ id_pergunta: 1, id_opcao: 2 }] });
+            .send({
+                submission_id: '11111111-1111-4111-8111-111111111111',
+                respostas: [{ id_pergunta: 1, id_opcao: 2 }]
+            });
 
         expect(response.status).toBe(400);
         expect(response.body.mensagem).toContain('no máximo uma resposta');
@@ -152,6 +186,8 @@ describe('rotas do Goal 3', () => {
         const response = await request(app).get('/api/questionarios/historico');
 
         expect(response.status).toBe(200);
-        expect(response.body).toEqual({ tentativas: [] });
+        expect(response.body).toEqual({
+            items: [], tentativas: [], page: 1, limit: 50, total: 0
+        });
     });
 });

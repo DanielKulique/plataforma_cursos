@@ -19,7 +19,8 @@ const {
     clearDatabase,
     seedBasicData,
     closeTestPool,
-    getTestPassword
+    getTestPassword,
+    getSessionToken
 } = require('./setup');
 const { app } = require('../../../index');
 const applicationDb = require('../../config/database');
@@ -59,7 +60,7 @@ describe('integração Node do detector contextual', () => {
                 email,
                 senha: getTestPassword()
             });
-            tokens[role] = login.body.token;
+            tokens[role] = getSessionToken(login);
         }
     });
 

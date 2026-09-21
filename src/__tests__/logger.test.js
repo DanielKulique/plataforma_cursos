@@ -66,4 +66,11 @@ describe('logger com redaction', () => {
             requestId: 'req-9'
         });
     });
+
+    it('preserva UUIDs de correlação mesmo quando o último segmento contém só números', () => {
+        const requestId = '6ace4216-17c7-4154-a0eb-123456789012';
+
+        expect(logger.redact({ requestId })).toEqual({ requestId });
+        expect(logger.redact('telefone 11999999999')).toBe(`telefone ${logger.REDACTED}`);
+    });
 });

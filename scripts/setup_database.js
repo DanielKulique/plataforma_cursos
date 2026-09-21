@@ -11,93 +11,123 @@ const {
 } = require('./test_database_safety');
 const { listTables, assertCanonicalSchema } = require('./schema_contract');
 const { loadEnvironment } = require('../src/config/loadEnvironment');
-
-const mode = process.argv[2];
-if (!['dev', 'test'].includes(mode)) {
-    throw new Error('Uso: node scripts/setup_database.js <dev|test>');
-}
+const {
+    assertDatabaseConnectionEnvironment,
+    describeDatabaseTarget
+} = require('../src/config/database-connection');
+const {
+    assertDatabaseIdentity,
+    initializeDatabaseIdentity,
+    inspectDatabaseServer
+} = require('../src/config/database-identity');
 
 const root = path.join(__dirname, '..');
-const envFile = mode === 'test' ? '.env.test' : '.env';
-loadEnvironment(mode, root);
-
-const database = mode === 'test'
-    ? assertTestDatabaseIsDisposable(process.env)
-    : assertDevelopmentDatabase(process.env);
-const expectedDatabase = mode === 'test' ? TEST_DATABASE : DEVELOPMENT_DATABASE;
-if (database !== expectedDatabase) throw new Error('Banco-alvo inesperado.');
-
-const baseConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    multipleStatements: true
-};
 
 function quoteIdentifier(value) {
     return `\`${String(value).replaceAll('`', '``')}\``;
 }
 
-function printManualInstructions() {
-    const host = process.env.DB_HOST || 'localhost';
-    const port = Number(process.env.DB_PORT || 3306);
-    const user = process.env.DB_USER || '<usuario_mysql>';
-    console.error('Comandos manuais equivalentes (não alteram o banco legado):');
-    const databaseCommand = mode === 'test'
-        ? `DROP DATABASE IF EXISTS ${quoteIdentifier(database)}; CREATE DATABASE ${quoteIdentifier(database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
-        : `CREATE DATABASE IF NOT EXISTS ${quoteIdentifier(database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`;
-    console.error(`mysql -h ${host} -P ${port} -u ${user} -p -e "${databaseCommand}"`);
-    console.error(`mysql -h ${host} -P ${port} -u ${user} -p ${database} < mysql/schema.sql`);
+function configurationForMode(mode, env) {
+    if (!['dev', 'test'].includes(mode)) {
+        throw new Error('Uso: node scripts/setup_database.js <dev|test>');
+    }
+    const connection = assertDatabaseConnectionEnvironment(env);
+    const database = mode === 'test'
+        ? assertTestDatabaseIsDisposable(env)
+        : assertDevelopmentDatabase(env);
+    const expectedDatabase = mode === 'test' ? TEST_DATABASE : DEVELOPMENT_DATABASE;
+    if (database !== expectedDatabase || connection.database !== database) {
+        throw new Error('Banco-alvo inesperado.');
+    }
+    return connection;
 }
 
-async function setupDatabase() {
-    if (!baseConfig.user || baseConfig.password === undefined) {
-        throw new Error(`Configure DB_USER e DB_PASSWORD em ${envFile} antes de preparar o banco.`);
-    }
+async function databaseExists(serverConnection, database) {
+    const [[row]] = await serverConnection.query(
+        `SELECT COUNT(*) AS total
+         FROM INFORMATION_SCHEMA.SCHEMATA
+         WHERE SCHEMA_NAME = ?`,
+        [database]
+    );
+    return Number(row.total) === 1;
+}
 
-    const schema = fs.readFileSync(path.join(root, 'mysql', 'schema.sql'), 'utf8');
+async function setupDatabase({
+    mode,
+    env = process.env,
+    createConnection = mysql.createConnection,
+    schema = fs.readFileSync(path.join(root, 'mysql', 'schema.sql'), 'utf8'),
+    output = console
+} = {}) {
+    const target = configurationForMode(mode, env);
+    const baseConfig = {
+        host: target.host,
+        port: target.port,
+        user: target.user,
+        password: target.password,
+        multipleStatements: true
+    };
     let serverConnection;
     let databaseConnection;
 
     try {
-        serverConnection = await mysql.createConnection(baseConfig);
+        serverConnection = await createConnection(baseConfig);
+        await inspectDatabaseServer(serverConnection);
 
-        if (mode === 'test') {
-            await serverConnection.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(database)}`);
+        const exists = await databaseExists(serverConnection, target.database);
+        if (exists) {
+            databaseConnection = await createConnection({ ...baseConfig, database: target.database });
+            const tables = await listTables(databaseConnection, target.database);
+            if (tables.length > 0) await assertDatabaseIdentity(databaseConnection, target);
+
+            if (mode === 'dev' && tables.length > 0) {
+                await assertCanonicalSchema(databaseConnection, target.database, { allowMissingMigrationLedger: true });
+                output.log(`Banco ${target.database} já possui identidade e schema canônicos; nenhuma alteração foi aplicada.`);
+                return { changed: false, database: target.database };
+            }
+            await databaseConnection.end();
+            databaseConnection = undefined;
+        }
+
+        if (mode === 'test' && exists) {
+            await serverConnection.query(`DROP DATABASE ${quoteIdentifier(target.database)}`);
         }
         await serverConnection.query(
-            `CREATE DATABASE IF NOT EXISTS ${quoteIdentifier(database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+            `CREATE DATABASE IF NOT EXISTS ${quoteIdentifier(target.database)} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
         );
 
-        databaseConnection = await mysql.createConnection({ ...baseConfig, database });
-        const tables = await listTables(databaseConnection, database);
-
-        if (mode === 'dev' && tables.length > 0) {
-            await assertCanonicalSchema(databaseConnection, database);
-            console.log(`Banco ${database} já possui o schema canônico; nenhuma alteração foi aplicada.`);
-            return;
-        }
-
+        databaseConnection = await createConnection({ ...baseConfig, database: target.database });
+        const tables = await listTables(databaseConnection, target.database);
         if (tables.length > 0) {
-            throw new Error(`O banco ${database} deveria estar vazio antes da aplicação do schema.`);
+            throw new Error(`O banco ${target.database} deveria estar vazio antes da aplicação do schema.`);
         }
-
         await databaseConnection.query(schema);
-        const verified = await assertCanonicalSchema(databaseConnection, database);
-        console.log(`Schema canônico aplicado em ${database} (${verified.tables} tabelas verificadas).`);
-    } catch (error) {
-        if (['ER_DBACCESS_DENIED_ERROR', 'ER_ACCESS_DENIED_ERROR', 'ER_TABLEACCESS_DENIED_ERROR'].includes(error.code)) {
-            printManualInstructions();
-        }
-        throw error;
+        await initializeDatabaseIdentity(databaseConnection, target);
+        const verified = await assertCanonicalSchema(
+            databaseConnection,
+            target.database,
+            { allowMissingMigrationLedger: true }
+        );
+        output.log(`Schema canônico aplicado em ${target.database} (${verified.tablesChecked} tabelas verificadas).`);
+        return { changed: true, database: target.database };
     } finally {
         if (databaseConnection) await databaseConnection.end();
         if (serverConnection) await serverConnection.end();
     }
 }
 
-setupDatabase().catch((error) => {
-    console.error(`Falha ao preparar ${database}: ${error.message}`);
-    process.exitCode = 1;
-});
+async function main() {
+    const mode = process.argv[2];
+    loadEnvironment(mode, root);
+    console.log(JSON.stringify(describeDatabaseTarget(process.env), null, 2));
+    await setupDatabase({ mode });
+}
+
+if (require.main === module) {
+    main().catch((error) => {
+        console.error(`Falha ao preparar o banco: ${error.message}`);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = { configurationForMode, databaseExists, setupDatabase };

@@ -6,9 +6,12 @@ const formCadastro = document.getElementById('form-cadastro');
 const mensagemCadastro = document.getElementById('mensagem-cadastro');
 const blocoPosCadastro = document.getElementById('bloco-pos-cadastro');
 const linkConfirmarEmail = document.getElementById('link-confirmar-email');
+const textoPosCadastro = document.getElementById('texto-pos-cadastro');
+const botaoReenviarCodigo = document.getElementById('botao-reenviar-codigo');
 const submitButton = formCadastro?.querySelector('button[type="submit"]');
 let submitting = false;
 let completed = false;
+let emailCadastrado = '';
 
 /**
  * Exibe mensagens de feedback para o usuário.
@@ -204,7 +207,7 @@ async function solicitarCodigoVerificacao(email) {
 function obterDadosDoFormulario() {
     const nome_completo = formCadastro.nome_completo.value.trim();
     const cpf = limparCpf(formCadastro.cpf.value);
-    const email = formCadastro.email.value.trim();
+    const email = formCadastro.email.value.trim().toLowerCase();
     const senha = formCadastro.senha.value;
     const confirmar_senha = formCadastro.confirmar_senha.value;
 
@@ -250,18 +253,38 @@ async function onSubmitCadastro(event) {
             console.warn('Pré-checagem de disponibilidade indisponível. Seguindo com cadastro...', erroPreCheck);
         }
 
-        await cadastrarUsuario(dados);
-        await solicitarCodigoVerificacao(dados.email);
+        const cadastro = await cadastrarUsuario(dados);
 
         completed = true;
-        exibirMensagem('Cadastro realizado! Código enviado para seu e-mail.', 'success');
+        emailCadastrado = cadastro.email || dados.email;
+        const estadoVerificacao = cadastro?.verificacao?.estado;
+        const emailEnviado = cadastro?.verificacao?.email_enviado === true;
+
+        if (estadoVerificacao === 'VERIFICADO') {
+            exibirMensagem('Cadastro concluído. Sua conta já está pronta para entrar.', 'success');
+            if (blocoPosCadastro) blocoPosCadastro.hidden = true;
+            return;
+        }
+
+        exibirMensagem(
+            cadastro.mensagem || (emailEnviado
+                ? 'Cadastro realizado. Enviamos o código de verificação por e-mail.'
+                : 'Cadastro realizado, mas o envio não foi confirmado. Solicite um novo código.'),
+            emailEnviado ? 'success' : 'info'
+        );
 
         if (blocoPosCadastro) {
             blocoPosCadastro.hidden = false;
         }
 
+        if (textoPosCadastro) {
+            textoPosCadastro.textContent = emailEnviado
+                ? 'Sua conta está pendente. Digite o código recebido para confirmar o e-mail.'
+                : 'Sua conta está pendente e nenhum envio foi confirmado. Tente reenviar o código.';
+        }
+
         if (linkConfirmarEmail) {
-            const emailParam = encodeURIComponent(dados.email);
+            const emailParam = encodeURIComponent(emailCadastrado);
             linkConfirmarEmail.href = `/verificar-email.html?email=${emailParam}`;
         }
     } catch (error) {
@@ -275,6 +298,28 @@ async function onSubmitCadastro(event) {
     }
 }
 
+async function onReenviarCodigo() {
+    if (!botaoReenviarCodigo || !emailCadastrado || botaoReenviarCodigo.disabled) return;
+
+    botaoReenviarCodigo.disabled = true;
+    botaoReenviarCodigo.textContent = 'Solicitando...';
+    try {
+        const resposta = await solicitarCodigoVerificacao(emailCadastrado);
+        exibirMensagem(
+            resposta.mensagem || 'Se sua conta estiver pendente, enviaremos um novo código.',
+            'info'
+        );
+        if (textoPosCadastro) {
+            textoPosCadastro.textContent = 'Confira também a caixa de spam. Você pode solicitar outro código após alguns minutos.';
+        }
+    } catch (error) {
+        exibirMensagem(error.message || 'Não foi possível solicitar outro código agora.', 'error');
+    } finally {
+        botaoReenviarCodigo.disabled = false;
+        botaoReenviarCodigo.textContent = 'Reenviar código';
+    }
+}
+
 function inicializarCadastro() {
     if (!formCadastro) return;
 
@@ -284,6 +329,7 @@ function inicializarCadastro() {
     });
 
     formCadastro.addEventListener('submit', onSubmitCadastro);
+    botaoReenviarCodigo?.addEventListener('click', onReenviarCodigo);
 }
 
 inicializarCadastro();

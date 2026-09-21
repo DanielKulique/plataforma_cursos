@@ -5,19 +5,23 @@ const mysql = require('mysql2/promise');
 const { loadEnvironment } = require('../src/config/loadEnvironment');
 const { assertDevelopmentDatabase } = require('./test_database_safety');
 const { assertCanonicalSchema } = require('./schema_contract');
+const { assertDatabaseConnectionEnvironment, describeDatabaseTarget } = require('../src/config/database-connection');
+const { assertDatabaseIdentity } = require('../src/config/database-identity');
 
 loadEnvironment('development', path.join(__dirname, '..'));
 const database = assertDevelopmentDatabase(process.env);
+const target = assertDatabaseConnectionEnvironment(process.env);
 
 async function migrate() {
     const connection = await mysql.createConnection({
-        host: process.env.DB_HOST || 'localhost',
-        port: Number(process.env.DB_PORT || 3306),
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
+        host: target.host,
+        port: target.port,
+        user: target.user,
+        password: target.password,
         database
     });
     try {
+        await assertDatabaseIdentity(connection, target);
         await connection.query(`
             CREATE TABLE IF NOT EXISTS AnalisesContextuais (
               id INT NOT NULL AUTO_INCREMENT,
@@ -44,6 +48,7 @@ async function migrate() {
     }
 }
 
+console.log(JSON.stringify(describeDatabaseTarget(process.env), null, 2));
 migrate().catch((error) => {
     console.error(`Falha na migração contextual: ${error.message}`);
     process.exitCode = 1;

@@ -16,8 +16,10 @@
 const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { loadEnvironment } = require('../src/config/loadEnvironment');
+loadEnvironment('development', path.join(__dirname, '..'));
 const { assertDevelopmentDatabase } = require('./test_database_safety');
+const { openVerifiedConnection } = require('./lib/database-operations');
 assertDevelopmentDatabase(process.env);
 const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
 if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
@@ -41,11 +43,9 @@ function log(cor, mensagem) {
 async function limparUsuariosTeste() {
     log(cores.amarelo, '\n=== LIMPANDO USUÁRIOS DE TESTE ===');
 
-    const conn = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+    const conn = await openVerifiedConnection({
+        createConnection: mysql.createConnection,
+        additions: { database: process.env.DB_NAME }
     });
 
     try {
@@ -108,11 +108,9 @@ async function criarUsuariosTeste() {
     log(cores.cyan, '    ✓ 1 número');
     log(cores.cyan, '    ✓ 1 símbolo especial (@)\n');
 
-    const conn = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+    const conn = await openVerifiedConnection({
+        createConnection: mysql.createConnection,
+        additions: { database: process.env.DB_NAME }
     });
 
     try {

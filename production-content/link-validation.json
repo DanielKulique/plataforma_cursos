@@ -1,0 +1,277 @@
+{
+  "checkedAt": "2026-09-19T21:44:46.319205+00:00",
+  "results": [
+    {
+      "url": "https://www.youtube.com/watch?v=JeaZc8_hqAk",
+      "type": "VIDEO",
+      "httpStatus": 200,
+      "finalUrl": "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DJeaZc8_hqAk&format=json",
+      "status": "HTTP_OK",
+      "author_name": "Plágio: Não Copie Essa Ideia",
+      "author_url": "https://www.youtube.com/@plagioutfpr",
+      "height": 113,
+      "width": 200,
+      "version": "1.0",
+      "provider_name": "YouTube",
+      "provider_url": "https://www.youtube.com/",
+      "thumbnail_height": 360,
+      "thumbnail_width": 480,
+      "thumbnail_url": "https://i.ytimg.com/vi/JeaZc8_hqAk/hqdefault.jpg",
+      "providerTitle": "Aula 01 - Introdução ao Curso",
+      "title": "Estudo de Caso"
+    },
+    {
+      "title": "Plágio: não copie essa ideia",
+      "url": "https://repositorio.utfpr.edu.br/jspui/handle/1/2902",
+      "type": "LINK",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "Cartilha Antiplágio",
+      "url": "https://drive.google.com/file/d/17vnYTANCUxYnkYfO3Q0bNgVPHlgVk9Ec/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=-U6o1uTg0Hk",
+      "type": "VIDEO",
+      "httpStatus": 200,
+      "finalUrl": "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D-U6o1uTg0Hk&format=json",
+      "status": "HTTP_OK",
+      "author_name": "Plágio: Não Copie Essa Ideia",
+      "author_url": "https://www.youtube.com/@plagioutfpr",
+      "height": 113,
+      "width": 200,
+      "version": "1.0",
+      "provider_name": "YouTube",
+      "provider_url": "https://www.youtube.com/",
+      "thumbnail_height": 360,
+      "thumbnail_width": 480,
+      "thumbnail_url": "https://i.ytimg.com/vi/-U6o1uTg0Hk/hqdefault.jpg",
+      "providerTitle": "Aula 02 - Estudo de Caso",
+      "title": "Introdução ao Curso"
+    },
+    {
+      "title": "Como verificar se há plágio no texto?",
+      "url": "https://drive.google.com/file/d/1abkbsyhpeivK-NJDT24-yvJXQIESBN6q/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=TRq7-e8SEJ0",
+      "type": "VIDEO",
+      "httpStatus": 200,
+      "finalUrl": "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DTRq7-e8SEJ0&format=json",
+      "status": "HTTP_OK",
+      "author_name": "Plágio: Não Copie Essa Ideia",
+      "author_url": "https://www.youtube.com/@plagioutfpr",
+      "height": 113,
+      "width": 200,
+      "version": "1.0",
+      "provider_name": "YouTube",
+      "provider_url": "https://www.youtube.com/",
+      "thumbnail_height": 360,
+      "thumbnail_width": 480,
+      "thumbnail_url": "https://i.ytimg.com/vi/TRq7-e8SEJ0/hqdefault.jpg",
+      "providerTitle": "Aula 03 - O que é Plágio?",
+      "title": "O que é plágio?"
+    },
+    {
+      "title": "Como reconhecer o plágio?",
+      "url": "https://drive.google.com/file/d/1oLFg7Jyuexgb_VIusivL2iFTAIshPYvH/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "Recomendações OAB — Combate ao plágio",
+      "url": "https://drive.google.com/file/d/1rutTJPcyPzXXBPgZnMPE4YMzzF39gvV7/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=_u9bxkHcwU8",
+      "type": "VIDEO",
+      "httpStatus": 200,
+      "finalUrl": "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D_u9bxkHcwU8&format=json",
+      "status": "HTTP_OK",
+      "author_name": "Plágio: Não Copie Essa Ideia",
+      "author_url": "https://www.youtube.com/@plagioutfpr",
+      "height": 113,
+      "width": 200,
+      "version": "1.0",
+      "provider_name": "YouTube",
+      "provider_url": "https://www.youtube.com/",
+      "thumbnail_height": 360,
+      "thumbnail_width": 480,
+      "thumbnail_url": "https://i.ytimg.com/vi/_u9bxkHcwU8/hqdefault.jpg",
+      "providerTitle": "Aula 04 - Outras Desonestidades",
+      "title": "Outras Desonestidades"
+    },
+    {
+      "title": "Rigor e Integridade na Condução da Pesquisa Científica",
+      "url": "https://drive.google.com/file/d/1WdD7g4CvvIqMQ1Strg5jlxCGqfEsQWN7/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=uWDl6rR5LEw",
+      "type": "VIDEO",
+      "httpStatus": 200,
+      "finalUrl": "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DuWDl6rR5LEw&format=json",
+      "status": "HTTP_OK",
+      "author_name": "Plágio: Não Copie Essa Ideia",
+      "author_url": "https://www.youtube.com/@plagioutfpr",
+      "height": 113,
+      "width": 200,
+      "version": "1.0",
+      "provider_name": "YouTube",
+      "provider_url": "https://www.youtube.com/",
+      "thumbnail_height": 360,
+      "thumbnail_width": 480,
+      "thumbnail_url": "https://i.ytimg.com/vi/uWDl6rR5LEw/hqdefault.jpg",
+      "providerTitle": "Aula 05 - Fichamento de Pesquisa",
+      "title": "Fichamento de pesquisa"
+    },
+    {
+      "title": "Google Acadêmico",
+      "url": "https://scholar.google.com.br/?hl=pt",
+      "type": "LINK",
+      "httpStatus": 200,
+      "finalUrl": "https://scholar.google.com.br/?hl=pt",
+      "status": "HTTP_OK"
+    },
+    {
+      "title": "Check-list para pesquisadores",
+      "url": "https://drive.google.com/file/d/10owrij1ckyzqCKwt9IGdQGtcAM2Dp4FP/view",
+      "type": "XLSX",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "Modelo de Fichamento de Trabalhos",
+      "url": "https://drive.google.com/file/d/13MhbteIyV96Dfr3tmHHdOYLOEaIEm9Vd/view",
+      "type": "XLSX",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "UKRIO — Recommended Checklist for Researchers",
+      "url": "https://drive.google.com/file/d/1MIaRbl3Md9-ngDlCNT63M3W0zKA7YHQA/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=cEisacCvVvI",
+      "type": "VIDEO",
+      "httpStatus": 200,
+      "finalUrl": "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DcEisacCvVvI&format=json",
+      "status": "HTTP_OK",
+      "author_name": "Plágio: Não Copie Essa Ideia",
+      "author_url": "https://www.youtube.com/@plagioutfpr",
+      "height": 113,
+      "width": 200,
+      "version": "1.0",
+      "provider_name": "YouTube",
+      "provider_url": "https://www.youtube.com/",
+      "thumbnail_height": 360,
+      "thumbnail_width": 480,
+      "thumbnail_url": "https://i.ytimg.com/vi/cEisacCvVvI/hqdefault.jpg",
+      "providerTitle": "Aula 06 - Uso Ético de Ferramentas de Inteligência Artificial (IA)",
+      "title": "Uso Ético de Ferramentas de Inteligência Artificial (IA)"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=_80ZNlYxEc4",
+      "type": "VIDEO",
+      "httpStatus": 200,
+      "finalUrl": "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D_80ZNlYxEc4&format=json",
+      "status": "HTTP_OK",
+      "author_name": "Plágio: Não Copie Essa Ideia",
+      "author_url": "https://www.youtube.com/@plagioutfpr",
+      "height": 113,
+      "width": 200,
+      "version": "1.0",
+      "provider_name": "YouTube",
+      "provider_url": "https://www.youtube.com/",
+      "thumbnail_height": 360,
+      "thumbnail_width": 480,
+      "thumbnail_url": "https://i.ytimg.com/vi/_80ZNlYxEc4/hqdefault.jpg",
+      "providerTitle": "Aula 07 - Detectando Plágio em Documentos",
+      "title": "Detectando Plágio em Documentos"
+    },
+    {
+      "title": "Plagiarism Detector",
+      "url": "https://plagiarismdetector.net/",
+      "type": "LINK",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "DupliChecker",
+      "url": "https://www.duplichecker.com/pt",
+      "type": "LINK",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=G-_NX8ieKt8",
+      "type": "VIDEO",
+      "httpStatus": 200,
+      "finalUrl": "https://www.youtube.com/oembed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DG-_NX8ieKt8&format=json",
+      "status": "HTTP_OK",
+      "author_name": "Plágio: Não Copie Essa Ideia",
+      "author_url": "https://www.youtube.com/@plagioutfpr",
+      "height": 113,
+      "width": 200,
+      "version": "1.0",
+      "provider_name": "YouTube",
+      "provider_url": "https://www.youtube.com/",
+      "thumbnail_height": 360,
+      "thumbnail_width": 480,
+      "thumbnail_url": "https://i.ytimg.com/vi/G-_NX8ieKt8/hqdefault.jpg",
+      "providerTitle": "Aula 08 - Códigos de Conduta e Casos Reais",
+      "title": "Códigos de Conduta e Casos Reais"
+    },
+    {
+      "title": "Declaração de Singapura sobre Integridade em Pesquisa",
+      "url": "https://drive.google.com/file/d/1VlvNpX7Gp-s6AAzoBV4ALo6C4mkqqVHN/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "Relatório da Comissão de Integridade de Pesquisa do CNPq",
+      "url": "https://drive.google.com/file/d/19OPeWiMWAsWUifvDrx3oksJ05vtWPTdU/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "Declaração Conjunta sobre Integridade em Pesquisa — II BRISPE",
+      "url": "https://drive.google.com/file/d/1iyKoVEViHixBLoV-2Uy_qnjEA9a5Rxhx/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "FAPESP — Código de Boas Práticas Científicas",
+      "url": "https://drive.google.com/file/d/1iW7sls32SsarTPf70nHWToThJCoj9lGJ/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    },
+    {
+      "title": "ORI — Introduction to the Responsible Conduct of Research",
+      "url": "https://drive.google.com/file/d/1nR8gzGGmMPIIJCRyW0cHtkmKl3-AdlYz/view",
+      "type": "PDF",
+      "status": "UNVERIFIED",
+      "error": "HTTPError"
+    }
+  ]
+}

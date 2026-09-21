@@ -1,6 +1,7 @@
 const cursosModel = require('../models/cursos.models');
 const { validationResult } = require('express-validator');
 const logger = require('../../utils/logger');
+const { sendHttpError } = require('../../utils/http-response');
 
 function responderValidacao(req, res) {
     const errors = validationResult(req);
@@ -10,10 +11,7 @@ function responderValidacao(req, res) {
 }
 
 function responderErro(res, error, mensagemPadrao) {
-    if (error?.status) {
-        return res.status(error.status).json({ message: error.message, code: error.code });
-    }
-    return res.status(500).json({ message: mensagemPadrao });
+    return sendHttpError(res, error, { internalMessage: mensagemPadrao, legacyKey: 'message' });
 }
 
 async function listarTodos(req, res) {

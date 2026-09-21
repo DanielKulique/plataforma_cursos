@@ -179,7 +179,10 @@ function createDetectorContextService({ fetchImpl = global.fetch, env = process.
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Request-ID': String(requestId || '')
+                        'X-Request-ID': String(requestId || ''),
+                        ...(env.MOTOR_IA_INTERNAL_API_TOKEN
+                            ? { 'X-Internal-Service-Token': String(env.MOTOR_IA_INTERNAL_API_TOKEN) }
+                            : {})
                     },
                     body: JSON.stringify(payload),
                     signal: requestSignal

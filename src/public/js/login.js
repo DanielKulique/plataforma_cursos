@@ -1,4 +1,4 @@
-import { login, setToken, getCurrentUser, getRedirectByRole } from './auth.js';
+import { login, getCurrentUser, getRedirectByRole } from './auth.js';
 
 const form = document.getElementById('form-login');
 const mensagem = document.getElementById('mensagem-login');
@@ -42,6 +42,11 @@ function mostrarMensagemPorMotivo() {
 
     if (motivo === 'nao_autorizado') {
         exibirMensagem('Você não tem permissão para acessar esta área.', 'error');
+        return;
+    }
+
+    if (motivo === 'senha_alterada') {
+        exibirMensagem('Senha alterada. Entre novamente para continuar.', 'success');
     }
 }
 
@@ -72,7 +77,6 @@ if (form) {
 
         try {
             const payload = await login(email, senha);
-            setToken(payload.token);
             exibirMensagem('Login realizado com sucesso! Redirecionando...', 'success');
 
             const tipo = payload?.usuario?.tipo;

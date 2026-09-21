@@ -27,7 +27,8 @@ function redactString(value) {
         .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED]')
         .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, REDACTED)
         .replace(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g, REDACTED)
-        .replace(/\+?\b\d{10,15}\b/g, REDACTED)
+        // Do not mistake an all-numeric UUID segment for a telephone number.
+        .replace(/(?<![A-Fa-f0-9-])\+?\d{10,15}(?![A-Fa-f0-9-])/g, REDACTED)
         .replace(/((?:c[oó]digo|senha|password|secret)\s*[:=]\s*)\S+/gi, `$1${REDACTED}`)
         .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, REDACTED);
 }

@@ -6,11 +6,14 @@ const bcrypt = require('bcrypt');
 const { assertDevelopmentDatabase } = require('./test_database_safety');
 const { assertCanonicalSchema } = require('./schema_contract');
 const { loadEnvironment } = require('../src/config/loadEnvironment');
+const { assertDatabaseConnectionEnvironment, describeDatabaseTarget } = require('../src/config/database-connection');
+const { assertDatabaseIdentity } = require('../src/config/database-identity');
 
 const root = path.join(__dirname, '..');
 loadEnvironment('dev', root);
 
 const database = assertDevelopmentDatabase(process.env);
+const target = assertDatabaseConnectionEnvironment(process.env);
 const demoPassword = process.env.MANUAL_DEMO_PASSWORD || process.env.CANONICAL_SEED_PASSWORD;
 
 if (!demoPassword || String(demoPassword).length < 8) {
@@ -20,10 +23,10 @@ if (!demoPassword || String(demoPassword).length < 8) {
 }
 
 const config = {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    host: target.host,
+    port: target.port,
+    user: target.user,
+    password: target.password,
     database
 };
 
@@ -211,6 +214,7 @@ async function seedManualDemo() {
 
     const connection = await mysql.createConnection(config);
     try {
+        await assertDatabaseIdentity(connection, target);
         await assertCanonicalSchema(connection, database);
         const passwordHash = await bcrypt.hash(demoPassword, 10);
         await connection.beginTransaction();
@@ -520,6 +524,7 @@ async function seedManualDemo() {
     }
 }
 
+console.log(JSON.stringify(describeDatabaseTarget(process.env), null, 2));
 seedManualDemo().catch((error) => {
     console.error(`Falha no seed manual de ${database}: ${error.message}`);
     process.exitCode = 1;

@@ -3,7 +3,8 @@
  */
 
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { loadEnvironment } = require('../src/config/loadEnvironment');
+loadEnvironment('development', path.join(__dirname, '..'));
 const { assertDevelopmentDatabase } = require('./test_database_safety');
 assertDevelopmentDatabase(process.env);
 const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
@@ -11,7 +12,7 @@ if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
     throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
 }
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = `http://localhost:${process.env.APP_PORT || 3000}/api`;
 
 async function fazerRequisicao(url, options = {}) {
     try {

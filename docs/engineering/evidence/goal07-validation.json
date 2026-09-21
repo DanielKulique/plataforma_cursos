@@ -1,0 +1,154 @@
+{
+  "date": "2026-09-11",
+  "status": "STORAGE_DATABASE_INTEGRITY_READY",
+  "source_bundle_sha256": "2dae3a9f0c76af88a02f65ad8cb799232129b7d45cee124f1c1102f32ace19c4",
+  "runtime": {
+    "checked": 188,
+    "mismatches": []
+  },
+  "first_dry_run": {
+    "materials": {
+      "RETAINED": 1,
+      "OK": 3
+    },
+    "certificates": {
+      "CERTIFICATE_HISTORICAL": 2,
+      "OK": 2
+    }
+  },
+  "final_dry_run": {
+    "materials": {
+      "RETAINED": 4,
+      "OK": 3
+    },
+    "certificates": {
+      "CERTIFICATE_HISTORICAL": 2,
+      "OK": 2
+    }
+  },
+  "staging_apply": {
+    "targets": 1,
+    "removed": 1,
+    "fixture_only": true,
+    "grace_hours_explicit_override": 0,
+    "retention_days": 90,
+    "certificate_pdfs_removed": 0
+  },
+  "fixture_cleanup": {
+    "academic_turma_removed": true,
+    "material_versions_retained": 2,
+    "missing_fixture_restored": true
+  },
+  "certificates": {
+    "active": 2,
+    "historical": 2,
+    "all_hashes_preserved": true,
+    "public_upload_and_history_download_verified": true
+  },
+  "migration": {
+    "name": "011_storage_lifecycle.sql",
+    "reapplied_in_test": true,
+    "staging_applied": true,
+    "schema_tables": 19
+  },
+  "gates": {
+    "date": "2026-09-11",
+    "command": "npm test",
+    "success": true,
+    "suites": 58,
+    "passed_suites": 58,
+    "tests": 595,
+    "passed": 595,
+    "failed": 0,
+    "pending": 0,
+    "coverage_percent": {
+      "statements": 61.85,
+      "branches": 55.56,
+      "functions": 63.2,
+      "lines": 65.11
+    },
+    "integration": {
+      "command": "npm run test:integration -- --setupFiles ./.deployments/storage-integrity/test-env.js",
+      "full_run": {
+        "suites": 16,
+        "passed_suites": 16,
+        "tests": 248,
+        "passed": 248,
+        "failed": 0
+      },
+      "additional_acceptance": {
+        "suites": 3,
+        "selected_tests": 4,
+        "passed": 4,
+        "failed": 0,
+        "unselected": 50
+      },
+      "final_combined_cases": 252,
+      "goal06_concurrency_cases": 38
+    },
+    "lint": {
+      "full_run": "4 no-undef errors exclusively in local disposable-DB helper .cjs; no application errors",
+      "correction": "Renamed helper to .js; scoped ESLint passed; staging smoke and added acceptance tests linted separately"
+    },
+    "build": "passed",
+    "audit": {
+      "all": 0,
+      "production": 0
+    },
+    "diff_check": "passed",
+    "staging": "STORAGE_SMOKE_OK; recreated app; materials and all four certificates persisted; exactly one named fixture orphan removed",
+    "previous_baseline": {
+      "date": "2026-09-11",
+      "unit_tests": 582,
+      "integration_cases": 232
+    }
+  },
+  "logs": {
+    ".deployments/storage-integrity/acceptance-extra.log": "8a754e44b0c9f5b162a545b653a6cab00ff69a070790db91dc8620c594c6532e",
+    ".deployments/storage-integrity/acceptance-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/audit-production.log": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+    ".deployments/storage-integrity/audit.log": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+    ".deployments/storage-integrity/build.log": "10f5d68f1b71c0a92acf2908cc155381df4eb6193302a2d899020eb697efd3b5",
+    ".deployments/storage-integrity/bundle.log": "65559ce73bff3237884aaa8205e14798c263a752190172fb7854689606c65d4b",
+    ".deployments/storage-integrity/cert-preparation.log": "3408d45b45895a7c8f865112f214242bc27df9d0797445fb1e16b62727c7b65a",
+    ".deployments/storage-integrity/deploy.log": "c0c3c433eda7da30776f843f7baaeb9de3b2288791911c9ca9a2cf5d884f6959",
+    ".deployments/storage-integrity/diff-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/docs-sync.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/download-faults.log": "c31cb1b2504339342053a148e412ed33d3696e05a1db785190f51eab2317674f",
+    ".deployments/storage-integrity/fault-unit.log": "3d48c033d279bb3f57825f5f55329decaa48bfea88c8e53d13e8dc518d9a036d",
+    ".deployments/storage-integrity/final-diff-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/final-targeted.log": "e117edd1025fcd89c46a797b152a4fa93570e2552a10c1f727b7ea4509cfcee5",
+    ".deployments/storage-integrity/integration-full.log": "63c92ca648ee5c3e172aa243479e5f772305995af3d35ca288e00214dc821886",
+    ".deployments/storage-integrity/integrity.log": "030f59f66d1081e2e386ed476f1bd38009f0e308f55e43300a0c331620496478",
+    ".deployments/storage-integrity/lint-correction.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/lint.log": "951bd1c8cd6e97230d310887e5fb13354e09d01c8325bee564b3fdc95d0d7f32",
+    ".deployments/storage-integrity/scp.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/shared-turma-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/shared-turma.log": "e979bfcc5c3fc0b68381dee42a7a872004961ad8c6bcadfd481172c2c94a83bd",
+    ".deployments/storage-integrity/smoke-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/staging-apply.log": "8b8e7a5ddf832bfc8bdbc03179ef636d64217753252974621d606557f20a381c",
+    ".deployments/storage-integrity/staging-certificates.log": "0ae2a866af8b63710670c0c3acf431cf6bfde203fb60e0dc5293d93df61ef781",
+    ".deployments/storage-integrity/staging-cleanup.log": "c29c6f0b7250ca1ddc120188ec93367d26b2e7e2dff2245e7ec8f9607a6a06b8",
+    ".deployments/storage-integrity/staging-docs-validation.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/staging-final-dry-run.log": "d1e3113c5996de42cb3226523f9f62da07ffbb4a8667728e1c2582d66b6c9533",
+    ".deployments/storage-integrity/staging-first-dry-run.log": "9068d56fb49cde06aa9667815be7190a750a913ca3ec83c2a65a7c794ed6e51f",
+    ".deployments/storage-integrity/staging-mounts.log": "c334d45864e1eccdb6b15cf1c6d319cd00b97b0e3b2244b00657b74b580be824",
+    ".deployments/storage-integrity/staging-prepare.log": "9194d8be1cf356ddf9e1a0b224c78792d02af391d7a69819e16327dc25d5f5f0",
+    ".deployments/storage-integrity/staging-recreate.log": "59ca509d9201fc884faf8afed91dc5ad3ebecc9441edded6a38b2b448cd33d01",
+    ".deployments/storage-integrity/targeted-integration.log": "ade6615a1c773e83c09f9972682ee39bfa0d6cb8402447caa091c928d199b926",
+    ".deployments/storage-integrity/targeted-unit.log": "7f1ebd95a63d17b2307b5388124e940206aaf24b970b0af4b0d92d9f3dcca083",
+    ".deployments/storage-integrity/test-source-sync.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".deployments/storage-integrity/unit-full.log": "ca5e446b7a5087e5844e15956ecb800fca649f404c0a62f411896ca4806f17df",
+    ".deployments/storage-integrity/upload.log": "28576e952d22a5fd1207f640a58f535a61b468439662290f5767424b92d3f655"
+  },
+  "goal08_remaining": [
+    "Trusted restore of MISSING/HASH_MISMATCH",
+    "Offsite and backup schedule/retention",
+    "Coordinated restore drill and RPO/RTO"
+  ],
+  "shared_turma_final_check": {
+    "test": "shared material remains active while another turma still references it",
+    "passed": 1,
+    "different_turmas": true
+  }
+}

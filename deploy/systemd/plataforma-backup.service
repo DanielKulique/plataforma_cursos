@@ -1,0 +1,21 @@
+[Unit]
+Description=Backup local validado e offsite da Plataforma de Cursos
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=azureuser
+Group=docker
+WorkingDirectory=/opt/plataforma-cursos
+EnvironmentFile=/etc/plataforma-cursos/backup.env
+Environment=BACKUP_REQUIRE_OFFSITE=true
+UMask=0077
+ExecStart=/opt/plataforma-cursos/scripts/backup_database.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+TimeoutStartSec=4h
+
+[Install]
+WantedBy=multi-user.target

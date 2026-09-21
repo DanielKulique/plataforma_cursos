@@ -3,7 +3,7 @@
  * @description Gerencia requisições, autenticação, retry e tratamento de erros
  */
 
-import { getToken, clearToken } from './auth.js';
+import { authenticatedFetch, clearToken } from './auth.js';
 import { cacheManager } from './cache.js';
 
 // ============================================================
@@ -103,6 +103,7 @@ function getRetryDelay(attempt) {
  */
 function extractErrorMessage(payload) {
     return (
+        payload?.error ||
         payload?.mensagem ||
         payload?.message ||
         payload?.errors?.[0]?.msg ||
@@ -116,10 +117,20 @@ function getMethod(options) {
 
 function createHttpError(status, payload) {
     const fallback = STATUS_MESSAGES[status] || 'Erro na requisição';
-    const message = status === 401 || status === 403
-        ? fallback
-        : extractErrorMessage(payload) || fallback;
+    const message = status >= 500 ? fallback : extractErrorMessage(payload) || fallback;
     return new APIError(message === 'Erro na requisição' ? fallback : message, status, payload);
+}
+
+async function parseResponsePayload(response) {
+    if (response.status === 204 || response.status === 205) return null;
+    try {
+        return await response.json();
+    } catch {
+        if (response.ok) {
+            throw new APIError('O servidor retornou uma resposta inválida.', 502);
+        }
+        return {};
+    }
 }
 
 function isTransientFailure(error) {
@@ -165,15 +176,10 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
     }
 
     // Preparar headers
-    const token = getToken();
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers
     };
-
-    if (token) {
-        headers.Authorization = `Bearer ${token}`;
-    }
 
     let lastError;
 
@@ -190,7 +196,7 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
         }
 
         try {
-            const response = await fetch(url, {
+            const response = await authenticatedFetch(url, {
                 ...options,
                 method,
                 headers,
@@ -198,17 +204,12 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
             });
 
             if (!response.ok) {
-                const payload = await response.json().catch(() => ({}));
+                const payload = await parseResponsePayload(response);
                 if (response.status === 401) clearToken();
                 throw createHttpError(response.status, payload);
             }
 
-            // Resposta vazia (204 No Content)
-            if (response.status === 204) {
-                return null;
-            }
-
-            const data = await response.json();
+            const data = await parseResponsePayload(response);
 
             // Armazenar em cache se configurado
             if (useCache && method === 'GET') {
@@ -225,7 +226,7 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
                 lastError = error;
             } else {
                 lastError = new APIError(
-                    error?.message || 'Falha na conexão. Verifique sua internet.',
+                    'Não foi possível conectar ao servidor.',
                     0
                 );
             }
@@ -251,7 +252,7 @@ export async function apiRequest(endpoint, options = {}, config = {}) {
         throw lastError;
     }
 
-    throw new APIError(lastError?.message || 'Falha na conexão. Verifique sua internet.', 0);
+    throw new APIError('Não foi possível conectar ao servidor.', 0);
 }
 
 // ============================================================
@@ -385,8 +386,9 @@ export function getCursos() {
  * Busca lista de turmas (com cache)
  * @returns {Promise<Array>}
  */
-export function getTurmas() {
-    return get('/turmas', { useCache: true, cacheDuration: 2 * 60 * 1000 });
+export async function getTurmas() {
+    const result = await get('/turmas?limit=100', { useCache: true, cacheDuration: 2 * 60 * 1000 });
+    return result.items;
 }
 
 /**
@@ -402,8 +404,12 @@ export function getTurmasProfessor(idProfessor) {
  * Busca sala virtual do aluno
  * @returns {Promise<Object>}
  */
-export function getMinhaSala() {
-    return get('/matriculas/minha-sala');
+export function getMinhaSala(config = {}) {
+    return get('/matriculas/minha-sala', config);
+}
+
+export function getMeusCertificados(config = {}) {
+    return get('/certificados/meus', config);
 }
 
 /**

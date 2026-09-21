@@ -12,7 +12,13 @@ const {
     checkMatriculaCancelPermission
 } = require('../../middlewares/checkProfessorPermission.middleware');
 
-const STATUS_APROVACAO = ['CURSANDO', 'APROVADO', 'REPROVADO', 'CANCELADO'];
+const STATUS_APROVACAO = ['CURSANDO', 'APROVADO', 'REPROVADO'];
+const apenasCamposAcademicos = body().custom((payload) => {
+    const permitidos = ['nota_final', 'status_aprovacao'];
+    const desconhecidos = Object.keys(payload || {}).filter((campo) => !permitidos.includes(campo));
+    if (desconhecidos.length) throw new Error(`Campos não permitidos: ${desconhecidos.join(', ')}.`);
+    return true;
+});
 
 // POST /api/matriculas - cria matrícula do aluno logado
 router.post(
@@ -64,9 +70,9 @@ router.patch(
     checkAuth,
     checkProfessorMatriculaPermission,
     param('id').isInt().withMessage('O ID deve ser um número inteiro.'),
-    body('nota_final').optional().isFloat({ min: 0, max: 10 }).withMessage('A nota final deve estar entre 0 e 10.').toFloat(),
+    apenasCamposAcademicos,
+    body('nota_final').optional({ nullable: true }).isFloat({ min: 0, max: 10 }).withMessage('A nota final deve estar entre 0 e 10.').toFloat(),
     body('status_aprovacao').optional().isIn(STATUS_APROVACAO).withMessage('Status inválido.'),
-    body('progresso_percentual').optional().isInt({ min: 0, max: 100 }).withMessage('O progresso deve estar entre 0 e 100.'),
     matriculaController.atualizarMatricula
 );
 

@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword } = require('./setup');
+const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword, getSessionToken } = require('./setup');
 const { app } = require('../../../index');
 const applicationDb = require('../../config/database');
 
@@ -53,9 +53,9 @@ describe('Goal 4 - CRUD administrativo e regras de integridade', () => {
         pool = await initTestPool();
         await clearDatabase();
         users = await seedBasicData();
-        adminToken = (await login('admin@teste.com')).body.token;
-        professorToken = (await login('professor@teste.com')).body.token;
-        alunoToken = (await login('aluno@teste.com')).body.token;
+        adminToken = getSessionToken(await login('admin@teste.com'));
+        professorToken = getSessionToken(await login('professor@teste.com'));
+        alunoToken = getSessionToken(await login('aluno@teste.com'));
     });
 
     beforeEach(async () => {
@@ -77,8 +77,8 @@ describe('Goal 4 - CRUD administrativo e regras de integridade', () => {
             .get('/api/admin/usuarios')
             .set('Authorization', `Bearer ${adminToken}`);
         expect(response.status).toBe(200);
-        expect(response.body).toHaveLength(3);
-        expect(response.body.every((usuario) => !('senha' in usuario) && !('password' in usuario))).toBe(true);
+        expect(response.body.items).toHaveLength(3);
+        expect(response.body.items.every((usuario) => !('senha' in usuario) && !('password' in usuario))).toBe(true);
         expect(JSON.stringify(response.body)).not.toMatch(/\$2[aby]\$/);
     });
 
@@ -107,7 +107,7 @@ describe('Goal 4 - CRUD administrativo e regras de integridade', () => {
         const lista = await request(server)
             .get('/api/admin/usuarios')
             .set('Authorization', `Bearer ${adminToken}`);
-        expect(lista.body.find((item) => item.id_usuario === usuario.body.id_usuario).nome_completo).toBe(payload);
+        expect(lista.body.items.find((item) => item.id_usuario === usuario.body.id_usuario).nome_completo).toBe(payload);
         expect(JSON.stringify(lista.body)).not.toMatch(/"senha"|\$2[aby]\$/i);
     });
 
@@ -277,6 +277,9 @@ describe('Goal 4 - CRUD administrativo e regras de integridade', () => {
         const [rows] = await pool.query('SELECT senha FROM Usuarios WHERE id_usuario = ?', [users.admin.id_usuario]);
         expect(rows[0].senha).not.toBe('NovaSenha@456');
         expect(rows[0].senha).toMatch(/^\$2[aby]\$/);
+        expect((await request(server)
+            .get('/api/auth/me')
+            .set('Authorization', `Bearer ${adminToken}`)).status).toBe(401);
         expect((await login('admin@teste.com', testPassword)).status).toBe(401);
         expect((await login('admin@teste.com', 'NovaSenha@456')).status).toBe(200);
     });
@@ -323,7 +326,8 @@ describe('Goal 4 - CRUD administrativo e regras de integridade', () => {
     });
 
     it('executa CRUD de turmas com nomes enriquecidos e todas as validações de domínio', async () => {
-        expect((await request(server).get('/api/turmas')).body).toEqual([]);
+        expect((await request(server).get('/api/turmas')).body)
+            .toEqual({ items: [], page: 1, limit: 50, total: 0 });
         const curso = await criarCurso('Curso base de turmas');
 
         const turma = await criarTurma(curso.body.id_curso, 'Turma CRUD Goal 4');
@@ -339,7 +343,7 @@ describe('Goal 4 - CRUD administrativo e regras de integridade', () => {
 
         const lista = await request(server).get('/api/turmas');
         expect(lista.status).toBe(200);
-        expect(lista.body[0]).toEqual(expect.objectContaining({
+        expect(lista.body.items[0]).toEqual(expect.objectContaining({
             nome_curso: 'Curso base de turmas',
             nome_professor: 'Professor Teste'
         }));

@@ -1,0 +1,56 @@
+{
+  "goal": "11B_RUNTIME_CONFIGURATION_OBSERVABILITY",
+  "date_utc": "2026-09-18",
+  "environment": "existing Azure staging VM; no reprovisioning",
+  "deployment": {
+    "application": "healthy",
+    "database": "healthy",
+    "caddy": "healthy",
+    "mysql_version": "8.4.11",
+    "migration_013": "APPLIED_OK; later NO_OP",
+    "schema_contract": {
+      "tables": 21,
+      "columns": 173,
+      "indexes": 78,
+      "constraints": 94
+    }
+  },
+  "checks": {
+    "healthz_http": 200,
+    "readyz_http": 200,
+    "admin_health_http": 200,
+    "admin_metrics_http": 200,
+    "metrics_authorization_http": [401, 403, 200],
+    "request_id_returned": true,
+    "database_status": "ok",
+    "pool_status": "ok",
+    "pool_active": 0,
+    "pool_pending": 0,
+    "storage_status": "ok",
+    "disk_status": "ok",
+    "disk_free_percent_at_smoke": 79.75,
+    "backup_status_after_canonical_mount": "ok",
+    "backup_latest_good_created_at_utc": "2026-09-17T19:48:35Z",
+    "backup_latest_good_scope": "local-and-offsite",
+    "backup_age_seconds_at_check": 69351,
+    "backup_rpo_hours": 24,
+    "memory_rss_bytes_at_smoke": 78942208,
+    "memory_heap_used_bytes_at_smoke": 23589824,
+    "http_5xx_at_smoke": 0,
+    "https_healthz_http": 200,
+    "https_readyz_http": 200,
+    "caddy_upstream": "app:${APP_PORT}",
+    "app_port": 3000,
+    "docker_healthcheck": "healthy",
+    "operational_check_service": "success; exit 0",
+    "operational_check_timer": "enabled and active"
+  },
+  "backup_timer": {
+    "state": "enabled and active",
+    "last_service_result": "failed at 2026-09-18 06:15 UTC before final runtime image",
+    "next_trigger_utc": "2026-09-19 06:15:00Z",
+    "action": "Monitor next run; Goal 11B did not run an offsite backup or restore drill"
+  },
+  "native_mysql_3306_touched": false,
+  "secrets_recorded": false
+}

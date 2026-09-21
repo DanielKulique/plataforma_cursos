@@ -13,15 +13,17 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { loadEnvironment } = require('../src/config/loadEnvironment');
+loadEnvironment('development', path.join(__dirname, '..'));
 const { assertDevelopmentDatabase } = require('./test_database_safety');
+const { openVerifiedConnection } = require('./lib/database-operations');
 assertDevelopmentDatabase(process.env);
 const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
 if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
     throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
 }
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = `http://localhost:${process.env.APP_PORT || 3000}/api`;
 
 // Cores para output no console
 const cores = {
@@ -62,11 +64,9 @@ async function fazerRequisicao(url, options = {}) {
 async function setupDadosTeste() {
     log(cores.amarelo, '\n=== CONFIGURANDO DADOS DE TESTE ===');
 
-    const conn = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+    const conn = await openVerifiedConnection({
+        createConnection: mysql.createConnection,
+        additions: { database: process.env.DB_NAME }
     });
 
     try {
@@ -268,11 +268,9 @@ async function testarAcessoNegadoAluno(token, idTurma) {
 async function limparDadosTeste(ids) {
     log(cores.amarelo, '\n=== LIMPANDO DADOS DE TESTE ===');
     
-    const conn = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+    const conn = await openVerifiedConnection({
+        createConnection: mysql.createConnection,
+        additions: { database: process.env.DB_NAME }
     });
 
     try {
@@ -309,11 +307,9 @@ async function main() {
     const dadosTeste = await setupDadosTeste();
 
     let todosSucesso = true;
-    let token = null;
-
     try {
         // Teste 1: Login
-        token = await testarLoginProfessor(dadosTeste.email, dadosTeste.senha);
+        const token = await testarLoginProfessor(dadosTeste.email, dadosTeste.senha);
         if (!token) todosSucesso = false;
 
         if (token) {

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Detalhe da aula — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Work+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/base.css"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/components.css"><link rel="stylesheet" href="/css/layouts.css"><link rel="stylesheet" href="/css/responsive.css"><link rel="stylesheet" href="/css/utilities.css"><link rel="stylesheet" href="/css/learning-path.css">
+</head><body class="academic-page academic-page--student classroom-page" data-session-state="loading" data-session-protected>
+<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a><div data-academic-header="student" data-current-area="student"></div>
+<main class="academic-main" id="conteudo-principal" tabindex="-1">
+  <div id="breadcrumbs"></div>
+  <section class="academic-panel course-masthead" aria-labelledby="titulo-pagina"><div><h1 id="titulo-pagina">Carregando aula...</h1><p><strong id="nome-curso">Curso</strong> · <span id="nome-turma">Turma</span></p><p id="descricao-aula"></p></div></section>
+  <div id="course-navigation" class="course-navigation-host"></div>
+  <p id="mensagem-aula" class="ui-message is-info" role="status" aria-live="polite">Carregando materiais.</p>
+  <section class="academic-panel" aria-labelledby="titulo-materiais"><header class="academic-panel__header"><div><h2 id="titulo-materiais">Conteúdos</h2><p>Abra um material por vez e conclua quando terminar.</p></div></header><ol id="lista-materiais" class="module-list" aria-busy="true"><li class="ui-state is-loading">Carregando conteúdos...</li></ol></section>
+  <section id="visualizador" class="academic-panel academic-viewer" aria-labelledby="titulo-conteudo" hidden>
+    <header class="academic-panel__header academic-panel__header--actions"><div><h2 id="titulo-conteudo">Conteúdo</h2><p id="meta-conteudo"></p></div><button id="fechar-conteudo" class="btn btn-ghost" type="button">Fechar</button></header>
+    <div id="corpo-conteudo" class="content-reader"></div>
+    <div id="video-container" class="video-wrapper" hidden><iframe id="video-player" title="Conteúdo em vídeo" sandbox="allow-scripts allow-same-origin allow-presentation" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+    <div class="academic-action-row"><button id="concluir-conteudo" type="button" class="btn btn-primary">Marcar como concluído</button><span id="status-conteudo" class="badge badge--warning">Em andamento</span></div>
+  </section>
+  <nav class="academic-action-row" aria-label="Navegação entre aulas"><a id="aula-anterior" class="action-button action-button--ghost" hidden>Aula anterior</a><a id="proxima-aula" class="action-button action-button--ghost" hidden>Próxima aula</a></nav>
+</main>
+<script src="/js/security-utils.js" defer></script><script type="module" src="/js/academic-area.js"></script><script type="module" src="/js/theme.js"></script><script type="module" src="/js/navigation.js"></script><script type="module" src="/js/sala-aula-detalhe.js"></script>
+</body></html>

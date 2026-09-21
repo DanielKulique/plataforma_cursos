@@ -5,6 +5,7 @@ const { body , param } = require('express-validator');
 const checkAuth = require('../../middlewares/checkAuth.middleware');
 const checkRole = require('../../middlewares/checkRole.middleware');
 const checkUserPermission = require('../../middlewares/checkUserPermission.middleware');
+const { normalizarEmail } = require('../../utils/identity');
 
 function apenasCamposPermitidos(campos) {
 	return body().custom((payload) => {
@@ -17,7 +18,7 @@ function apenasCamposPermitidos(campos) {
 }
 
 router.post('/',
-	body('email').isEmail().withMessage('O e-mail fornecido não é valido.'),
+		body('email').customSanitizer(normalizarEmail).isEmail().withMessage('O e-mail fornecido não é valido.'),
 	body('senha')
 		.isLength({ min: 8 }).withMessage('A senha precisa ter no mínimo 8 caracteres')
 		.matches(/[A-Z]/).withMessage('A senha precisa ter pelo menos uma letra maiúscula')
@@ -31,7 +32,7 @@ router.post('/',
 	UsuariosController.criarUsuario);
 
 router.post('/verificar-disponibilidade',
-	body('email').isEmail().withMessage('O e-mail fornecido não é valido.'),
+		body('email').customSanitizer(normalizarEmail).isEmail().withMessage('O e-mail fornecido não é valido.'),
 	body('cpf').isLength({ min: 11, max: 11}).withMessage('O CPF deve ter exatamente 11 digítos').isNumeric().withMessage('O CPF deve conter apenas números.'),
 	UsuariosController.verificarDisponibilidadeCadastro);
 

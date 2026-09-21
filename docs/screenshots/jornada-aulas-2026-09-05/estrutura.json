@@ -1,0 +1,11 @@
+{
+  "origem": 25,
+  "replica": 26,
+  "resultados": [
+    "Replicação preserva aulas, ordem, conteúdo, perguntas e vínculo opcional de avaliações",
+    "PDF privado permanece acessível na réplica",
+    "Réplica sem alunos nem tentativas/resultados",
+    "FECHADA permite autoria; ENCERRADA bloqueia ADMIN e professor"
+  ],
+  "verificado_em": "2026-09-06T12:18:30.983Z"
+}

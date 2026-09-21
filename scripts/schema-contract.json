@@ -1,0 +1,3811 @@
+{
+  "expectedVersion": 13,
+  "generatedFrom": "mysql/schema.sql + migrations on disposable MySQL 8.4",
+  "tables": {
+    "AnalisesContextuais": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_usuario",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "ordinal": 3,
+          "type": "varchar(30)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "total_segmentos",
+          "ordinal": 4,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "segmentos_analisados",
+          "ordinal": 5,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "total_alertas",
+          "ordinal": 6,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "gravidade_maxima",
+          "ordinal": 7,
+          "type": "enum('INFORMATIVA','BAIXA','MEDIA','ALTA')",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "versao_contrato",
+          "ordinal": 8,
+          "type": "varchar(20)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "tempo_total_ms",
+          "ordinal": 9,
+          "type": "decimal(12,3)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "parametros_json",
+          "ordinal": 10,
+          "type": "json",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "criado_em",
+          "ordinal": 11,
+          "type": "timestamp",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_analises_contextuais_usuario_criado",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "criado_em",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_analises_contextuais_usuario",
+          "columns": [
+            "id_usuario"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "AnalisesPlagio": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "usuario_id",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "trecho_texto",
+          "ordinal": 3,
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "score_similaridade",
+          "ordinal": 4,
+          "type": "decimal(5,2)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "fontes_encontradas",
+          "ordinal": 5,
+          "type": "json",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "criado_em",
+          "ordinal": 6,
+          "type": "timestamp",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_analises_usuario",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "usuario_id",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_analises_plagio_usuario",
+          "columns": [
+            "usuario_id"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "CASCADE",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "ArquivosMateriais": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_arquivo_material",
+          "ordinal": 1,
+          "type": "bigint unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "storage_name",
+          "ordinal": 2,
+          "type": "varchar(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "original_name",
+          "ordinal": 3,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "mime_type",
+          "ordinal": 4,
+          "type": "varchar(100)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "size_bytes",
+          "ordinal": 5,
+          "type": "bigint unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "sha256",
+          "ordinal": 6,
+          "type": "char(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "id_usuario_upload",
+          "ordinal": 7,
+          "type": "int",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "ordinal": 8,
+          "type": "enum('ATIVO','RETIDO','PURGANDO','PURGADO')",
+          "nullable": false,
+          "default": "ATIVO",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "criado_em",
+          "ordinal": 9,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "retido_em",
+          "ordinal": 10,
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "purgado_em",
+          "ordinal": 11,
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_arquivo_material_sha256",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "sha256",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_arquivo_material_usuario",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario_upload",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_arquivo_material",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_arquivo_material_storage",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "storage_name",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_arquivo_material_usuario",
+          "columns": [
+            "id_usuario_upload"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "SET NULL"
+        }
+      ],
+      "checks": []
+    },
+    "Certificados": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_certificado",
+          "ordinal": 1,
+          "type": "bigint unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_aluno",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_turma",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "codigo_publico",
+          "ordinal": 4,
+          "type": "varchar(40)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "aluno_nome",
+          "ordinal": 5,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "curso_nome",
+          "ordinal": 6,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "turma_nome",
+          "ordinal": 7,
+          "type": "varchar(100)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "carga_horaria",
+          "ordinal": 8,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "emitido_em",
+          "ordinal": 9,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "ordinal": 10,
+          "type": "enum('ATIVO','REVOGADO')",
+          "nullable": false,
+          "default": "ATIVO",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "sha256",
+          "ordinal": 11,
+          "type": "char(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "storage_name",
+          "ordinal": 12,
+          "type": "varchar(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "tamanho_bytes",
+          "ordinal": 13,
+          "type": "bigint unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_usuario_emissor",
+          "ordinal": 14,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "revogado_em",
+          "ordinal": 15,
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_usuario_revogador",
+          "ordinal": 16,
+          "type": "int",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "motivo_revogacao",
+          "ordinal": 17,
+          "type": "varchar(500)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "criado_em",
+          "ordinal": 18,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "versao",
+          "ordinal": 19,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": "1",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_certificado_anterior",
+          "ordinal": 20,
+          "type": "bigint unsigned",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "motivo_reemissao",
+          "ordinal": 21,
+          "type": "varchar(500)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "reemitido_em",
+          "ordinal": 22,
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_usuario_reemissor",
+          "ordinal": 23,
+          "type": "int",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "snapshot_json",
+          "ordinal": 24,
+          "type": "json",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "ativo_unico",
+          "ordinal": 25,
+          "type": "tinyint",
+          "nullable": true,
+          "default": null,
+          "extra": "stored generated",
+          "generationExpression": "(case when (status = _utf8mb4\\'ATIVO\\') then 1 else null end)",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "fk_certificado_emissor",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario_emissor",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "fk_certificado_reemissor",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario_reemissor",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "fk_certificado_revogador",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario_revogador",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_certificado_sha256",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "sha256",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_certificado",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_certificado_anterior",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_certificado_anterior",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_certificado_ativo",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_aluno",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_turma",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "ativo_unico",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_certificado_codigo_publico",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "codigo_publico",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_certificado_storage_name",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "storage_name",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_certificado_versao",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_aluno",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_turma",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "versao",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_certificado_anterior",
+          "columns": [
+            "id_certificado_anterior"
+          ],
+          "referencedTable": "Certificados",
+          "referencedColumns": [
+            "id_certificado"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_certificado_emissor",
+          "columns": [
+            "id_usuario_emissor"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_certificado_matricula",
+          "columns": [
+            "id_aluno",
+            "id_turma"
+          ],
+          "referencedTable": "Matriculas",
+          "referencedColumns": [
+            "id_aluno",
+            "id_turma"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_certificado_reemissor",
+          "columns": [
+            "id_usuario_reemissor"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_certificado_revogador",
+          "columns": [
+            "id_usuario_revogador"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        }
+      ],
+      "checks": [
+        {
+          "name": "chk_certificado_carga_horaria",
+          "clause": "carga_horaria > 0"
+        },
+        {
+          "name": "chk_certificado_reemissao",
+          "clause": "((versao = 1) and (id_certificado_anterior is null) and (motivo_reemissao is null) and (reemitido_em is null) and (id_usuario_reemissor is null)) or ((versao > 1) and (id_certificado_anterior is not null) and (motivo_reemissao is not null) and (char_length(trim(motivo_reemissao)) between 3 and 500) and (reemitido_em is not null) and (id_usuario_reemissor is not null) and (snapshot_json is not null))"
+        },
+        {
+          "name": "chk_certificado_revogacao",
+          "clause": "((status = _utf8mb4\\'ATIVO\\') and (revogado_em is null) and (id_usuario_revogador is null) and (motivo_revogacao is null)) or ((status = _utf8mb4\\'REVOGADO\\') and (revogado_em is not null) and (id_usuario_revogador is not null) and (motivo_revogacao is not null))"
+        },
+        {
+          "name": "chk_certificado_versao",
+          "clause": "versao >= 1"
+        }
+      ]
+    },
+    "Conteudos": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_conteudo",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_turma",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_modulo",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "titulo",
+          "ordinal": 4,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "descricao",
+          "ordinal": 5,
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "tipo",
+          "ordinal": 6,
+          "type": "enum('VIDEO','TEXTO','PDF','LINK','ATIVIDADE')",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "id_arquivo_material",
+          "ordinal": 7,
+          "type": "bigint unsigned",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "url",
+          "ordinal": 8,
+          "type": "varchar(1000)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "corpo",
+          "ordinal": 9,
+          "type": "mediumtext",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "duracao_minutos",
+          "ordinal": 10,
+          "type": "int unsigned",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "ordem",
+          "ordinal": 11,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_conteudo_arquivo_material",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_arquivo_material",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_conteudo_modulo",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_modulo",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_conteudo",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_conteudo_turma_ordem",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "ordem",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_conteudo_arquivo_material",
+          "columns": [
+            "id_arquivo_material"
+          ],
+          "referencedTable": "ArquivosMateriais",
+          "referencedColumns": [
+            "id_arquivo_material"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_conteudo_modulo",
+          "columns": [
+            "id_modulo"
+          ],
+          "referencedTable": "Modulos",
+          "referencedColumns": [
+            "id_modulo"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "SET NULL"
+        },
+        {
+          "name": "fk_conteudo_turma",
+          "columns": [
+            "id_turma"
+          ],
+          "referencedTable": "Turmas",
+          "referencedColumns": [
+            "id_turma"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "ConteudosProgresso": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_progresso",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_aluno",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_conteudo",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "ordinal": 4,
+          "type": "enum('NAO_INICIADO','INICIADO','CONCLUIDO')",
+          "nullable": false,
+          "default": "NAO_INICIADO",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "iniciado_em",
+          "ordinal": 5,
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "concluido_em",
+          "ordinal": 6,
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "fk_progresso_conteudo",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_conteudo",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_progresso",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_aluno_conteudo",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_aluno",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_conteudo",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_progresso_aluno",
+          "columns": [
+            "id_aluno"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_progresso_conteudo",
+          "columns": [
+            "id_conteudo"
+          ],
+          "referencedTable": "Conteudos",
+          "referencedColumns": [
+            "id_conteudo"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "Cursos": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_curso",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "nome_curso",
+          "ordinal": 2,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "descricao",
+          "ordinal": 3,
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "carga_horaria",
+          "ordinal": 4,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_curso",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_cursos_nome",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "nome_curso",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [],
+      "checks": []
+    },
+    "EmailVerificacoes": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_verificacao",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "email",
+          "ordinal": 2,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "codigo",
+          "ordinal": 3,
+          "type": "varchar(6)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "verificado",
+          "ordinal": 4,
+          "type": "tinyint(1)",
+          "nullable": false,
+          "default": "0",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "expira_em",
+          "ordinal": 5,
+          "type": "datetime",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "criado_em",
+          "ordinal": 6,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_verificacao",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_email_verificacao",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "email",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [],
+      "checks": []
+    },
+    "Matriculas": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_matricula",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_aluno",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_turma",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "data_matricula",
+          "ordinal": 4,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "nota_final",
+          "ordinal": 5,
+          "type": "decimal(5,2)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "status_aprovacao",
+          "ordinal": 6,
+          "type": "enum('CURSANDO','APROVADO','REPROVADO','CANCELADO')",
+          "nullable": false,
+          "default": "CURSANDO",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "progresso_percentual",
+          "ordinal": 7,
+          "type": "tinyint unsigned",
+          "nullable": false,
+          "default": "0",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "ciclo_atual",
+          "ordinal": 8,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": "1",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_matriculas_turma",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_matricula",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_aluno_turma",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_aluno",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_turma",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_matriculas_aluno",
+          "columns": [
+            "id_aluno"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_matriculas_turma",
+          "columns": [
+            "id_turma"
+          ],
+          "referencedTable": "Turmas",
+          "referencedColumns": [
+            "id_turma"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": [
+        {
+          "name": "chk_matriculas_ciclo",
+          "clause": "ciclo_atual >= 1"
+        },
+        {
+          "name": "chk_matriculas_nota",
+          "clause": "(nota_final is null) or ((nota_final >= 0) and (nota_final <= 10))"
+        },
+        {
+          "name": "chk_matriculas_progresso",
+          "clause": "(progresso_percentual >= 0) and (progresso_percentual <= 100)"
+        }
+      ]
+    },
+    "Modulos": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_modulo",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_turma",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "titulo",
+          "ordinal": 3,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "descricao",
+          "ordinal": 4,
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "ordem",
+          "ordinal": 5,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_modulo",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_modulo_turma_ordem",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "ordem",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_modulo_turma",
+          "columns": [
+            "id_turma"
+          ],
+          "referencedTable": "Turmas",
+          "referencedColumns": [
+            "id_turma"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "PasswordResetTokens": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_token",
+          "ordinal": 1,
+          "type": "bigint unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_usuario",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "token_hash",
+          "ordinal": 3,
+          "type": "char(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "expira_em",
+          "ordinal": 4,
+          "type": "datetime",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "usado_em",
+          "ordinal": 5,
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "criado_em",
+          "ordinal": 6,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_password_reset_usuario_estado",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "usado_em",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "expira_em",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_token",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_password_reset_hash",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "token_hash",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_password_reset_usuario",
+          "columns": [
+            "id_usuario"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "Q_Opcoes": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_opcao",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_pergunta",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "texto_opcao",
+          "ordinal": 3,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "ordem",
+          "ordinal": 4,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "correta",
+          "ordinal": 5,
+          "type": "tinyint(1)",
+          "nullable": false,
+          "default": "0",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_opcao",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_opcao_pergunta_ordem",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_pergunta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "ordem",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_opcoes_pergunta",
+          "columns": [
+            "id_pergunta"
+          ],
+          "referencedTable": "Q_Perguntas",
+          "referencedColumns": [
+            "id_pergunta"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "Q_Perguntas": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_pergunta",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_questionario",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "texto_pergunta",
+          "ordinal": 3,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "tipo_pergunta",
+          "ordinal": 4,
+          "type": "enum('MULTIPLA_ESCOLHA','VERDADEIRO_FALSO','RESPOSTA_CURTA')",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "ordem",
+          "ordinal": 5,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "pontos",
+          "ordinal": 6,
+          "type": "decimal(6,2)",
+          "nullable": false,
+          "default": "1.00",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_pergunta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_pergunta_questionario_ordem",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_questionario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "ordem",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_perguntas_questionario",
+          "columns": [
+            "id_questionario"
+          ],
+          "referencedTable": "Questionarios",
+          "referencedColumns": [
+            "id_questionario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "Q_Respostas": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_resposta",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_pergunta",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_usuario",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_questionario",
+          "ordinal": 4,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_tentativa",
+          "ordinal": 5,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "resposta_texto",
+          "ordinal": 6,
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "resposta_opcao",
+          "ordinal": 7,
+          "type": "int",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "data_resposta",
+          "ordinal": 8,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "correta",
+          "ordinal": 9,
+          "type": "tinyint(1)",
+          "nullable": false,
+          "default": "0",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "fk_respostas_pergunta",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_pergunta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_respostas_opcao",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "resposta_opcao",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_respostas_questionario",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_questionario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_respostas_usuario",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_resposta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_resposta_tentativa_pergunta",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_tentativa",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_pergunta",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_respostas_opcao",
+          "columns": [
+            "resposta_opcao"
+          ],
+          "referencedTable": "Q_Opcoes",
+          "referencedColumns": [
+            "id_opcao"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "SET NULL"
+        },
+        {
+          "name": "fk_respostas_pergunta",
+          "columns": [
+            "id_pergunta"
+          ],
+          "referencedTable": "Q_Perguntas",
+          "referencedColumns": [
+            "id_pergunta"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_respostas_questionario",
+          "columns": [
+            "id_questionario"
+          ],
+          "referencedTable": "Questionarios",
+          "referencedColumns": [
+            "id_questionario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_respostas_tentativa",
+          "columns": [
+            "id_tentativa"
+          ],
+          "referencedTable": "Q_Tentativas",
+          "referencedColumns": [
+            "id_tentativa"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_respostas_usuario",
+          "columns": [
+            "id_usuario"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "Q_Tentativas": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_tentativa",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_questionario",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_usuario",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_turma",
+          "ordinal": 4,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "pontuacao",
+          "ordinal": 5,
+          "type": "decimal(8,2)",
+          "nullable": false,
+          "default": "0.00",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "percentual",
+          "ordinal": 6,
+          "type": "decimal(5,2)",
+          "nullable": false,
+          "default": "0.00",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "acertos",
+          "ordinal": 7,
+          "type": "int",
+          "nullable": false,
+          "default": "0",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "total_perguntas",
+          "ordinal": 8,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "chave_idempotencia",
+          "ordinal": 9,
+          "type": "char(36)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "ciclo_matricula",
+          "ordinal": 10,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": "1",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "iniciada_em",
+          "ordinal": 11,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "finalizada_em",
+          "ordinal": 12,
+          "type": "datetime",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "fk_tentativa_questionario",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_questionario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_tentativas_aluno_data",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "iniciada_em",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "D"
+            },
+            {
+              "name": "id_tentativa",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "D"
+            }
+          ]
+        },
+        {
+          "name": "idx_tentativas_aluno_questionario",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_questionario",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_tentativas_ciclo_atual",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_turma",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "ciclo_matricula",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_questionario",
+              "ordinal": 4,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "finalizada_em",
+              "ordinal": 5,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_tentativas_turma",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_tentativas_turma_data",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "iniciada_em",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "D"
+            },
+            {
+              "name": "id_tentativa",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "D"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_tentativa",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_tentativa_idempotente",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_questionario",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "ciclo_matricula",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "chave_idempotencia",
+              "ordinal": 4,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_tentativa_questionario",
+          "columns": [
+            "id_questionario"
+          ],
+          "referencedTable": "Questionarios",
+          "referencedColumns": [
+            "id_questionario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_tentativa_turma",
+          "columns": [
+            "id_turma"
+          ],
+          "referencedTable": "Turmas",
+          "referencedColumns": [
+            "id_turma"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_tentativa_usuario",
+          "columns": [
+            "id_usuario"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": [
+        {
+          "name": "chk_tentativas_ciclo",
+          "clause": "ciclo_matricula >= 1"
+        },
+        {
+          "name": "chk_tentativas_percentual",
+          "clause": "(percentual >= 0) and (percentual <= 100)"
+        }
+      ]
+    },
+    "Questionarios": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_questionario",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_curso",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_turma",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "titulo",
+          "ordinal": 4,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "descricao",
+          "ordinal": 5,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "ativo",
+          "ordinal": 6,
+          "type": "tinyint(1)",
+          "nullable": false,
+          "default": "1",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "tipo",
+          "ordinal": 7,
+          "type": "enum('PROVA','EXERCICIO')",
+          "nullable": false,
+          "default": "EXERCICIO",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "id_modulo",
+          "ordinal": 8,
+          "type": "int",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "ordem",
+          "ordinal": 9,
+          "type": "int",
+          "nullable": false,
+          "default": "0",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "prova_final",
+          "ordinal": 10,
+          "type": "tinyint(1)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "fk_questionario_modulo",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_modulo",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_questionarios_curso",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_curso",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_questionario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_prova_final_turma",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "prova_final",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_questionario_turma_tipo_titulo",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "tipo",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "titulo",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_questionario_modulo",
+          "columns": [
+            "id_modulo"
+          ],
+          "referencedTable": "Modulos",
+          "referencedColumns": [
+            "id_modulo"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_questionarios_curso",
+          "columns": [
+            "id_curso"
+          ],
+          "referencedTable": "Cursos",
+          "referencedColumns": [
+            "id_curso"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_questionarios_turma",
+          "columns": [
+            "id_turma"
+          ],
+          "referencedTable": "Turmas",
+          "referencedColumns": [
+            "id_turma"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": [
+        {
+          "name": "chk_prova_final_tipo",
+          "clause": "(prova_final is null) or ((prova_final = 1) and (tipo = _utf8mb4\\'PROVA\\'))"
+        }
+      ]
+    },
+    "ReplicacoesTurma": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_replicacao",
+          "ordinal": 1,
+          "type": "bigint unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_turma_origem",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_turma_destino",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_usuario_admin",
+          "ordinal": 4,
+          "type": "int",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "chave_idempotencia",
+          "ordinal": 5,
+          "type": "varchar(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "requisicao_hash",
+          "ordinal": 6,
+          "type": "char(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "criada_em",
+          "ordinal": 7,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_replicacao_admin",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario_admin",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_replicacao_origem",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma_origem",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_replicacao",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_replicacao_chave",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "chave_idempotencia",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_replicacao_destino",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma_destino",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_replicacao_admin",
+          "columns": [
+            "id_usuario_admin"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "SET NULL"
+        },
+        {
+          "name": "fk_replicacao_destino",
+          "columns": [
+            "id_turma_destino"
+          ],
+          "referencedTable": "Turmas",
+          "referencedColumns": [
+            "id_turma"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_replicacao_origem",
+          "columns": [
+            "id_turma_origem"
+          ],
+          "referencedTable": "Turmas",
+          "referencedColumns": [
+            "id_turma"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "SET NULL"
+        }
+      ],
+      "checks": []
+    },
+    "Turmas": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_turma",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_curso",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_professor",
+          "ordinal": 3,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "nome_turma",
+          "ordinal": 4,
+          "type": "varchar(100)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "data_inicio",
+          "ordinal": 5,
+          "type": "date",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "data_fim",
+          "ordinal": 6,
+          "type": "date",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "status",
+          "ordinal": 7,
+          "type": "enum('ABERTA','FECHADA','ENCERRADA')",
+          "nullable": false,
+          "default": "ABERTA",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_turmas_curso",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_curso",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_turmas_data_lista",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "data_inicio",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "D"
+            },
+            {
+              "name": "id_turma",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "D"
+            }
+          ]
+        },
+        {
+          "name": "idx_turmas_professor",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_professor",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_turmas_nome",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "nome_turma",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_turmas_curso",
+          "columns": [
+            "id_curso"
+          ],
+          "referencedTable": "Cursos",
+          "referencedColumns": [
+            "id_curso"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_turmas_professor",
+          "columns": [
+            "id_professor"
+          ],
+          "referencedTable": "Usuarios",
+          "referencedColumns": [
+            "id_usuario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        }
+      ],
+      "checks": []
+    },
+    "Usuarios": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_usuario",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "auto_increment",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "nome_completo",
+          "ordinal": 2,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "cpf",
+          "ordinal": 3,
+          "type": "varchar(11)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "email",
+          "ordinal": 4,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "senha",
+          "ordinal": 5,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "telefone",
+          "ordinal": 6,
+          "type": "varchar(20)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "tipo",
+          "ordinal": 7,
+          "type": "enum('ALUNO','PROFESSOR','ADMIN')",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "versao_sessao",
+          "ordinal": 8,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": "0",
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "data_cadastro",
+          "ordinal": 9,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_usuarios_nome_lista",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "nome_completo",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_usuario",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_usuario",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_usuarios_cpf",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "cpf",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_usuarios_email",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "email",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [],
+      "checks": []
+    },
+    "environment_identity": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "singleton_id",
+          "ordinal": 1,
+          "type": "tinyint unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "identity_key",
+          "ordinal": 2,
+          "type": "varchar(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "database_name",
+          "ordinal": 3,
+          "type": "varchar(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 4,
+          "type": "datetime",
+          "nullable": false,
+          "default": "current_timestamp",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "singleton_id",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_environment_identity_key",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "identity_key",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [],
+      "checks": [
+        {
+          "name": "chk_environment_identity_singleton",
+          "clause": "singleton_id = 1"
+        }
+      ]
+    },
+    "schema_migrations": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "version",
+          "ordinal": 1,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "filename",
+          "ordinal": 2,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "checksum_sha256",
+          "ordinal": 3,
+          "type": "char(64)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "applied_at",
+          "ordinal": 4,
+          "type": "datetime(6)",
+          "nullable": false,
+          "default": "current_timestamp(6)",
+          "extra": "default_generated",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "execution_ms",
+          "ordinal": 5,
+          "type": "int unsigned",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "version",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_schema_migrations_filename",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "filename",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [],
+      "checks": [
+        {
+          "name": "chk_schema_migrations_checksum",
+          "clause": "regexp_like(checksum_sha256,_utf8mb4\\'^[0-9a-f]{64}$\\')"
+        }
+      ]
+    }
+  }
+}

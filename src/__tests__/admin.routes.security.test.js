@@ -10,12 +10,16 @@ jest.mock('../api/controllers/usuarios.controller', () => ({
     deletarUsuario: jest.fn()
 }));
 jest.mock('../api/models/auth.models', () => ({
-    buscarUsuarioPorId: jest.fn()
+    buscarUsuarioSessao: jest.fn()
+}));
+jest.mock('../api/controllers/health.controller', () => ({
+    metrics: jest.fn((req, res) => res.json({ process: { uptimeSeconds: 1 } }))
 }));
 
 const usuariosController = require('../api/controllers/usuarios.controller');
 const authModel = require('../api/models/auth.models');
 const adminRoutes = require('../api/routes/admin.routes');
+const healthController = require('../api/controllers/health.controller');
 
 const app = express();
 app.use(express.json());
@@ -51,8 +55,8 @@ describe('proteção da criação administrativa de usuários', () => {
     });
 
     it('recusa usuário autenticado sem papel ADMIN', async () => {
-        authModel.buscarUsuarioPorId.mockResolvedValue({ id_usuario: 2, tipo: 'ALUNO' });
-        const token = jwt.sign({ id_usuario: 2, tipo: 'ALUNO' }, process.env.JWT_SECRET);
+        authModel.buscarUsuarioSessao.mockResolvedValue({ id_usuario: 2, tipo: 'ALUNO', versao_sessao: 0 });
+        const token = jwt.sign({ id_usuario: 2, tipo: 'ALUNO', sv: 0 }, process.env.JWT_SECRET);
         const response = await request(app)
             .post('/api/admin/usuarios')
             .set('Authorization', `Bearer ${token}`)
@@ -63,8 +67,8 @@ describe('proteção da criação administrativa de usuários', () => {
     });
 
     it('mantém a criação disponível para ADMIN autenticado', async () => {
-        authModel.buscarUsuarioPorId.mockResolvedValue({ id_usuario: 1, tipo: 'ADMIN' });
-        const token = jwt.sign({ id_usuario: 1, tipo: 'ALUNO' }, process.env.JWT_SECRET);
+        authModel.buscarUsuarioSessao.mockResolvedValue({ id_usuario: 1, tipo: 'ADMIN', versao_sessao: 0 });
+        const token = jwt.sign({ id_usuario: 1, tipo: 'ALUNO', sv: 0 }, process.env.JWT_SECRET);
         const response = await request(app)
             .post('/api/admin/usuarios')
             .set('Authorization', `Bearer ${token}`)
@@ -72,7 +76,21 @@ describe('proteção da criação administrativa de usuários', () => {
 
         expect(response.status).toBe(201);
         expect(response.body.tipo).toBe('PROFESSOR');
-        expect(authModel.buscarUsuarioPorId).toHaveBeenCalledWith(1);
+        expect(authModel.buscarUsuarioSessao).toHaveBeenCalledWith(1);
         expect(usuariosController.criarUsuarioAdmin).toHaveBeenCalledTimes(1);
+    });
+
+    it('protege métricas para ADMIN: anônimo 401, ALUNO 403 e ADMIN 200', async () => {
+        expect((await request(app).get('/api/admin/metrics')).status).toBe(401);
+
+        authModel.buscarUsuarioSessao.mockResolvedValue({ id_usuario: 2, tipo: 'ALUNO', versao_sessao: 0 });
+        const aluno = jwt.sign({ id_usuario: 2, sv: 0 }, process.env.JWT_SECRET);
+        expect((await request(app).get('/api/admin/metrics').set('Authorization', `Bearer ${aluno}`)).status).toBe(403);
+
+        authModel.buscarUsuarioSessao.mockResolvedValue({ id_usuario: 1, tipo: 'ADMIN', versao_sessao: 0 });
+        const admin = jwt.sign({ id_usuario: 1, sv: 0 }, process.env.JWT_SECRET);
+        const response = await request(app).get('/api/admin/metrics').set('Authorization', `Bearer ${admin}`);
+        expect(response.status).toBe(200);
+        expect(healthController.metrics).toHaveBeenCalledTimes(1);
     });
 });

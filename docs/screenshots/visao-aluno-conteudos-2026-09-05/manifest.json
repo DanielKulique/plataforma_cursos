@@ -1,0 +1,204 @@
+{
+  "capturedAt": "2026-09-05T20:57:22.884Z",
+  "baseUrl": "https://plataforma-cursos-demo-dk-20260901.chilecentral.cloudapp.azure.com",
+  "theme": "light",
+  "total": 14,
+  "screenshots": [
+    {
+      "viewport": "desktop",
+      "name": "01-sala-de-aula-visao-geral",
+      "label": "Sala de aula — visão geral e todos os materiais",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "desktop/01-sala-de-aula-visao-geral.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1777
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "desktop",
+      "name": "02-conteudo-textual-aberto",
+      "label": "Conteúdo textual aberto",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "desktop/02-conteudo-textual-aberto.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 2127
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "desktop",
+      "name": "03-video-aula-aberta",
+      "label": "Videoaula aberta no player",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "desktop/03-video-aula-aberta.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 2706
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "desktop",
+      "name": "04-pdfs-disponiveis",
+      "label": "Filtro de PDFs disponíveis",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "desktop/04-pdfs-disponiveis.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1475
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "desktop",
+      "name": "05-atividade-aberta",
+      "label": "Atividade de reflexão aberta",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "desktop/05-atividade-aberta.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1677
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "desktop",
+      "name": "06-questionario-exercicio",
+      "label": "Questionário de exercício com questões e alternativas",
+      "route": "/questionario.html?tipo=exercicio&id_turma=1",
+      "finalUrl": "/questionario.html?tipo=exercicio&id_turma=1",
+      "title": "Questionário — Plágio",
+      "file": "desktop/06-questionario-exercicio.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 2251
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "desktop",
+      "name": "07-questionario-prova",
+      "label": "Prova com questões e alternativas",
+      "route": "/questionario.html?tipo=prova&id_turma=1",
+      "finalUrl": "/questionario.html?tipo=prova&id_turma=1",
+      "title": "Questionário — Plágio",
+      "file": "desktop/07-questionario-prova.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 2285
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "mobile",
+      "name": "01-sala-de-aula-visao-geral",
+      "label": "Sala de aula — visão geral e todos os materiais",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "mobile/01-sala-de-aula-visao-geral.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2757
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "mobile",
+      "name": "02-conteudo-textual-aberto",
+      "label": "Conteúdo textual aberto",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "mobile/02-conteudo-textual-aberto.png",
+      "dimensions": {
+        "width": 412,
+        "height": 3161
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "mobile",
+      "name": "03-video-aula-aberta",
+      "label": "Videoaula aberta no player",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "mobile/03-video-aula-aberta.png",
+      "dimensions": {
+        "width": 412,
+        "height": 3316
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "mobile",
+      "name": "04-pdfs-disponiveis",
+      "label": "Filtro de PDFs disponíveis",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "mobile/04-pdfs-disponiveis.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2252
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "mobile",
+      "name": "05-atividade-aberta",
+      "label": "Atividade de reflexão aberta",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "mobile/05-atividade-aberta.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2418
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "mobile",
+      "name": "06-questionario-exercicio",
+      "label": "Questionário de exercício com questões e alternativas",
+      "route": "/questionario.html?tipo=exercicio&id_turma=1",
+      "finalUrl": "/questionario.html?tipo=exercicio&id_turma=1",
+      "title": "Questionário — Plágio",
+      "file": "mobile/06-questionario-exercicio.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2570
+      },
+      "browserErrors": []
+    },
+    {
+      "viewport": "mobile",
+      "name": "07-questionario-prova",
+      "label": "Prova com questões e alternativas",
+      "route": "/questionario.html?tipo=prova&id_turma=1",
+      "finalUrl": "/questionario.html?tipo=prova&id_turma=1",
+      "title": "Questionário — Plágio",
+      "file": "mobile/07-questionario-prova.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2629
+      },
+      "browserErrors": []
+    }
+  ]
+}

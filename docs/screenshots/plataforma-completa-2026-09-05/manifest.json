@@ -1,0 +1,876 @@
+{
+  "capturedAt": "2026-09-05T20:31:02.450Z",
+  "baseUrl": "https://plataforma-cursos-demo-dk-20260901.chilecentral.cloudapp.azure.com",
+  "theme": "light",
+  "total": 62,
+  "screenshots": [
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "01-publico-landing",
+      "route": "/landing.html",
+      "finalUrl": "/landing.html",
+      "title": "Plágio: não copie essa ideia — Projeto e plataforma",
+      "file": "desktop/01-publico-landing.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 6776
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "02-publico-inicio",
+      "route": "/index.html",
+      "finalUrl": "/index.html",
+      "title": "Plágio — Não Copie Essa Ideia",
+      "file": "desktop/02-publico-inicio.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "03-publico-login",
+      "route": "/login.html",
+      "finalUrl": "/login.html",
+      "title": "Login — Plágio",
+      "file": "desktop/03-publico-login.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1064
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "04-publico-cadastro",
+      "route": "/cadastro.html",
+      "finalUrl": "/cadastro.html",
+      "title": "Cadastro — Plágio",
+      "file": "desktop/04-publico-cadastro.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1064
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "05-publico-recuperar-senha",
+      "route": "/recuperar-senha.html",
+      "finalUrl": "/recuperar-senha.html",
+      "title": "Recuperar senha — Plágio",
+      "file": "desktop/05-publico-recuperar-senha.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1064
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "06-publico-redefinir-senha-sem-token",
+      "route": "/redefinir-senha.html",
+      "finalUrl": "/redefinir-senha.html",
+      "title": "Redefinir senha — Plágio",
+      "file": "desktop/06-publico-redefinir-senha-sem-token.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1064
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "07-publico-confirmar-email",
+      "route": "/verificar-email.html",
+      "finalUrl": "/verificar-email.html",
+      "title": "Confirmar E-mail — Plágio",
+      "file": "desktop/07-publico-confirmar-email.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1064
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "08-institucional-sobre",
+      "route": "/sobre.html",
+      "finalUrl": "/sobre.html",
+      "title": "Sobre o projeto — Plágio: não copie essa ideia",
+      "file": "desktop/08-institucional-sobre.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 3541
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "09-institucional-equipe",
+      "route": "/equipe.html",
+      "finalUrl": "/equipe.html",
+      "title": "Equipe — Plágio: não copie essa ideia",
+      "file": "desktop/09-institucional-equipe.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 3440
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "10-institucional-parceiros",
+      "route": "/parceiros.html",
+      "finalUrl": "/parceiros.html",
+      "title": "Parceiros — Plágio: não copie essa ideia",
+      "file": "desktop/10-institucional-parceiros.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 4038
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "11-institucional-materiais",
+      "route": "/materiais.html",
+      "finalUrl": "/materiais.html",
+      "title": "Materiais — Plágio: não copie essa ideia",
+      "file": "desktop/11-institucional-materiais.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 4961
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "12-institucional-cartilha",
+      "route": "/cartilha.html",
+      "finalUrl": "/cartilha.html",
+      "title": "Cartilha — Plágio: não copie essa ideia",
+      "file": "desktop/12-institucional-cartilha.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 3399
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "13-institucional-perguntas-frequentes",
+      "route": "/perguntas-frequentes.html",
+      "finalUrl": "/perguntas-frequentes.html",
+      "title": "Perguntas frequentes — Plágio: não copie essa ideia",
+      "file": "desktop/13-institucional-perguntas-frequentes.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 3101
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "14-certificados-validacao",
+      "route": "/certificados/validar",
+      "finalUrl": "/certificados/validar",
+      "title": "Validar certificado — Plágio",
+      "file": "desktop/14-certificados-validacao.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "desktop",
+      "name": "15-certificados-resultado-revogado",
+      "route": "/certificados/validar/CERT-17224941-BF231DFF-6982AFBA-6561DE2B",
+      "finalUrl": "/certificados/validar/CERT-17224941-BF231DFF-6982AFBA-6561DE2B",
+      "title": "Validar certificado — Plágio",
+      "file": "desktop/15-certificados-resultado-revogado.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1457
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "desktop",
+      "name": "20-aluno-inicio-e-catalogo",
+      "route": "/index.html",
+      "finalUrl": "/index.html",
+      "title": "Plágio — Não Copie Essa Ideia",
+      "file": "desktop/20-aluno-inicio-e-catalogo.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "desktop",
+      "name": "21-aluno-sala-virtual-e-certificados",
+      "route": "/sala-virtual.html",
+      "finalUrl": "/sala-virtual.html",
+      "title": "Sala Virtual — Plágio",
+      "file": "desktop/21-aluno-sala-virtual-e-certificados.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1121
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "desktop",
+      "name": "22-aluno-sala-de-aula",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "desktop/22-aluno-sala-de-aula.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1289
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "desktop",
+      "name": "23-aluno-questionario-exercicio",
+      "route": "/questionario.html?tipo=exercicio&id_turma=1",
+      "finalUrl": "/questionario.html?tipo=exercicio&id_turma=1",
+      "title": "Questionário — Plágio",
+      "file": "desktop/23-aluno-questionario-exercicio.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1453
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "desktop",
+      "name": "24-aluno-questionario-prova",
+      "route": "/questionario.html?tipo=prova&id_turma=1",
+      "finalUrl": "/questionario.html?tipo=prova&id_turma=1",
+      "title": "Questionário — Plágio",
+      "file": "desktop/24-aluno-questionario-prova.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1453
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "desktop",
+      "name": "25-aluno-verificador-contextual",
+      "route": "/verificador.html",
+      "finalUrl": "/verificador.html",
+      "title": "Verificador contextual — Plágio",
+      "file": "desktop/25-aluno-verificador-contextual.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 2136
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "desktop",
+      "name": "30-professor-minhas-turmas",
+      "route": "/professor.html",
+      "finalUrl": "/professor.html",
+      "title": "Área do Professor — Plágio",
+      "file": "desktop/30-professor-minhas-turmas.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "desktop",
+      "name": "31-professor-gestao-da-turma",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "desktop/31-professor-gestao-da-turma.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1713
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "desktop",
+      "name": "32-professor-modal-editar-matricula",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "desktop/32-professor-modal-editar-matricula.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1713
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "desktop",
+      "name": "33-professor-modal-novo-modulo",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "desktop/33-professor-modal-novo-modulo.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1713
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "desktop",
+      "name": "34-professor-modal-novo-conteudo",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "desktop/34-professor-modal-novo-conteudo.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1713
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "desktop",
+      "name": "35-professor-modal-novo-questionario",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "desktop/35-professor-modal-novo-questionario.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1713
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Administrador",
+      "viewport": "desktop",
+      "name": "40-admin-usuarios",
+      "route": "/admin.html",
+      "finalUrl": "/admin.html",
+      "title": "Painel administrativo — Plágio",
+      "file": "desktop/40-admin-usuarios.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Administrador",
+      "viewport": "desktop",
+      "name": "41-admin-cursos",
+      "route": "/admin.html",
+      "finalUrl": "/admin.html",
+      "title": "Painel administrativo — Plágio",
+      "file": "desktop/41-admin-cursos.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Administrador",
+      "viewport": "desktop",
+      "name": "42-admin-turmas",
+      "route": "/admin.html",
+      "finalUrl": "/admin.html",
+      "title": "Painel administrativo — Plágio",
+      "file": "desktop/42-admin-turmas.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1000
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Administrador",
+      "viewport": "desktop",
+      "name": "43-admin-visao-da-turma",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "desktop/43-admin-visao-da-turma.png",
+      "dimensions": {
+        "width": 1440,
+        "height": 1713
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "01-publico-landing",
+      "route": "/landing.html",
+      "finalUrl": "/landing.html",
+      "title": "Plágio: não copie essa ideia — Projeto e plataforma",
+      "file": "mobile/01-publico-landing.png",
+      "dimensions": {
+        "width": 412,
+        "height": 5511
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "02-publico-inicio",
+      "route": "/index.html",
+      "finalUrl": "/index.html",
+      "title": "Plágio — Não Copie Essa Ideia",
+      "file": "mobile/02-publico-inicio.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1144
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "03-publico-login",
+      "route": "/login.html",
+      "finalUrl": "/login.html",
+      "title": "Login — Plágio",
+      "file": "mobile/03-publico-login.png",
+      "dimensions": {
+        "width": 412,
+        "height": 979
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "04-publico-cadastro",
+      "route": "/cadastro.html",
+      "finalUrl": "/cadastro.html",
+      "title": "Cadastro — Plágio",
+      "file": "mobile/04-publico-cadastro.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1021
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "05-publico-recuperar-senha",
+      "route": "/recuperar-senha.html",
+      "finalUrl": "/recuperar-senha.html",
+      "title": "Recuperar senha — Plágio",
+      "file": "mobile/05-publico-recuperar-senha.png",
+      "dimensions": {
+        "width": 412,
+        "height": 979
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "06-publico-redefinir-senha-sem-token",
+      "route": "/redefinir-senha.html",
+      "finalUrl": "/redefinir-senha.html",
+      "title": "Redefinir senha — Plágio",
+      "file": "mobile/06-publico-redefinir-senha-sem-token.png",
+      "dimensions": {
+        "width": 412,
+        "height": 979
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "07-publico-confirmar-email",
+      "route": "/verificar-email.html",
+      "finalUrl": "/verificar-email.html",
+      "title": "Confirmar E-mail — Plágio",
+      "file": "mobile/07-publico-confirmar-email.png",
+      "dimensions": {
+        "width": 412,
+        "height": 979
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "08-institucional-sobre",
+      "route": "/sobre.html",
+      "finalUrl": "/sobre.html",
+      "title": "Sobre o projeto — Plágio: não copie essa ideia",
+      "file": "mobile/08-institucional-sobre.png",
+      "dimensions": {
+        "width": 412,
+        "height": 3803
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "09-institucional-equipe",
+      "route": "/equipe.html",
+      "finalUrl": "/equipe.html",
+      "title": "Equipe — Plágio: não copie essa ideia",
+      "file": "mobile/09-institucional-equipe.png",
+      "dimensions": {
+        "width": 412,
+        "height": 4461
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "10-institucional-parceiros",
+      "route": "/parceiros.html",
+      "finalUrl": "/parceiros.html",
+      "title": "Parceiros — Plágio: não copie essa ideia",
+      "file": "mobile/10-institucional-parceiros.png",
+      "dimensions": {
+        "width": 412,
+        "height": 4737
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "11-institucional-materiais",
+      "route": "/materiais.html",
+      "finalUrl": "/materiais.html",
+      "title": "Materiais — Plágio: não copie essa ideia",
+      "file": "mobile/11-institucional-materiais.png",
+      "dimensions": {
+        "width": 412,
+        "height": 4966
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "12-institucional-cartilha",
+      "route": "/cartilha.html",
+      "finalUrl": "/cartilha.html",
+      "title": "Cartilha — Plágio: não copie essa ideia",
+      "file": "mobile/12-institucional-cartilha.png",
+      "dimensions": {
+        "width": 412,
+        "height": 3668
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "13-institucional-perguntas-frequentes",
+      "route": "/perguntas-frequentes.html",
+      "finalUrl": "/perguntas-frequentes.html",
+      "title": "Perguntas frequentes — Plágio: não copie essa ideia",
+      "file": "mobile/13-institucional-perguntas-frequentes.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2878
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "14-certificados-validacao",
+      "route": "/certificados/validar",
+      "finalUrl": "/certificados/validar",
+      "title": "Validar certificado — Plágio",
+      "file": "mobile/14-certificados-validacao.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1234
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Público",
+      "viewport": "mobile",
+      "name": "15-certificados-resultado-revogado",
+      "route": "/certificados/validar/CERT-17224941-BF231DFF-6982AFBA-6561DE2B",
+      "finalUrl": "/certificados/validar/CERT-17224941-BF231DFF-6982AFBA-6561DE2B",
+      "title": "Validar certificado — Plágio",
+      "file": "mobile/15-certificados-resultado-revogado.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1877
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "mobile",
+      "name": "20-aluno-inicio-e-catalogo",
+      "route": "/index.html",
+      "finalUrl": "/index.html",
+      "title": "Plágio — Não Copie Essa Ideia",
+      "file": "mobile/20-aluno-inicio-e-catalogo.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1145
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "mobile",
+      "name": "21-aluno-sala-virtual-e-certificados",
+      "route": "/sala-virtual.html",
+      "finalUrl": "/sala-virtual.html",
+      "title": "Sala Virtual — Plágio",
+      "file": "mobile/21-aluno-sala-virtual-e-certificados.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1156
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "mobile",
+      "name": "22-aluno-sala-de-aula",
+      "route": "/sala-aula.html?id_turma=1",
+      "finalUrl": "/sala-aula.html?id_turma=1",
+      "title": "Sala de Aula — Plágio",
+      "file": "mobile/22-aluno-sala-de-aula.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1794
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "mobile",
+      "name": "23-aluno-questionario-exercicio",
+      "route": "/questionario.html?tipo=exercicio&id_turma=1",
+      "finalUrl": "/questionario.html?tipo=exercicio&id_turma=1",
+      "title": "Questionário — Plágio",
+      "file": "mobile/23-aluno-questionario-exercicio.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1533
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "mobile",
+      "name": "24-aluno-questionario-prova",
+      "route": "/questionario.html?tipo=prova&id_turma=1",
+      "finalUrl": "/questionario.html?tipo=prova&id_turma=1",
+      "title": "Questionário — Plágio",
+      "file": "mobile/24-aluno-questionario-prova.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1533
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Aluno",
+      "viewport": "mobile",
+      "name": "25-aluno-verificador-contextual",
+      "route": "/verificador.html",
+      "finalUrl": "/verificador.html",
+      "title": "Verificador contextual — Plágio",
+      "file": "mobile/25-aluno-verificador-contextual.png",
+      "dimensions": {
+        "width": 412,
+        "height": 3229
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "mobile",
+      "name": "30-professor-minhas-turmas",
+      "route": "/professor.html",
+      "finalUrl": "/professor.html",
+      "title": "Área do Professor — Plágio",
+      "file": "mobile/30-professor-minhas-turmas.png",
+      "dimensions": {
+        "width": 412,
+        "height": 915
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "mobile",
+      "name": "31-professor-gestao-da-turma",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "mobile/31-professor-gestao-da-turma.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2717
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "mobile",
+      "name": "32-professor-modal-editar-matricula",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "mobile/32-professor-modal-editar-matricula.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2717
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "mobile",
+      "name": "33-professor-modal-novo-modulo",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "mobile/33-professor-modal-novo-modulo.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2717
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "mobile",
+      "name": "34-professor-modal-novo-conteudo",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "mobile/34-professor-modal-novo-conteudo.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2717
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Professor",
+      "viewport": "mobile",
+      "name": "35-professor-modal-novo-questionario",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "mobile/35-professor-modal-novo-questionario.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2717
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Administrador",
+      "viewport": "mobile",
+      "name": "40-admin-usuarios",
+      "route": "/admin.html",
+      "finalUrl": "/admin.html",
+      "title": "Painel administrativo — Plágio",
+      "file": "mobile/40-admin-usuarios.png",
+      "dimensions": {
+        "width": 412,
+        "height": 915
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Administrador",
+      "viewport": "mobile",
+      "name": "41-admin-cursos",
+      "route": "/admin.html",
+      "finalUrl": "/admin.html",
+      "title": "Painel administrativo — Plágio",
+      "file": "mobile/41-admin-cursos.png",
+      "dimensions": {
+        "width": 412,
+        "height": 1124
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Administrador",
+      "viewport": "mobile",
+      "name": "42-admin-turmas",
+      "route": "/admin.html",
+      "finalUrl": "/admin.html",
+      "title": "Painel administrativo — Plágio",
+      "file": "mobile/42-admin-turmas.png",
+      "dimensions": {
+        "width": 412,
+        "height": 915
+      },
+      "browserErrors": []
+    },
+    {
+      "area": "Administrador",
+      "viewport": "mobile",
+      "name": "43-admin-visao-da-turma",
+      "route": "/professor-turma.html?id_turma=1",
+      "finalUrl": "/professor-turma.html?id_turma=1",
+      "title": "Gerenciar Turma — Plágio",
+      "file": "mobile/43-admin-visao-da-turma.png",
+      "dimensions": {
+        "width": 412,
+        "height": 2735
+      },
+      "browserErrors": []
+    }
+  ]
+}

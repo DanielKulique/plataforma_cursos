@@ -37,17 +37,39 @@ describe('Goal Visual 1 - fundação visual', () => {
         const incrementalPages = new Set([
             'index.html',
             'login.html',
+            'recuperar-senha.html',
+            'redefinir-senha.html',
             'cadastro.html',
             'verificar-email.html',
             'sala-virtual.html',
             'sala-aula.html',
+            'sala-aulas.html',
+            'sala-aula-detalhe.html',
+            'sala-avaliacoes.html',
+            'sala-progresso.html',
+            'meus-certificados.html',
             'questionario.html',
             'professor.html',
             'professor-turma.html',
+            'professor-turma-alunos.html',
+            'professor-turma-aulas.html',
+            'professor-turma-aula.html',
+            'professor-turma-avaliacoes.html',
+            'professor-turma-avaliacao.html',
+            'professor-turma-certificados.html',
             'admin.html',
-            'verificador.html'
+            'verificador.html',
+            'certificados-validar.html'
         ]);
-        expect(pages).toHaveLength(12);
+        const institutionalPages = new Set([
+            'sobre.html',
+            'equipe.html',
+            'cartilha.html',
+            'parceiros.html',
+            'materiais.html',
+            'perguntas-frequentes.html'
+        ]);
+        expect(pages.length).toBeGreaterThanOrEqual(21);
 
         pages.forEach((page) => {
             const html = fs.readFileSync(path.join(publicDir, page), 'utf8');
@@ -57,6 +79,14 @@ describe('Goal Visual 1 - fundação visual', () => {
                 expect(localStyles).toEqual([
                     '/css/landing/landing.css',
                     '/css/landing/landing-responsive.css'
+                ]);
+                return;
+            }
+            if (institutionalPages.has(page)) {
+                expect(localStyles).toEqual([
+                    '/css/landing/landing.css',
+                    '/css/landing/landing-responsive.css',
+                    '/css/institucional.css'
                 ]);
                 return;
             }
@@ -75,8 +105,46 @@ describe('Goal Visual 1 - fundação visual', () => {
                 );
             }
 
+            if (page === 'sala-aula-detalhe.html') expectedStyles.push('/css/learning-path.css');
             expect(localStyles).toEqual(expectedStyles);
         });
+    });
+
+    it('unifica tipografia e assinatura de marca sem emoji de cérebro', () => {
+        const pages = fs.readdirSync(publicDir).filter((file) => file.endsWith('.html'));
+
+        pages.forEach((page) => {
+            const html = fs.readFileSync(path.join(publicDir, page), 'utf8');
+            expect(html).toContain('family=Fraunces');
+            expect(html).toContain('family=Work+Sans');
+            expect(html).toMatch(/\/assets\/landing\/(?:papagaio-detalhado|logo-plagio)\.webp|data-academic-header=/);
+            expect(html).not.toMatch(/brand-mark[^>]*>\s*🧠/u);
+        });
+    });
+
+    it('usa o papagaio detalhado nos ícones compactos e preserva o logotipo institucional', () => {
+        const compactPages = [
+            'admin.html', 'cadastro.html', 'certificados-validar.html', 'index.html',
+            'login.html', 'professor-turma.html', 'professor.html', 'questionario.html',
+            'recuperar-senha.html', 'redefinir-senha.html', 'sala-aula.html',
+            'sala-virtual.html', 'verificador.html', 'verificar-email.html'
+        ];
+
+        compactPages.forEach((page) => {
+            const html = fs.readFileSync(path.join(publicDir, page), 'utf8');
+            if (html.includes('data-academic-header=')) {
+                const shell = fs.readFileSync(path.join(publicDir, 'js', 'academic-area.js'), 'utf8');
+                expect(shell).toContain('/assets/landing/papagaio-detalhado.webp');
+                expect(shell).toContain('image.width = 256');
+                expect(shell).toContain('image.height = 256');
+            } else {
+                expect(html).toContain('/assets/landing/papagaio-detalhado.webp');
+                expect(html).toContain('width="256" height="256"');
+            }
+        });
+
+        const landing = fs.readFileSync(path.join(publicDir, 'landing.html'), 'utf8');
+        expect(landing).toContain('/assets/landing/logo-plagio.webp');
     });
 
     it('expõe os grupos de tokens semânticos aprovados sem cadeia de imports', () => {
@@ -146,8 +214,8 @@ describe('Goal Visual 1 - fundação visual', () => {
             .forEach((size) => expect(tokensSource).toContain(`--font-size-${size}:`));
         ['1', '2', '3', '4', '6', '8', '12', '16']
             .forEach((space) => expect(tokensSource).toContain(`--space-${space}:`));
-        expect(tokensSource).toContain('--font-family-sans: "Sora"');
-        expect(tokensSource).toContain('--font-family-display: "DM Serif Display"');
+        expect(tokensSource).toContain('--font-family-sans: "Work Sans"');
+        expect(tokensSource).toContain('--font-family-display: "Fraunces"');
         expect(tokensSource).toContain('--font-family-mono: "JetBrains Mono"');
     });
 

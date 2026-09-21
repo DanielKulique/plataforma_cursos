@@ -212,6 +212,18 @@ describe('Goal Visual 8 - landing institucional isolada', () => {
         });
     });
 
+    it('mantém superfícies narrativas vinculadas ao tema e SVG válido', () => {
+        expect(css).toMatch(
+            /\.landing-tree\s*\{[\s\S]*?var\(--landing-paper\)[\s\S]*?var\(--landing-bark\)/
+        );
+        expect(responsiveCss).toMatch(
+            /\.landing-card\s*\{[\s\S]*?background:\s*color-mix\([^;]*var\(--landing-paper\)/
+        );
+        expect(responsiveCss).not.toContain('rgba(251, 247, 236, 0.97)');
+        expect(html).toContain('preserveAspectRatio="xMidYMin slice"');
+        expect(html).not.toContain('preserveAspectRatio="xMidYTop slice"');
+    });
+
     it('mantém um h1, hierarquia, conteúdo alternativo e decoração oculta', () => {
         expect(html.match(/<h1\b/g)).toHaveLength(1);
         expect(html.match(/<h2\b/g)?.length).toBeGreaterThanOrEqual(7);
@@ -229,17 +241,23 @@ describe('Goal Visual 8 - landing institucional isolada', () => {
 
     it('configura rotas reais e protege todos os links externos', () => {
         expect(html).not.toMatch(/href=["']#["']/);
-        ['/index.html', '/login.html', '/cadastro.html']
+        [
+            '/index.html',
+            '/login.html',
+            '/cadastro.html',
+            '/sobre.html',
+            '/equipe.html',
+            '/cartilha.html',
+            '/parceiros.html',
+            '/materiais.html',
+            '/perguntas-frequentes.html'
+        ]
             .forEach((route) => expect(html).toContain(`href="${route}"`));
         expect(html).toContain('href="#projeto"');
-        expect(html).toContain('href="#conteudo"');
-        expect(html).toContain('href="#instituicao"');
-        expect(html).toContain(
-            'href="https://falandodeplagio.wixsite.com/eplagio"'
-        );
+        expect(html).not.toContain('falandodeplagio.wixsite.com');
 
         const external = externalAnchors(html);
-        expect(external.length).toBeGreaterThanOrEqual(7);
+        expect(external.length).toBeGreaterThanOrEqual(2);
         external.forEach((anchor) => {
             expect(anchor).toContain('target="_blank"');
             expect(anchor).toContain('rel="noopener noreferrer"');
@@ -328,11 +346,13 @@ describe('Goal Visual 8 - landing institucional isolada', () => {
         }
     });
 
-    it('usa fallbacks locais sem adicionar carregamento de fonte externa', () => {
-        expect(html).not.toContain('fonts.googleapis.com');
-        expect(html).not.toContain('fonts.gstatic.com');
-        expect(css).toContain('font-family: Georgia, "Times New Roman", serif');
-        expect(css).toContain('font-family: Arial, Helvetica, sans-serif');
+    it('carrega a tipografia editorial aprovada com fallbacks locais', () => {
+        expect(html).toContain('fonts.googleapis.com');
+        expect(html).toContain('fonts.gstatic.com');
+        expect(html).toContain('family=Fraunces');
+        expect(html).toContain('family=Work+Sans');
+        expect(css).toContain('font-family: "Fraunces", Georgia, serif');
+        expect(css).toContain('font-family: "Work Sans", system-ui, sans-serif');
         expect(css).not.toMatch(/@font-face|@import/i);
     });
 });

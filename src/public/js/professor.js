@@ -1,4 +1,4 @@
-import { clearToken, getToken } from './auth.js';
+import { authenticatedFetch, clearToken } from './auth.js';
 import { initSessionUI } from './session-ui.js';
 import {
     createAcademicState,
@@ -87,7 +87,7 @@ function renderizarTurmas(turmas = []) {
 
         const description = criarElemento('p', 'card-item__description', turma.descricao_curso || 'Curso sem descrição cadastrada.');
         const actions = criarElemento('div', 'card-actions');
-        const manage = criarElemento('a', 'action-button', 'Gerenciar turma');
+        const manage = criarElemento('a', 'action-button', 'Abrir painel da turma');
         manage.href = `/professor-turma.html?id_turma=${encodeURIComponent(turma.id_turma)}`;
         actions.append(manage);
         item.append(header, meta, description, actions);
@@ -97,8 +97,6 @@ function renderizarTurmas(turmas = []) {
 }
 
 async function carregarTurmasProfessor(usuario) {
-    const token = getToken();
-
     try {
         if (listaTurmas) {
             mostrarEstadoLista('Carregando suas turmas...', 'loading-state');
@@ -108,11 +106,7 @@ async function carregarTurmasProfessor(usuario) {
             statusUsuario.textContent = `Professor logado: ${usuario.nome_completo}`;
         }
 
-        const response = await fetch('/api/turmas/professor/' + usuario.id_usuario, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        const response = await authenticatedFetch('/api/turmas/professor/' + usuario.id_usuario);
 
         if (response.status === 401) {
             clearToken();

@@ -1,0 +1,69 @@
+{
+  "goal": "11A_DATABASE_MIGRATION_CONTRACT",
+  "executed_at_utc": "2026-09-17T19:50:49Z",
+  "environment": "staging",
+  "database": {
+    "name": "plataforma_cursos_staging",
+    "identity": "plataforma_cursos_staging",
+    "mysql_version": "8.4.11",
+    "connection": "Docker Compose internal db:3306"
+  },
+  "backup": {
+    "backup_id": "backup-20260917T194835Z-d87305fa-7eba-406b-9b1b-fc77850141d3",
+    "status": "GOOD",
+    "manifest_verified": true,
+    "offsite_service_result": "success"
+  },
+  "preflight": {
+    "status": "ok",
+    "ledger": "missing_as_expected",
+    "tables_checked": 20,
+    "columns_checked": 168,
+    "indexes_checked": 72,
+    "constraints_checked": 91,
+    "drift": false
+  },
+  "baseline": {
+    "registered_versions": "001-011",
+    "historical_sql_reexecuted": false,
+    "pending_applied": [12]
+  },
+  "final": {
+    "migration_status": "001-012_APPLIED_OK",
+    "second_migrate": "NO_OP",
+    "schema_status": "ok",
+    "tables_checked": 21,
+    "columns_checked": 173,
+    "indexes_checked": 74,
+    "primary_keys_checked": 21,
+    "unique_indexes_checked": 26,
+    "foreign_keys_checked": 35,
+    "checks_checked": 12,
+    "constraints_checked": 94,
+    "pending_migrations": 0,
+    "migration_drift": false
+  },
+  "data_integrity": {
+    "status": "RESTORE_VERIFIED",
+    "domain_tables_compared": 20,
+    "materials_compared": 7,
+    "certificates_compared": 4,
+    "reconciliation_failures": 0
+  },
+  "health": {
+    "internal_http_status": 200,
+    "external_status": "ok",
+    "app_container": "healthy",
+    "db_container": "healthy",
+    "caddy_container": "healthy"
+  },
+  "final_sync": {
+    "executed_at_utc": "2026-09-17T19:58:00Z",
+    "migration_status": "001-012_APPLIED_OK",
+    "migrate_result": "NO_OP",
+    "schema_status": "ok",
+    "external_health": "ok",
+    "containers": "healthy"
+  },
+  "secrets_recorded": false
+}

@@ -143,7 +143,7 @@
 .public-home .catalog-section .card-title {
   margin: 0;
   color: var(--color-text);
-  font-family: var(--font-family-sans);
+  font-family: var(--font-family-display);
   font-size: var(--font-size-18);
   line-height: var(--line-height-heading);
 }
@@ -191,8 +191,8 @@
   inline-size: min(100%, var(--form-width));
   max-inline-size: var(--form-width);
   padding: var(--space-8);
-  border-color: var(--color-border-strong);
-  border-radius: var(--radius-lg);
+  border-color: var(--color-border);
+  border-radius: var(--radius-xl);
   background: var(--color-surface-elevated);
   box-shadow: var(--shadow-lg);
   backdrop-filter: none;
@@ -219,7 +219,9 @@
 .academic-page {
   display: block;
   min-block-size: 100vh;
-  background: var(--color-background);
+  background:
+    radial-gradient(circle at 88% 0%, color-mix(in srgb, var(--color-action) 5%, transparent), transparent 28rem),
+    var(--color-background);
   color: var(--color-text);
 }
 
@@ -299,10 +301,10 @@
   gap: var(--space-8);
   padding: clamp(var(--space-8), 5vw, var(--space-12));
   border: 1px solid color-mix(in srgb, var(--color-action) 34%, var(--color-border));
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background:
-    radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--color-accent) 13%, transparent), transparent 32%),
-    color-mix(in srgb, var(--color-action) 8%, var(--color-surface));
+    radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 34%),
+    color-mix(in srgb, var(--color-action) 7%, var(--color-surface));
   overflow: hidden;
 }
 
@@ -436,7 +438,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface-elevated);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-border) 72%, transparent);
 }
 
 .academic-page .academic-panel__header {
@@ -764,4 +766,31 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
+}
+
+/* A autoria acompanha a mesma sequência por aulas, com avaliações no contexto. */
+.teacher-class-page .teacher-content-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+.teacher-class-page .teacher-module__header {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+.teacher-class-page .teacher-module__copy {
+  grid-column: 1 / -1;
+}
+@media (max-width: 640px) {
+  .teacher-class-page .teacher-module__header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.academic-page .academic-breadcrumbs,
+.academic-page .course-navigation-host {
+  width: 100%;
+}
+
+.academic-page .course-navigation-host {
+  margin-block: var(--space-4) var(--space-6);
 }

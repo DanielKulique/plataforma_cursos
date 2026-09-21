@@ -39,9 +39,29 @@ body.landing-page {
   background:
     radial-gradient(ellipse 120% 60% at 50% 0%, var(--landing-bg) 60%, var(--landing-bg-deep) 100%);
   color: var(--landing-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Work Sans", system-ui, sans-serif;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
+}
+
+body.landing-page.dark-mode {
+  --landing-bg: #17120e;
+  --landing-bg-deep: #120e0b;
+  --landing-paper: #211a14;
+  --landing-paper-soft: #2a2119;
+  --landing-bark: #b48f6f;
+  --landing-bark-dark: #765942;
+  --landing-bark-light: #d0ad8b;
+  --landing-pine: #8baa86;
+  --landing-pine-mid: #719071;
+  --landing-pine-light: #a9c0a4;
+  --landing-amber: #d19158;
+  --landing-ink: #f5eddd;
+  --landing-ink-muted: #c8baa5;
+  --landing-line: rgba(222, 209, 188, 0.22);
+  --landing-focus: #e0bd8e;
+  --landing-shadow-soft: 0 20px 55px -34px rgba(0, 0, 0, 0.78);
+  --landing-shadow-nav: 0 12px 36px -28px rgba(0, 0, 0, 0.9);
 }
 
 .landing-page,
@@ -115,17 +135,16 @@ body.landing-page {
   inset: 0 0 auto;
   z-index: 100;
   min-height: var(--landing-nav-height);
-  border-bottom: 1px solid rgba(74, 53, 39, 0.1);
-  background: rgba(241, 234, 217, 0.92);
+  border-bottom: 1px solid var(--landing-line);
+  background: color-mix(in srgb, var(--landing-bg) 92%, transparent);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   transition:
-    box-shadow var(--landing-transition-normal),
-    background var(--landing-transition-normal);
+    box-shadow var(--landing-transition-normal);
 }
 
 .landing-header.landing-is-scrolled {
-  background: rgba(251, 247, 236, 0.97);
+  background: color-mix(in srgb, var(--landing-paper) 97%, transparent);
   box-shadow: var(--landing-shadow-nav);
 }
 
@@ -170,6 +189,37 @@ body.landing-page {
   text-decoration: none;
   white-space: nowrap;
   transition: color var(--landing-transition-fast);
+}
+
+.landing-theme-toggle {
+  min-width: 3.25rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-radius-small);
+  background: var(--landing-paper);
+  color: var(--landing-pine);
+  font: 600 0.68rem/1 "Work Sans", system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--landing-transition-fast), border-color var(--landing-transition-fast);
+}
+
+.landing-theme-toggle:hover {
+  border-color: var(--landing-pine);
+  background: color-mix(in srgb, var(--landing-pine) 9%, var(--landing-paper));
+}
+
+.landing-theme-toggle .icon-sun,
+.landing-page.light-mode .landing-theme-toggle .icon-moon,
+.landing-page.dark-mode .landing-theme-toggle .icon-sun {
+  display: none;
+}
+
+.landing-page.light-mode .landing-theme-toggle .icon-sun,
+.landing-page.dark-mode .landing-theme-toggle .icon-moon {
+  display: inline;
 }
 
 .landing-nav__links a:not(.landing-nav__cta)::after {
@@ -312,7 +362,7 @@ body.landing-page {
   max-width: 13ch;
   margin: 0 auto;
   color: var(--landing-bark);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Fraunces", Georgia, serif;
   font-size: clamp(3.15rem, 8.6vw, 6.6rem);
   font-weight: 700;
   letter-spacing: -0.045em;
@@ -329,7 +379,7 @@ body.landing-page {
   max-width: 48ch;
   margin: 1.75rem auto 0;
   color: var(--landing-ink-muted);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Fraunces", Georgia, serif;
   font-size: clamp(1.05rem, 2vw, 1.3rem);
   line-height: 1.65;
   text-wrap: balance;
@@ -388,7 +438,7 @@ body.landing-page {
 
 .landing-button--secondary {
   border-color: var(--landing-bark-light);
-  background: rgba(251, 247, 236, 0.68);
+  background: color-mix(in srgb, var(--landing-paper) 72%, transparent);
   color: var(--landing-bark);
 }
 
@@ -396,6 +446,16 @@ body.landing-page {
 .landing-button--secondary:focus-visible {
   border-color: var(--landing-bark);
   background: var(--landing-paper);
+}
+
+.landing-page.dark-mode .landing-button--primary {
+  color: var(--landing-soil);
+}
+
+.landing-page.dark-mode .landing-button--secondary {
+  border-color: var(--landing-bark);
+  background: var(--landing-paper-soft);
+  color: var(--landing-ink);
 }
 
 .landing-hero__account {
@@ -453,8 +513,15 @@ body.landing-page {
   width: 100%;
   overflow: clip;
   background:
-    linear-gradient(rgba(251, 247, 236, 0.94), rgba(251, 247, 236, 0.94)),
-    radial-gradient(circle at 20% 30%, rgba(74, 53, 39, 0.08) 0 1px, transparent 1.2px);
+    linear-gradient(
+      color-mix(in srgb, var(--landing-paper) 94%, transparent),
+      color-mix(in srgb, var(--landing-paper) 94%, transparent)
+    ),
+    radial-gradient(
+      circle at 20% 30%,
+      color-mix(in srgb, var(--landing-bark) 8%, transparent) 0 1px,
+      transparent 1.2px
+    );
   background-size: auto, 21px 21px;
   isolation: isolate;
 }
@@ -618,10 +685,8 @@ body.landing-page {
   padding: clamp(1.7rem, 3vw, 2.5rem);
   border: 1px solid var(--landing-line);
   border-radius: var(--landing-radius-card);
-  background: rgba(251, 247, 236, 0.94);
+  background: color-mix(in srgb, var(--landing-paper) 96%, transparent);
   box-shadow: var(--landing-shadow-soft);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
 }
 
 .landing-branch-section.landing-is-visible .landing-card {
@@ -643,7 +708,7 @@ body.landing-page {
 .landing-card__number {
   margin: 0 0 0.85rem;
   color: var(--landing-amber);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Fraunces", Georgia, serif;
   font-size: 0.79rem;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -653,7 +718,7 @@ body.landing-page {
 .landing-card h2 {
   margin: 0;
   color: var(--landing-bark);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Fraunces", Georgia, serif;
   font-size: clamp(1.75rem, 3vw, 2.2rem);
   line-height: 1.14;
   text-wrap: balance;
@@ -742,7 +807,7 @@ body.landing-page {
   max-width: 14ch;
   margin: 0 auto;
   color: var(--landing-soil-text);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Fraunces", Georgia, serif;
   font-size: clamp(2.35rem, 6vw, 4rem);
   line-height: 1.05;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.58);
@@ -753,7 +818,7 @@ body.landing-page {
   max-width: 46ch;
   margin: 1.5rem auto 0;
   color: var(--landing-soil-muted);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Fraunces", Georgia, serif;
   font-size: 1.08rem;
   line-height: 1.72;
 }

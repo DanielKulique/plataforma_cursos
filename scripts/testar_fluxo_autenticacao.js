@@ -14,15 +14,17 @@
 const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { loadEnvironment } = require('../src/config/loadEnvironment');
+loadEnvironment('development', path.join(__dirname, '..'));
 const { assertDevelopmentDatabase } = require('./test_database_safety');
+const { openVerifiedConnection } = require('./lib/database-operations');
 assertDevelopmentDatabase(process.env);
 const TEST_ACCOUNT_PASSWORD = process.env.CANONICAL_SEED_PASSWORD;
 if (!TEST_ACCOUNT_PASSWORD || String(TEST_ACCOUNT_PASSWORD).length < 8) {
     throw new Error('Defina CANONICAL_SEED_PASSWORD com ao menos 8 caracteres antes de executar este script.');
 }
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3000}/api`;
+const BASE_URL = `http://localhost:${process.env.APP_PORT || 3000}/api`;
 
 // Cores para output
 const cores = {
@@ -71,11 +73,9 @@ async function executarSeedAdmin() {
         console.log(output);
         
         // Verificar se admin existe
-        const conn = await mysql.createConnection({
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
+        const conn = await openVerifiedConnection({
+            createConnection: mysql.createConnection,
+            additions: { database: process.env.DB_NAME }
         });
         
         const [admins] = await conn.query(
@@ -94,11 +94,9 @@ async function executarSeedAdmin() {
         // Pode falhar se admin já existir - isso é OK
         log(cores.amarelo, 'Seed pode ter falhado porque admin já existe (isso é OK)');
         
-        const conn = await mysql.createConnection({
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
+        const conn = await openVerifiedConnection({
+            createConnection: mysql.createConnection,
+            additions: { database: process.env.DB_NAME }
         });
         
         const [admins] = await conn.query(
@@ -289,11 +287,9 @@ async function testarListarUsuariosAdmin(token) {
 async function limparUsuariosTeste() {
     log(cores.amarelo, '\n=== LIMPANDO USUÁRIOS DE TESTE ===');
     
-    const conn = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+    const conn = await openVerifiedConnection({
+        createConnection: mysql.createConnection,
+        additions: { database: process.env.DB_NAME }
     });
     
     try {
@@ -323,14 +319,11 @@ async function main() {
     log(cores.verde, '✓ Servidor está rodando!');
     
     let resultados = [];
-    let tokenAdmin = null;
-    let dadosProfessor = null;
-    
     // Teste 0: Seed do admin
     resultados.push(await executarSeedAdmin());
     
     // Teste 1: Login admin
-    tokenAdmin = await testarLoginAdmin();
+    const tokenAdmin = await testarLoginAdmin();
     resultados.push(!!tokenAdmin);
     
     if (tokenAdmin) {
@@ -338,7 +331,7 @@ async function main() {
         resultados.push(await testarCriacaoProfessorPublico(tokenAdmin));
         
         // Teste 3: Criar professor via admin (deve funcionar)
-        dadosProfessor = await testarCriacaoProfessorAdmin(tokenAdmin);
+        const dadosProfessor = await testarCriacaoProfessorAdmin(tokenAdmin);
         resultados.push(!!dadosProfessor);
         
         // Teste 4: Criar aluno via público (deve funcionar)

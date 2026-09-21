@@ -1,0 +1,1608 @@
+{
+  "date": "2026-09-19",
+  "scope": "plataforma_cursos repository; pre-existing worktree changes preserved",
+  "removed_count": 110,
+  "moved_count": 54,
+  "removed": [
+    {
+      "path": "coverage/lcov-report/__tests__/fixtures/detector-contextual.fixture.js.html",
+      "sha256_before": "3a4a24a37103f6c2259a8082de6402c3fc8affa1d894c799bdfd022fb846bfeb",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/__tests__/fixtures/index.html",
+      "sha256_before": "c59add1c05bbd27844de14bfb5fa3722dac9b2bf71dce9cddf36d468cb58b05d",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/__tests__/integration/auth.integration.test.js.html",
+      "sha256_before": "9e004bcc0e125b4042f93d37ff4d0b09f3a9fc16d8a88f165d20bd64e2d413ef",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/__tests__/integration/cursos-turmas.integration.test.js.html",
+      "sha256_before": "6123dfcd25bc68c312070bb5110e4c8b8d1919ed3b4e719c112351e2a8d9aa52",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/__tests__/integration/index.html",
+      "sha256_before": "a147f6f14177948ca98ceb2fd0baf3e80c8c2166fecb1206926373cc863aeedf",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/__tests__/integration/matriculas.integration.test.js.html",
+      "sha256_before": "b5dc47f2a2bf66e9d18a3f3bd5da19f2e3f88c8df5568f1b24222b9a8f9d0b32",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/__tests__/integration/plagio.test.js.html",
+      "sha256_before": "99d0407ce4c372c88237422016d29eca124f41fc0f328aa0cdf7410efdd3e669",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/__tests__/integration/setup.js.html",
+      "sha256_before": "d7ef8a6ae67e92a21fa26c28b1670ee3f71edae8f85cbdcfc5eeb3823b76f19d",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/analises-contextuais.controller.js.html",
+      "sha256_before": "dc53c0d3ee73583316a43fd519206d3f4a85a376966f9acdff3c4955a6b3daa3",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/auth.controller.js.html",
+      "sha256_before": "6e772da767a955d3fe281bdb6da9f70c894e1e3f8b41204286424859672a8f6c",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/capabilities.controller.js.html",
+      "sha256_before": "a851b7008b706dbb22391929826e55db04fba1ee9bb5c3e6114eae4fe35cea0b",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/certificados.controller.js.html",
+      "sha256_before": "abd587b5f25810a7a2d9050e6b76b323c10f7529feadb23d99fde6d8ae93274f",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/conteudos.controller.js.html",
+      "sha256_before": "4e98d7ca2ca4a896c6d1108690462a423a7dd38cb8935d89fa242f5e76ea7ffa",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/cursos.controller.js.html",
+      "sha256_before": "33330b7e06a0b15928eab768010b62cb5a600bd7533ff8c762c8b1485f8f147e",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/health.controller.js.html",
+      "sha256_before": "77261188b3dbb7713ef25cd4d1bbfb904140aa1d4fc9b751f6a6833471fe21ed",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/index.html",
+      "sha256_before": "5b831b84382666ef9c4c9e515512808f8987c27056ecc70a4768a6081cd7506a",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/indexed-analysis.controller.js.html",
+      "sha256_before": "2abeae8e775ebaa7b119ad2ed00875dbf9ecd5f3359c3171aa99d47162fa1b81",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/matricula.controller.js.html",
+      "sha256_before": "e3432e1ea8b6f6a63304b3e1c9952ef3de7d41e8ce8cb61e421a4e37a871a03e",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/plagio.controller.js.html",
+      "sha256_before": "d2a0c14ae77d85e9f4ef8d289fab10994eb76c582bbd5e94aa1f439cdc088e9b",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/questoes.controller.js.html",
+      "sha256_before": "dfe15e73fefca7f5d941d33709cc5384c99ead55bac7a68649f24eacf68c4add",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/turmas.controller.js.html",
+      "sha256_before": "e3635f7f8d315533ed68b70db92c27d2e5d0844e2ca851dd521e21d5cf8ecb51",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/controllers/usuarios.controller.js.html",
+      "sha256_before": "e7c156eb17d2b9be373cb913d66b17076128fcf84b2499b504b2d3cb88ccdc4d",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/analise-contextual.model.js.html",
+      "sha256_before": "071c434cb757d6d44d8c1cff41452bb455baf2f180160e4fce5cba7d30977f47",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/analise.model.js.html",
+      "sha256_before": "9e050eb8eb37c7fd70c420edae35d10930588958da33229d50d6b95aac7f96bc",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/auth.models.js.html",
+      "sha256_before": "2660052277504197df704eeb2d0fb65576e511c4b3f146ffdaca05b391208d12",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/certificados.models.js.html",
+      "sha256_before": "836647ca0465940bb4e1448ff45897008e6b5413c0ee03d36e9365ce36f6f63d",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/conteudos.models.js.html",
+      "sha256_before": "47b088bc754e9acd246399e0f22c6fa4eeee3650ee8e089580ad491d1febf7e6",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/cursos.models.js.html",
+      "sha256_before": "ca5443cb8451806f9b093b40838884fb5f41fcc8d070cd1acaaeaf1e8f82997d",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/index.html",
+      "sha256_before": "99f355e379e34b71db8353661b158bf5b7465bcec276d7a084252ce7d309a32a",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/matricula.models.js.html",
+      "sha256_before": "d0d93650af162cf03e0aa0de2d8c7a7d3024dc20d40d92b19012b6749d5afc26",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/questoes.models.js.html",
+      "sha256_before": "bf6132532171365ab9cbae9abfe5b2f6047408dd8dc5a2fba2657319f24e8087",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/turmas.models.js.html",
+      "sha256_before": "d43ddd06c95c77a439721982268735052ed0af089f453f9f196deb87052cb6b1",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/models/usuarios.models.js.html",
+      "sha256_before": "09235b8ddbe8cd6911a2e064a9c2a6ace69ade9f169cf7ffdf66eff906509524",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/admin.routes.js.html",
+      "sha256_before": "adb7c2d0d7f68cad0cebedd8503047b55023392f4bdb6fc8f1c4a4ca8fbeef97",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/analises-contextuais.routes.js.html",
+      "sha256_before": "a9215118d95834e61b9dd2aafcca178a81ac3867ceef3dfe039a46b0e29434b4",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/auth.routes.js.html",
+      "sha256_before": "03bfdaed0cc2f898b817d0f79a5e04018df0ecd698e5adc92a6470b496593bc4",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/capabilities.routes.js.html",
+      "sha256_before": "3a10f56e6d8a4d3e279e9f7590f9ac77a46ae0dba1dd53eeabf6a1ad84bc91fb",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/certificados.routes.js.html",
+      "sha256_before": "0987221162123f8aba1e48e78ea9eea8a9d2aaf73bb4676e0f3f5b3efc2e144a",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/conteudos.routes.js.html",
+      "sha256_before": "61575a8246269f67061f9ad2155e97cf3f232f0fbcb495dc2418b50b08e90d82",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/cursos.routes.js.html",
+      "sha256_before": "b18ecb2cb41d210919af1b02f893c0bf86c0dc911cfb631ea88f41c5e9673161",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/health.routes.js.html",
+      "sha256_before": "e6ea3b49b9f779bc7ba425dcd083e2e00d9b6effa84a10781bb5a83f3a6d4945",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/index.html",
+      "sha256_before": "beb918ce3973cc7df499c5063f07096836ea3e49de53858408b68757a906822c",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/indexed-analysis.routes.js.html",
+      "sha256_before": "48789030fe77f8444ad207a7d836f965e8b749ea733e19945e13b2b40088b9d0",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/matricula.routes.js.html",
+      "sha256_before": "14252be37a1ea69d1ae6e99d6f77d4ff709fc370546176133c301b1e34b5b940",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/plagio.routes.js.html",
+      "sha256_before": "db907e3cec45291deb7bac962ce676566fd5cad226bf3c51ecdb055145358bc4",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/public-certificados.routes.js.html",
+      "sha256_before": "ff26c1695cc8a15f95feb5dd87cd5bf60633304171fee96187859e66f8b8b237",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/questoes.routes.js.html",
+      "sha256_before": "79bc393640eee21e189dde9714ad21ee4702172d7aa9215b6ad4c7f94065e9e0",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/turmas.routes.js.html",
+      "sha256_before": "d134d3dd9e87bd4b76e9908593c7754fa12cd62560340b8ed7cbec5002a1d8dc",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/routes/usuarios.routes.js.html",
+      "sha256_before": "b72aefeb45b346f3075a313c5baa803e505e115a16b22aedf60796e4b13bf5eb",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/academic-access.service.js.html",
+      "sha256_before": "91af8b54fa0cc06d5240f9b4e171661c89f31294338684749c9446e662be85db",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/academic-progress.service.js.html",
+      "sha256_before": "792b5c79f19c2c38266f3be22cf60a244bc11999eb18f84ec1370d9cea99e3be",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/backup-status.service.js.html",
+      "sha256_before": "630e946e526c01c2739db720fe30cee2102a564351ca47a974d98b7ad7f1675b",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/certificate-pdf.service.js.html",
+      "sha256_before": "5542eb150bf9d80bb42e31e011c6d601b9e63496d92d3881737e03485e3db1a9",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/certificate-rate-limit.service.js.html",
+      "sha256_before": "bcfa29561db376e3b372af5fd9574ec2c63a61f25eca5cbf5dd2525b0dc42ed4",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/certificate-storage.service.js.html",
+      "sha256_before": "9ba3760cb73cb4d1aeca457183c01e4eb662649bb14289f0e4f84b9384a87eda",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/certificate.service.js.html",
+      "sha256_before": "7e37138ae5fece5405cfb0142aedb9afafc90c4e67a98a611d7ff65675690799",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/detector-contextual.service.js.html",
+      "sha256_before": "6b11a238a791f7aa67078014b7805119c461a5aba6444a950e30afee7d9e9001",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/http-metrics.service.js.html",
+      "sha256_before": "bfdc0abc93a4080981a4729ba5391fdd7b2810e30355ccdf70da5aa949b3b7ef",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/index.html",
+      "sha256_before": "6756bdca255ba93bb60da01c1fc8c73d71b4478547b782e388bd4084aef0a7df",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/indexed-analysis.service.js.html",
+      "sha256_before": "a49f3fef05d2bad024f631eaf0e6c16bce6885e88e2075fe753488dff2dab9ac",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/material-lifecycle.service.js.html",
+      "sha256_before": "3645144f7d3702a2f372e74cac7edecec7a29001c5033419205d66c4aacc51d5",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/material-upload.service.js.html",
+      "sha256_before": "fa36fd38d92b6411be658c119099f496c183273047f1ca42e5c5f2bf26d6d0ab",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/operational-status.service.js.html",
+      "sha256_before": "64f089258aaebb153f46ea26efdc958ea85208a36469a67eedae1a11a0cf5f7e",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/pdf-validation.service.js.html",
+      "sha256_before": "4f9003c25875a0edd028cb4691afffd5269504cd798d944deaefe3f8430e437e",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/pdf-validation.worker.js.html",
+      "sha256_before": "5059bb06a93b70405345d54ef2f99db18e9642f6acf7ff5fde2146c53bb8f2d3",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/plagio.service.js.html",
+      "sha256_before": "849e643274acd4cf48174150dc1359e51819662861d468d778fa4ddbc8d245b4",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/private-download.service.js.html",
+      "sha256_before": "f69c9c3684375334fcbdbd0b88a819d675f7218334f348a9d32023cb8fbd079a",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/private-storage.service.js.html",
+      "sha256_before": "4bb3798faa5f5f4f25464df8dbd1d505aaee8c6cd9437ab9a16da461b080aa8c",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/storage-reconciliation.service.js.html",
+      "sha256_before": "7976abb9342bc09c9546c672085d911e9c8882eda3bbf803df12854dc1cc2bbf",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/api/services/turma-replication.service.js.html",
+      "sha256_before": "91c4990a62be2cc0350bce049bf3e6113b6207a48f9c34f53eaada62d9f70a5e",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/base.css",
+      "sha256_before": "3f876e51f0a46864ffa7665b4b7a1f5fb5f6f37fb6a28f014e2b12d82962c852",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/block-navigation.js",
+      "sha256_before": "cd8db34b1fbeb973354a93f8b4133c7c7eab34cdda9429a0434be91384783b7e",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/certificate-storage.js.html",
+      "sha256_before": "4c8aef0355684db82127e471655324fc04eedd51ada43911e95910f76814fbf9",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/database-connection.js.html",
+      "sha256_before": "1bc1948c6ca6549318d703f731143c35d603a2e7a4632739fbc31f83be90645d",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/database-identity.js.html",
+      "sha256_before": "a29e9c467461a812e3e912bbdeb58e2268e846f0a1736c8160d239e4f34f3eba",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/database-pool-errors.js.html",
+      "sha256_before": "e6403358b5e8f610163fc343ba53dae82b7f67a5699e6d0ef0bde58123656103",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/database.js.html",
+      "sha256_before": "53b22992fc60b5d3e63b76740ebcf9536eb51c53a9c7bc161bc0829fa84cfe3b",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/env.js.html",
+      "sha256_before": "9b58a0acdf0fc10e88c8fada2190a56904fbb4ac023a5c2f9312d1fe1c10e95c",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/index.html",
+      "sha256_before": "c6dce068778713c450a9e6f24992a26fbf2809693cc059a57f160cc1c7c7ba06",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/loadEnvironment.js.html",
+      "sha256_before": "7a007416a4cb1d800e7cd592a73df9633e8cd113cd1c8644726156254ced73de",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/material-storage.js.html",
+      "sha256_before": "cca447e3fffa1beacf4eb480b3200c6438ee087269fd1baed3854342743c14ca",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/runtime-config.js.html",
+      "sha256_before": "de1a5cd69272f9189176283b12b494ad465613d2b0d97f313889efe49ae7a27e",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/session.js.html",
+      "sha256_before": "b2c1d60db7a416d138959c16246f428c4850e30d19ccdfc387b09005b253fa89",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/config/storage-policy.js.html",
+      "sha256_before": "82518465c7f9df5435e503b1026ab923f3318bdafcab12a47acd8298c691df1e",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/favicon.png",
+      "sha256_before": "5b0cfd52dc0bfbe544f4e1a9c77aa46b8629b0e0aad6c54f95eef457b86c2a89",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/index.html",
+      "sha256_before": "ee1b769fb5ca7cdb545a1989930d02685961ec54a8dfdf55834631b71f74d6c8",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/checkAuth.middleware.js.html",
+      "sha256_before": "40c9c5ba13c6887c8f4fd8c27c4783a22926395907ac29bfacd39910c73a193a",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/checkProfessorPermission.middleware.js.html",
+      "sha256_before": "b6dc9edefc922fdcdbe2566e45fc043ea70d31401c233cdfa59a2e7243447371",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/checkRole.middleware.js.html",
+      "sha256_before": "ce5111c5e437315607926c6967af0ce9ac6ac4d68d9bb676ce928446787915f9",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/checkUserPermission.middleware.js.html",
+      "sha256_before": "9caf4f9a7e2b92170b30eb05f8bce75ce900263a5f1b1951e873c9210d7fd679",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/detectorContextual.validation.js.html",
+      "sha256_before": "09c8f371257faa7993b19eaadaf77e8f4fdec9a24a7b702c27fc087343553c99",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/detectorRateLimit.middleware.js.html",
+      "sha256_before": "5210b51ebf3d75048a469778b9c6b4eb2656584abfac78cc83bbe78a990c7d1c",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/emailVerificationRateLimit.middleware.js.html",
+      "sha256_before": "7ae2fae7946649d5a1c243c2f290865a7d923d68bd1499809ab92ca2e48fb2c4",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/featureFlag.middleware.js.html",
+      "sha256_before": "427569962c53fec8e6492f722f7f264133f0ce70fb7830389c06c173987c1b2c",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/httpObservability.middleware.js.html",
+      "sha256_before": "3c894caae65f1c8610343d77172e624ecebc28a89db700afdce446558fa803a8",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/index.html",
+      "sha256_before": "779209627a39dcc31ea9e28d6db1d5bf7b8a8388c62981c9d1a3997b406343fc",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/indexedAnalysis.validation.js.html",
+      "sha256_before": "7bc7ab1cc7c73694e9629d93d960a800db5018518ef8c17ef5436f7651fb6904",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/indexedAnalysisRateLimit.middleware.js.html",
+      "sha256_before": "415a8b919b23c27c03eaf4d15a79879732cbd20ff031c854c19f29584cc287bf",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/middlewares/requestContext.middleware.js.html",
+      "sha256_before": "2e547f35bf65799f96c00a0be337eb0e15314e79213dba2e9a2db5fdd64d6b67",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/prettify.css",
+      "sha256_before": "ea3fe433f9450698ca8a230271688e7aeec12f99c8a7ef6c94379abb38f27823",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/prettify.js",
+      "sha256_before": "fa1b1e1b906ddcfa08b46f161c0f924f506e1a31b4f3e09b8caaa2463ef52c18",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/services/email.service.js.html",
+      "sha256_before": "10007ae407611cf4f8eb00890fb6ed29a4934d0f0da04afecdfe12ab05169f59",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/services/index.html",
+      "sha256_before": "4342975ef884a3542ce98ef2582d6d3a07b81a481d4d30cc9cb1a418124d53a2",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/sort-arrow-sprite.png",
+      "sha256_before": "42c895355f9838ede83fdfdca90127d8471aefed5ecf5342374f65ec7c3f10ab",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/sorter.js",
+      "sha256_before": "f8cc5d157379d844fd695ad567b6c29b3c1f0812964ddf6f95c26327e434bab5",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/utils/http-response.js.html",
+      "sha256_before": "8f69c2c8a9d8a989f4b5aa73de1736ce7360ec65ccb68e1c16a658865ba424c3",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/utils/identity.js.html",
+      "sha256_before": "cfcc143d69e9f55fd2f5612507a3d4b0934452325cd1fd68333ac3dbaf3feae9",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/utils/index.html",
+      "sha256_before": "4292ea25ca55eb88ba17c550f7890056f418a70456e6b45cf58ab3c30cbe7cf5",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/utils/logger.js.html",
+      "sha256_before": "4f8f80e002a05098551fecca1400d54e68b2499cafa5cd0355e314d497d2410c",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    },
+    {
+      "path": "coverage/lcov-report/utils/pagination.js.html",
+      "sha256_before": "14d4553eeed4a893f569d12d7ec3ade5d49c2666dcb1eb9d8707214be04c8f93",
+      "classification": "generated HTML coverage report; machine-readable results preserved"
+    }
+  ],
+  "moved": [
+    {
+      "from": "docs/GOAL2_BANCO_MATRICULA.md",
+      "to": "docs/engineering/goals/GOAL2_BANCO_MATRICULA.md",
+      "sha256_before": "87be06b99a0a8867e060c62e284ee0d7baf5c285ef95e426600c5f74492cba99",
+      "sha256_after": "f0e5cc3469a3d17797820c27b47de5687b32c3960e674a53fc712eccc5c7fe8e",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL3_FLUXOS_ALUNO_PROFESSOR.md",
+      "to": "docs/engineering/goals/GOAL3_FLUXOS_ALUNO_PROFESSOR.md",
+      "sha256_before": "9c7355363f5189070cd65f2aad86e923078ae7ef1ee04cb46c2c8031024237cb",
+      "sha256_after": "1d4c5c732165aa101d488a8944014b08805740db87bcef0b09b6ab2499bdd7c5",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL4_CRUD_ADMINISTRATIVO.md",
+      "to": "docs/engineering/goals/GOAL4_CRUD_ADMINISTRATIVO.md",
+      "sha256_before": "2a2270c1efe873136aaf3de6c95df8f5f3668f724434adb8266c946b2b7cfbfb",
+      "sha256_after": "dfa968c3d17a2a47491b07c2689c85f313433bdf0c1f14ede7ce6ac4cf1e6f3a",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL5_TESTES_VALIDACAO_FINAL.md",
+      "to": "docs/engineering/goals/GOAL5_TESTES_VALIDACAO_FINAL.md",
+      "sha256_before": "997bb1430cf273b70be9e7adeb70e9e1542623472708481fb305c7ec106eb558",
+      "sha256_after": "13628e114cd09f7dec56cd214c2e224ce1731c56d230e007b53c2483e0aa30fa",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL_DETECTOR_3_INTEGRACAO.md",
+      "to": "docs/engineering/goals/GOAL_DETECTOR_3_INTEGRACAO.md",
+      "sha256_before": "31d99c76ee954b859d3d3573a12c533f0bfa1b713736b706a1cbd7487f2b3313",
+      "sha256_after": "c23a1e8b524a3fe3923f505c92b01014c6a86d0713499cbe6f88b5c938fd7411",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL_DETECTOR_4_INTERFACE.md",
+      "to": "docs/engineering/goals/GOAL_DETECTOR_4_INTERFACE.md",
+      "sha256_before": "cd7386803f4dd15c8a140c3252c1f9acc3043840edd5dbc9f85bcd85ff91b14c",
+      "sha256_after": "654641ce3ad6a6f7b522648370fcc361ec637fa1e8ef37580f3abca46b501ad2",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL_VISUAL_4_ADMIN.md",
+      "to": "docs/engineering/goals/GOAL_VISUAL_4_ADMIN.md",
+      "sha256_before": "27967101555093d436c611c797314ba6b88efc102e1538d892df620f0ab24776",
+      "sha256_after": "2a979410f7cfd336e3cff200d3400edb1382794bee1aeb62ea53fba59bd7b70b",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL_VISUAL_5_VERIFICADOR.md",
+      "to": "docs/engineering/goals/GOAL_VISUAL_5_VERIFICADOR.md",
+      "sha256_before": "8e796e2ef7671ec511b6480aae63348f2f386820cdcc5b255b9633488c0deb77",
+      "sha256_after": "82c7fcaddad12656604cfd88b8aec7e3e1b36dfd1f361713f7ff875359edfc90",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL_VISUAL_6_CONSOLIDACAO.md",
+      "to": "docs/engineering/goals/GOAL_VISUAL_6_CONSOLIDACAO.md",
+      "sha256_before": "7035d1f9aa91992542325a4073adc1b7fe903e426651ca393cdd0414c93dbbf6",
+      "sha256_after": "e7fff91ee1f4d4f2d18c3d9c93c1a9746cf927195ef19cbc643c4ddf53af9293",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL_VISUAL_7_VALIDACAO_PUBLICACAO.md",
+      "to": "docs/engineering/goals/GOAL_VISUAL_7_VALIDACAO_PUBLICACAO.md",
+      "sha256_before": "0f9fec562af4e225ea57dbac7891b7aebaf0ee8270cf3c36178d2e9065f8f10b",
+      "sha256_after": "fd8781459ecdd1dde460e8a0b70e0a8b644598bf101668bb088f3c525811ce23",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/GOAL_VISUAL_8_LANDING.md",
+      "to": "docs/engineering/goals/GOAL_VISUAL_8_LANDING.md",
+      "sha256_before": "b4d753ac4375c508575400ccf40d37670e87bb792597695ff2bdc52ba9c06831",
+      "sha256_after": "1407f8c66be73ffe7fd8ce7192f859b354186baaa745149aeb0e8a11c86e33d6",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_02_ACADEMIC_COMPLETION_INTEGRITY.md",
+      "to": "docs/engineering/goals/GOAL_02_ACADEMIC_COMPLETION_INTEGRITY.md",
+      "sha256_before": "acb87a6ac66d4704217cf46b397f586892ab4162a88fa6a4b8bd4295bd2e82ea",
+      "sha256_after": "bf430fa85b0520fadd84e3de661d42277799a834e7da934c37af11642c2eeff2",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_02_ACADEMIC_EXAM_APPROVAL.md",
+      "to": "docs/engineering/goals/GOAL_02_ACADEMIC_EXAM_APPROVAL.md",
+      "sha256_before": "236220ee80c125fafc9e50d19526d834e10fa4f2ba089dce148a8047b82abdb8",
+      "sha256_after": "e2d9e743b21f5644e1a43dc80889a289098de69abd3f4acb275444b907552808",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_03_CERTIFICATE_VERSIONING.md",
+      "to": "docs/engineering/goals/GOAL_03_CERTIFICATE_VERSIONING.md",
+      "sha256_before": "fc865eb2f8bf5750558281e0f4c10534693c8972bdc34a84434ecf09c094f08d",
+      "sha256_after": "82b22ff2bbf0f5409a5de7506c5fc5962b0a56e1cd3cc0a1ded678b5160915ad",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_04_ENROLLMENT_LIFECYCLE.md",
+      "to": "docs/engineering/goals/GOAL_04_ENROLLMENT_LIFECYCLE.md",
+      "sha256_before": "262c8c4ee91a74ff3705b9fa7ad34f29769275c84b4bda2172e3e214c0c57172",
+      "sha256_after": "c88a4ac4df50846398bd86b07fbb245455d5fa7d617587f90bdf5ac648b79c1b",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_06_ATOMIC_ACADEMIC_AUTHORIZATION.md",
+      "to": "docs/engineering/goals/GOAL_06_ATOMIC_ACADEMIC_AUTHORIZATION.md",
+      "sha256_before": "0eb1df45048cd4df755a5f6ac2498c6ae6eb0f2f968e13f25777006d5d924490",
+      "sha256_after": "19599e257f3894c60a22a2cc27c8146853266d21dc47013684471f451563f744",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_07_STORAGE_DATABASE_INTEGRITY.md",
+      "to": "docs/engineering/goals/GOAL_07_STORAGE_DATABASE_INTEGRITY.md",
+      "sha256_before": "401f60a1879f21f5883773c255527d8f3128b47a34b6db5bf5cf415865ca24f0",
+      "sha256_after": "eecdb44d44671f01fbde2f8c42292b623c93dae4a933a6ded4ae11855847d25e",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_08_BACKUP_RESTORE_DISASTER_RECOVERY.md",
+      "to": "docs/engineering/goals/GOAL_08_BACKUP_RESTORE_DISASTER_RECOVERY.md",
+      "sha256_before": "57e7142533a3fff4f0b3d3943e587624ffbc837588949da18e60f239eeedf3ee",
+      "sha256_after": "5fd2379c60099f3861939bd979e9f16ab43a58ebcb16da34adcbd35418307642",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_09_FRONTEND_API_RESILIENCE.md",
+      "to": "docs/engineering/goals/GOAL_09_FRONTEND_API_RESILIENCE.md",
+      "sha256_before": "458cee45a3384bbf640dac0a2fc94cfdee8dd6962340dd575c75214cff37564d",
+      "sha256_after": "d84a01ed8255c8935deb373292e47759901cf1a93d8fce9ed03305c06ab91b39",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/GOAL_10_ASSESSMENT_AUTHORING_COMPLETE.md",
+      "to": "docs/engineering/goals/GOAL_10_ASSESSMENT_AUTHORING_COMPLETE.md",
+      "sha256_before": "aca665f53a6a1834efc9e20df7d65b21236c4b764c13f3347fbd686109a03f84",
+      "sha256_after": "2bd289722a09bdea6cb63bd9b979dc4645dc46978967519f5bc03b6153a45681",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/ARQUITETURA_BANCO.md",
+      "to": "docs/engineering/history/ARQUITETURA_BANCO.md",
+      "sha256_before": "350c4b494129c7f87a1c1185f55099e5c96435962da853ee55b5c9c0f25ed761",
+      "sha256_after": "4c93ea6dbbbbde9165e1378441665166dac67c938b2c084733de6eb888de28ec",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/AUDITORIA_FLUXO_ACADEMICO.md",
+      "to": "docs/engineering/history/AUDITORIA_FLUXO_ACADEMICO.md",
+      "sha256_before": "924cb15539008d37b5d61a11bd828631f011521804e9d3244cb8da1e8c418fe1",
+      "sha256_after": "3fc99199fde517a5e39d348abc3fb9c6ffb4f282829cea3362bd1b44ae7f3e53",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/AUDITORIA_FRONTEND.md",
+      "to": "docs/engineering/history/AUDITORIA_FRONTEND.md",
+      "sha256_before": "67f20af9e6770a603bd7f2514940fe78f8695ca0ed9ef432aebe7f570e2305d2",
+      "sha256_after": "fc021bcce56804e51158ff77a0f1fb32cd1a66a237b4b38bad87942309c75ed0",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/AZURE_STAGING.md",
+      "to": "docs/engineering/history/AZURE_STAGING.md",
+      "sha256_before": "d843d2b65fb584dda3c0de4e5d9647e83f3b9dd0166229ffe2d2f8235a376e8e",
+      "sha256_after": "2db64f7bd8a4381ae6b0e663b39f49cc7c11846a7e9e3ba2ef4734843d9fbe84",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/BACKLOG_FRONTEND_EXECUTAVEL.md",
+      "to": "docs/engineering/history/BACKLOG_FRONTEND_EXECUTAVEL.md",
+      "sha256_before": "0b2157b4e90d81cc60bb21bc4bd736961de9b2d9c7a44618260b8a3f4b0c87c6",
+      "sha256_after": "39a54ccec51e7bbd1577355b14d3ff864f97eba5dc11173698b6b0c3e20cd236",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/BACKUP_RESTORE.md",
+      "to": "docs/engineering/history/BACKUP_RESTORE.md",
+      "sha256_before": "8de90b2a153f0392eb28eb8b7036643c4dc4268a844a24ea97b21f1647a96e86",
+      "sha256_after": "23a8c9a2e1a35141818b1b7647184fd5d488c02ace5e08f27d5ea8796f037a56",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/CERTIFICADOS.md",
+      "to": "docs/engineering/history/CERTIFICADOS.md",
+      "sha256_before": "7a3cbd064ca9499dd46b1dc36565b517f600780aeb674501cd7b7c6a5165db37",
+      "sha256_after": "8d70260aac63333fa66d66bff83cd87051366fc647dbd6bd32756aeb2c06cb2b",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/CLASSROOM_LEARNING_PATH.md",
+      "to": "docs/engineering/history/CLASSROOM_LEARNING_PATH.md",
+      "sha256_before": "1f51d041e5e985e4dcd5809c2e2192b38320753bd5e3e7df87c4e21ff9602761",
+      "sha256_after": "9bd4454d3c7d430d912be4d2f2e70b6d7c7c5f468ed87636e20075d04d3cf88f",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/DEPLOY_VPS.md",
+      "to": "docs/engineering/history/DEPLOY_VPS.md",
+      "sha256_before": "15ebc1a023fd7a629a0eb03d719378e639913ac3140b6b5b11eb0e8589d61cbb",
+      "sha256_after": "fd12a11bb076216aedb15eb23d439fce0ba825ce1bc550a9c6919df7ee7fb035",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/DESIGN_SYSTEM_FRONTEND.md",
+      "to": "docs/engineering/history/DESIGN_SYSTEM_FRONTEND.md",
+      "sha256_before": "9c39080bc8af78ba20b95a0dbd7b0211cfb30e2dd547241b0738d14c7fc1fb9e",
+      "sha256_after": "aaa836d3d105d73db20f612cb6f052eabb551dd2947b8faed5e8782ec614b8d6",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/INTEGRACAO_ANALISE_SIMILARIDADE.md",
+      "to": "docs/engineering/history/INTEGRACAO_ANALISE_SIMILARIDADE.md",
+      "sha256_before": "b5ea546af3455b5e4b99268e0ebc4b65529d03df40c4537ad62551f6ccd0ddc2",
+      "sha256_after": "1cff257a963319e1e59a6e33a434e961daa7f739aeb8e5c60f94af40b6e56671",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/REFATORACAO_VISUAL_ARAUCARIA.md",
+      "to": "docs/engineering/history/REFATORACAO_VISUAL_ARAUCARIA.md",
+      "sha256_before": "1c3114017bf76d225d5e56e8e0db40dc8695453fa80c83bc87a8fb88ca5ed98e",
+      "sha256_after": "21e5e27ef60d61a8a8c57796965868920f57ce128b90e261b371296cb4928233",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/RELATORIO_MESTRE_API_ANALISE_PLAGIO.md",
+      "to": "docs/engineering/history/RELATORIO_MESTRE_API_ANALISE_PLAGIO.md",
+      "sha256_before": "81f32311082287d417fdb841dd6165270dff2b8e4e1ce4aec8dcae9995f141be",
+      "sha256_after": "99a9794a3ef14e41cbd1fe30b9850bb55c0f16bcf384c0efe54effb12e087f82",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/ROADMAP_DETECTOR_INCREMENTAL_FONTES.md",
+      "to": "docs/engineering/history/ROADMAP_DETECTOR_INCREMENTAL_FONTES.md",
+      "sha256_before": "b65cb4a4dd9a2b6be56bd47d240a7ce9637e8465ced5ba22eb515ede1273ecc0",
+      "sha256_after": "416c365fa2e57af8fafa170905f71e92194d7f0d67554466afdf4e632a992827",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/SECURITY_MVP.md",
+      "to": "docs/engineering/history/SECURITY_MVP.md",
+      "sha256_before": "9915dddd91bc9d64e20000d1784fdc7bbd09f405acf23e5b03aa232e3f5da798",
+      "sha256_after": "765db500a68aa2880134b2f93f87ac69bec567708e6fbe8ee9fe1e6ba4decf21",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/SETUP_OUTRO_COMPUTADOR.md",
+      "to": "docs/engineering/history/SETUP_OUTRO_COMPUTADOR.md",
+      "sha256_before": "3cde8b5e3a38275fcdd4ce7e5d376455631a2ecea8706a781e50d93c8620cae0",
+      "sha256_after": "6e6d4057df85739c7a083c8a39a387e4177d3858036486a1fcf76d7d2ce1ece8",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/STAGING_CHECKLIST.md",
+      "to": "docs/engineering/history/STAGING_CHECKLIST.md",
+      "sha256_before": "0108e11fb0cbbdfd1433cc2b97df1d1a7086e698745055bd15522e5880f9c9bb",
+      "sha256_after": "1eaac416e57ba9ba325029cdb325f749fd24a098d62b580b76a35178b07e0759",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/TESTES_INTEGRACAO.md",
+      "to": "docs/engineering/history/TESTES_INTEGRACAO.md",
+      "sha256_before": "73e4eed9f37debd952a8c58e5004053b7665a0a713266b499e575e5548df5109",
+      "sha256_after": "0f6505c9ae9e086b87841bf232803a97c5de17e6c744e817d80c7b5ff46bfb5d",
+      "byte_identical": false
+    },
+    {
+      "from": "ANALISE_FRONTEND.md",
+      "to": "docs/engineering/history/ANALISE_FRONTEND.md",
+      "sha256_before": "e5b318753134669d66b15feb064bdf96f5e51a57aa44896c673b50362cfb7ca4",
+      "sha256_after": "8bfba437e6ee1034ebcab0d6208118b7654a6c8f9dae23f99f061251739ff352",
+      "byte_identical": false
+    },
+    {
+      "from": "ANALISE_INTEGRACAO.md",
+      "to": "docs/engineering/history/ANALISE_INTEGRACAO.md",
+      "sha256_before": "6270ba9afc1250d20d9ceec998d5bc2abf3132157097f2d088c923cfa46e5486",
+      "sha256_after": "ea7324cec21cf8c5f143259a9dd5f5d02a18ef029b8af752e8a6d5ff6a06a6a5",
+      "byte_identical": false
+    },
+    {
+      "from": "DADOS_MOCK_TESTE.md",
+      "to": "docs/engineering/history/DADOS_MOCK_TESTE.md",
+      "sha256_before": "3df1831815e8bcae845239abf41386d84c57390e08767a86206b9d66a276f98c",
+      "sha256_after": "2c8a75538517454d4886d74226b5a0198cd50dcb2bcd56f018a94bebda2ff505",
+      "byte_identical": false
+    },
+    {
+      "from": "FRONTEND_IMPLEMENTACOES.md",
+      "to": "docs/engineering/history/FRONTEND_IMPLEMENTACOES.md",
+      "sha256_before": "a44bb037ef24a4bd6245f0725df84f5545e629fc9784ef2de78348c1c23f72b0",
+      "sha256_after": "3833366aa42240cf6dbf6709e7ef792d6c523a88d0408a59bb534dc83d7bdcfb",
+      "byte_identical": false
+    },
+    {
+      "from": "MAPA_NAVEGACAO_BOTOES.md",
+      "to": "docs/engineering/history/MAPA_NAVEGACAO_BOTOES.md",
+      "sha256_before": "056f25deeb95cda0e9211aad687a2d8bc1a3e7237b45d0ced09f080208d02775",
+      "sha256_after": "c6177e1ff21dad43d253da61a952bbc545624f9a02d60b906a36fbb6c6799aa1",
+      "byte_identical": false
+    },
+    {
+      "from": "MATRICULA_IMPLEMENTACAO.md",
+      "to": "docs/engineering/history/MATRICULA_IMPLEMENTACAO.md",
+      "sha256_before": "24bac16ab9879e32000b1bb6890a7a0b7f96b449de299b5cc4faf3aaf232b200",
+      "sha256_after": "38f5666f25db2658efdf6301290a31e09e49e224aa1eb3b3e57833cf2df96340",
+      "byte_identical": false
+    },
+    {
+      "from": "RESUMO_EXECUTIVO.md",
+      "to": "docs/engineering/history/RESUMO_EXECUTIVO.md",
+      "sha256_before": "8eedb4b90610fb2cf4dcf87bed879b9a1e66d2ac61f755c748509847a90920fc",
+      "sha256_after": "0e68fa9bd93be2b3bc7a66629dc04314485edb4d2ab6cf1f6169ab80a84506c9",
+      "byte_identical": false
+    },
+    {
+      "from": "TESTES.md",
+      "to": "docs/engineering/history/TESTES.md",
+      "sha256_before": "b85e4964975d4a6dc5fc1e00808d0fb2d852f8562ce8fefa73cf0b330458212a",
+      "sha256_after": "66079c6d48f1d34c7114e3074856c276c834f0e5822ad047e3a64e9c1d30b349",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/DATABASE_MIGRATIONS.md",
+      "to": "docs/engineering/history/DATABASE_MIGRATIONS.md",
+      "sha256_before": "78ef341a1abed05465412c169d91c865a1937f4b48af6a04b058c3ed3efaa149",
+      "sha256_after": "141c973abaf7aa80d5c8d41d878c0f742c4c1f6a5f8b9c38df6a6fcb27ac0d7b",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/RUNTIME_OPERATIONS.md",
+      "to": "docs/engineering/history/RUNTIME_OPERATIONS.md",
+      "sha256_before": "348fe9a6a9c8133b5d5239505ee80775b3ec3e8c65bbc5afecd6f4fd9c1ab79f",
+      "sha256_after": "586cef8f66121ab085ff0afd796eba7f4bd53010b4d0dd0c81fc3e04e0f342a4",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/BACKUP_RESTORE_RUNBOOK.md",
+      "to": "docs/engineering/history/BACKUP_RESTORE_RUNBOOK.md",
+      "sha256_before": "14ac1d1bf55df9e63a7f379c2ead7d2247994885196066e9d8dc5bc83c43ff18",
+      "sha256_after": "c7f54f83aa3fffa1d2d0ec25e34330aa97964b216eb6667fcf67b6a2a4533ae6",
+      "byte_identical": false
+    },
+    {
+      "from": "docs/engineering/INFORMATION_ARCHITECTURE.md",
+      "to": "docs/engineering/history/INFORMATION_ARCHITECTURE.md",
+      "sha256_before": "9eb37ee56fe50fd3ce3406ed563fac8699acc026eb09f9c0729fb61bfd4cdbb3",
+      "sha256_after": "188ea5626e2531bbc6803a4aaa63c3d435cd34c4fca4625a60d9ccbf2fc5ffc3",
+      "byte_identical": false
+    },
+    {
+      "from": "coverage/coverage-summary.json",
+      "to": "docs/engineering/evidence/coverage-before-goal14/coverage-summary.json",
+      "sha256_before": "879fc15f72e94d10a9eb07e59a1d3ac04fec29cc61c9418f41b11581c91aae1d",
+      "sha256_after": "879fc15f72e94d10a9eb07e59a1d3ac04fec29cc61c9418f41b11581c91aae1d",
+      "byte_identical": true
+    },
+    {
+      "from": "coverage/lcov.info",
+      "to": "docs/engineering/evidence/coverage-before-goal14/lcov.info",
+      "sha256_before": "d1fd7cafe725a6a49f7276f3da41fd505c9d964c7da2a34b6941c3f85cb9a19a",
+      "sha256_after": "d1fd7cafe725a6a49f7276f3da41fd505c9d964c7da2a34b6941c3f85cb9a19a",
+      "byte_identical": true
+    },
+    {
+      "from": "coverage/clover.xml",
+      "to": "docs/engineering/evidence/coverage-before-goal14/clover.xml",
+      "sha256_before": "46232a8930a5f248013f1bccfffba27083ca17227ba04bd3eb26379cf41553cc",
+      "sha256_after": "46232a8930a5f248013f1bccfffba27083ca17227ba04bd3eb26379cf41553cc",
+      "byte_identical": true
+    },
+    {
+      "from": "coverage/coverage-final.json",
+      "to": "docs/engineering/evidence/coverage-before-goal14/coverage-final.json",
+      "sha256_before": "4b59e9d51bd9569b045e41b2c7cc301f90ff647b1ec1599261b6df75eb35c0d7",
+      "sha256_after": "4b59e9d51bd9569b045e41b2c7cc301f90ff647b1ec1599261b6df75eb35c0d7",
+      "byte_identical": true
+    }
+  ],
+  "protected_non_markdown_files_verified": 641,
+  "protected_non_markdown_files": {
+    "skills-lock.json": "f338dc7d2b4b6cc2aac1ae63088465e82b52c5e151a1fd467543d722bb45005a",
+    "eslint.config.js": "95862d508053bd728b1daf3a2f3dbda19c9974bbb3d487c71edde27ed6202050",
+    "Caddyfile.staging": "4470d12a82b8d96cefa2e963fb6160436d6aa1626e2409bced6044e72ddf713c",
+    "audit-report.html": "343d2dd2050b5d4d54d3fb3fb23388730bc45fefc41d07d427533ca52ca0f4e8",
+    "jest.integration.config.js": "3c9964890521862905a069748e85f269597008447f13c38711c88ed923a7e1ef",
+    "compose.yaml": "883d4b0a158729d41557073a512b265c2f1f2417da7ab87742bb8c732d1cdd36",
+    "compose.local-db.yaml": "04a295ff11e069011b4bf9be75304a5c1a9d197cb7822ad046e92a0f20bf2263",
+    "color-report.html": "2b380fa2b6280fdfb6949a11def941d4d8e855f31bd6d1b4585a9614e67fa88a",
+    "index.js": "a1b598f97f950e62f73cfe73c4020bc10b23de3950050458e1d72ada819c9c2e",
+    "Dockerfile": "da021340b5f20cf0ed0679206a76d212b7a2bf1a70696e20909e6eb25f6ac522",
+    "audit-autoria.js": "68b39744f723aa2c636d7e5306b613ea3f77d1267de9a6f7057e0d9bee31f796",
+    ".env.staging.example": "5cf7eedb3df4a7328af0cc9ea07b2a5a96bafefdfaa578c179332d43f9b29ab8",
+    "compose.staging.yaml": "20c25b285e140967f0306842ca1114dc3e565bece7e82028981ea20fa0bc064c",
+    ".env.example": "e02a8bbb2304dc3f72fc0efa02d15225aea1bea96c9e934fbc07c29cba8e4a53",
+    "layout.html": "d8567fc10b9aa241b7c5cd49072a7924f547e3d24354e6b4a778518cb26fc0d5",
+    ".env.test.example": "e9802f7584baae3a0b77e3b9ca67811ed6d9ffaf24d09768e20707bb17402e51",
+    ".env.test": "9cadc2751403c26f7833219089702b38058dae49736a00d57e0a784b14434625",
+    ".dockerignore": "078e4c8fb85b01894d1dfda342029c56f37564c6a173fde3022e3e1a62315dc3",
+    "package.json": "fac48d75d13d23b7c41ba026cfded5e695a6eb5c92f10524bbc8c2ae51be8c5b",
+    ".env": "a4df0f37695390215e271c9653792b887f4a773bc2752175ff377a6e2e0531c7",
+    ".env.production.example": "4b51f5cd11de1b3ab164e54d140a12d1c05329adfff3125393bde63fbfce7d08",
+    "Caddyfile": "c762cc4a47d25006330496836c45d8521b12d39e3f18444fb8e056ab3b45e95b",
+    "package-lock.json": "59dc422dd601599c0c95dc09cee0bdd11b4a5ce8b44a8e0e2e840f4072e1cabf",
+    ".impeccable/config.json": "1197f7e9642ad2c7d0497c0aa6efcb1ed348b2a8bf6828ec326ec1b686f8782c",
+    ".impeccable/review/equipe-final2-mobile.png": "aab81d947d298efc540130fa442f34a981d37777815b2669b3b9cccc69fda577",
+    ".impeccable/review/equipe-final-desktop.png": "c0be9a76d3017120c41b075fdd4a8cf445bc3c95b5fb380ee7b48fa7cb26123b",
+    ".impeccable/review/equipe-full-mobile.png": "a4b4e50a62ff61f6a7c128e7939220fd461e570d8362c63a0086ad289fe731fd",
+    ".impeccable/review/equipe-desktop.png": "52a8d4776d4c59df9fe169db9224fa0227acd1384a974daebf9413733837c48c",
+    ".impeccable/review/equipe-full-desktop.png": "a197c738e401dafbf0cacdffa6515e1443d60d1f4fc887c48f20d260c3edf458",
+    ".impeccable/review/equipe-final-mobile.png": "d8f07bd5a8a30d0919dac6345504264106c22fb5135661de513d62503f5ff49d",
+    ".impeccable/review/equipe-mobile.png": "dc4179e3e4e8a3031539aaf3d2fa6206e1302d11aa8f64fc7666a18369bf6d43",
+    ".impeccable/review/equipe-final2-desktop.png": "3c06fbef39285d4d4a0ecb0150fd753b215a0761f7226cba5b5fd1db53fa4ce6",
+    ".impeccable/review/goal03/desktop-teacher.png": "d73300970bf82b332a17c43a4b3afce5872a132ff72a4bf663bb9f875c9c311a",
+    ".impeccable/review/goal03/desktop-admin-dialog.png": "be9692f14920d64ced5fec2b3fbbe7c382381bf6cf4dc18ad7919fe938487e72",
+    ".impeccable/review/goal03/mobile-admin-dialog.png": "726459a2903cf86daa85287262c9a09de79c938fb97c801e87524cc0a2e8190e",
+    ".impeccable/review/goal03/desktop-student-history.png": "67613eb33f2256c32fc3abe03c65332046e382c57910ad66b80f220fa9aa5278",
+    ".impeccable/review/goal03/manifest.json": "0f067ae3d4b8d94f092268f1d7c901728994f0a3d68741d607300cfd81fccc97",
+    ".impeccable/review/goal03/mobile-admin-history.png": "18f86848f679d3ec69986578eceb4672edd1a8ee95ec6d82feb6f1a3764cdd7e",
+    ".impeccable/review/goal03/desktop-admin-history.png": "e0c14a4a231999ec3ac3c8ab26a74ebf0411a3a9e79b7720f2b5e59441331d6f",
+    ".impeccable/review/goal03/mobile-teacher.png": "240744dcdb153439f73752a2582a14e45f003729cbf069c8c5d891b61ed56001",
+    ".impeccable/review/goal03/mobile-student-history.png": "10512ce5163d79d81807c55bdf19ea93afb6cc54de4b228f36e2d7c2a8a4e7f5",
+    "docs/engineering/evidence/coverage-before-goal14/coverage-summary.json": "879fc15f72e94d10a9eb07e59a1d3ac04fec29cc61c9418f41b11581c91aae1d",
+    "docs/engineering/evidence/coverage-before-goal14/lcov.info": "d1fd7cafe725a6a49f7276f3da41fd505c9d964c7da2a34b6941c3f85cb9a19a",
+    "docs/engineering/evidence/coverage-before-goal14/clover.xml": "46232a8930a5f248013f1bccfffba27083ca17227ba04bd3eb26379cf41553cc",
+    "docs/engineering/evidence/coverage-before-goal14/coverage-final.json": "4b59e9d51bd9569b045e41b2c7cc301f90ff647b1ec1599261b6df75eb35c0d7",
+    "scripts/smoke_atomic_authorization_staging.js": "219e473188d7f7964ed7084851db055f076ce899dd10b81a3a8c089621c37a80",
+    "scripts/backup_offsite.sh": "89171b3c43244038db29d0ddb3d47f578a0f4a21f55f2d91a6df6800fb13e345",
+    "scripts/generate_certificate_visual_samples.js": "0d9a62b008ff2c455942e41474db47a6423fb135ad8fb4a6817419c5765b1db8",
+    "scripts/setup_database.js": "f387e57a9c316b033be18cff21c0fbb45a1a3b602de677e9b2315a1f4219d3ac",
+    "scripts/seed_database.js": "fece861191536da42c3d666966eb1c71aa22c50e6aa294b712843f3ab3ced715",
+    "scripts/smoke_information_architecture_staging.js": "01488f64aa845204ad2c00fb085cae36708999f6fb674fb5e060ad3d9e34359b",
+    "scripts/restore_drill.sh": "b1650a0f92305da411d44947911c574d34c9bc1e99e936e3c5cfc09c3ffd4707",
+    "scripts/fingerprint_legacy_database.js": "b22568c6d81979675095a1b6cac545479220c766bc15ed277a2e1ccff76649be",
+    "scripts/generate_schema_contract.js": "a21af4503ceaf8b30e8c8b5161cf953bf3c021aa0db28303d66f5178fa725cee",
+    "scripts/smoke_course_pdf_staging.js": "ffbfb846a3b5adaac812b8ad90006c3f3637b7cf3a38e86dd50a0e275b1af310",
+    "scripts/test_database_safety.js": "742cbf45801ce0556c93ff8b6850cb80df95df3c6e7f80b2e896c418fb6e27e5",
+    "scripts/migrate_database.js": "b8297ae4426e3f03d44920a177acee80be64e97a67f7e7942830575366742971",
+    "scripts/seed_learning_path_demo.js": "ea97a131e98fe981f6e4cb12e205685f3ce609c479675c6b20c94a93b26305e7",
+    "scripts/smoke_staging.js": "d1a8f7d52f5a4a5397ea584b3377144ed600621ff0ae184be59a6922a59f1d99",
+    "scripts/restore_database.sh": "eab8e96461540bcdb441439547586190c6643cce0750cf0b3e64f867dcf18f70",
+    "scripts/capture_backup_metadata.js": "46cfcf7979cb78e4b354ef3ede6d859f0a2e6c59c093cacea0a039f550d589d4",
+    "scripts/schema_contract.js": "280ba40799997fbc46d8c9ab9b91bb44db91a9a354bc97653d49bd788ae62269",
+    "scripts/provision_backup_offsite_azure.sh": "7421959a32fa759b4a268d148d0875a74646e18eb940b6da87e3ea4bcf81ebda",
+    "scripts/verify_database_identity.js": "eb0671ae05482f2fff7706be08603abbf211ca1fbfb2d14a270681b052629764",
+    "scripts/seed_usuarios_teste.js": "1e45957f6d909222231fe8313b8001d10149aba64ca1308f19bb6d6e94b794b9",
+    "scripts/seed_test_database.js": "30f47cb9fcae5c57114eee25098bdc15221549dc1fd4287dc845a9ca7aea0691",
+    "scripts/validate_learning_path_staging.js": "18f0aa022e03482f3cc52ab444408473caf02609982e871cf2f31d865250c567",
+    "scripts/seed_manual_demo.js": "bfd7fa2b63137150de8d83d513c3cf5ab07541c7a8e89f8ecbaac027a151d182",
+    "scripts/seed_staging_demo.js": "41fea6f3f9412b50864f321136415dd186500ebe9e9479e18186a0667e335d73",
+    "scripts/deploy_staging.sh": "8142400f7637b2177270cf405d26727866f4da9be9fbf769afe1fbd18ebbd4fe",
+    "scripts/seed_matriculas_mock.js": "f7870e6b96b682ebb3025df0fe3cbee400297265797f8915ac1726e298b6f1e7",
+    "scripts/validate_database_isolation.js": "df508771ee59088c04d1939a17f6b2937434fc38428d6f469dcb2e07d57227b7",
+    "scripts/smoke_certificates_staging.js": "2e36436f91677571cf94745b52d129ac91d1569bfafb30dc59d95eef99a3f079",
+    "scripts/testar_criacao_professor.js": "d63edfa20e6d6cf9eb8aa083dd0a7a5ac461ad488d32ee9ca87fd1c3aa9db41d",
+    "scripts/certificate_migration_preflight.js": "77f48a85f77e7d7bd7019cf0825d3228d02565fa33a0c6137d9768b1fa7761d9",
+    "scripts/operational_check.js": "c907e134cea815d4b9b50cfd877cf991dca0590ac2e9b84bb5b0e29d6839b3cf",
+    "scripts/package_staging_bundle.sh": "1f9037f4577ad01048152f1013c26f959a9159d7a0131f9717f1880c5d880ad8",
+    "scripts/capture_student_classroom_screenshots.js": "1656e913dae85a5d2554bb8307e15a25c7951d7f4c0e222914a3019276993975",
+    "scripts/provision_azure_staging.sh": "8ef0ac6550f237522a3bb4f455d53a9ba4fc47c8d3a2c3304670255553badab2",
+    "scripts/setup_test_database.js": "5e094f531af166513e96ff959b27f7a91d92f4743c262fb6eb99cedf9f29d009",
+    "scripts/register_database_identity.js": "a9abc24f77487f106fa066eb6b3d965a63cbf69fd4b4c4786ff4a06a9bf5cd7a",
+    "scripts/backup_manifest.js": "4a96045e1e9c3b12e1c3c10efde71ddde78d264dec01c58c75cfb8e0a12b2918",
+    "scripts/seed_curso_duas_turmas.js": "e0e6d01a9ecc63dac09e3d66f29aba4d51017ac376c95603994ee3b55d05ccc2",
+    "scripts/verify_certificate_storage.js": "0f7402f3fe30a389e663e39241a1b483ee9126410e91b7a07160fe7a94799a72",
+    "scripts/smoke_enrollment_lifecycle_staging.js": "32a7e804f76851b994cb317bf53283e19e09503b0c95c5188a17d7e7253aa686",
+    "scripts/testar_fluxo_autenticacao.js": "a7d8ac7d3d83ea7b4c26d45bcafe8a1b1527d7b5a7ed847de946d1719835bd2a",
+    "scripts/seed_dados.js": "4708e8f9374eede893acdad58fa48d598ab4e008c3e8387765818d0d469ba3dc",
+    "scripts/seed_dev_database.js": "16406f9a76af356732d380a8eddac5a579167a22282b4c2a795c499648203fb1",
+    "scripts/seed_admin_inicial.js": "0a9f8f8ebce7acf060b9dd801b395406b08429c0ff42e2f91647be05ec985a13",
+    "scripts/testar_funcionalidades_professor.js": "fdf488be97bb901147553c43af7af92f17884537bb6364c3108c683c3e523ad3",
+    "scripts/reconcile_storage.js": "4778b382268cd769f2ceda9be9435fc8846282bbeaf8c763e474c4759e248c83",
+    "scripts/capture_information_architecture.js": "fb279496626be9b7b3074a323d4f5e79e7d3a344433a80c0490ddd90ae5d692c",
+    "scripts/smoke_storage_integrity_staging.js": "de90988a6e1365bf405587dfba82775e09b99d55732c3691ba96607d6af40f52",
+    "scripts/smoke_academic_completion_staging.js": "11e7a115b6d66108a8dc6760d2cc58b4574016497edb04fbc2f9f8926723914c",
+    "scripts/verify_restored_backup.js": "7b1b8eeefacba39776d2e2160ce9f17b9406fa99f9788b498b46ac49b3971033",
+    "scripts/smoke_certificate_versioning_staging.js": "75264b2220f38a2e58b9c398c33fc42bba04171a9be635eef45895bced5dbaf0",
+    "scripts/install_backup_systemd.sh": "3b51280847297a0656aa4c2b2c60579e6747eef8ab4456a914e60645a39646a7",
+    "scripts/validate_learning_path_structure_staging.js": "39ebd4018a1fad2083a11ae7eb9dacba67886f578e678a946635932850dfd330",
+    "scripts/schema-contract.json": "d7a5fec3146b1dc0c1b9e3e43435d15da2c37c028b99482af70719e8f135e59c",
+    "scripts/verify_schema.js": "70e5532614ad369b1034399e57609c68eb620fd15bf0fb997794cb79368549b7",
+    "scripts/smoke_identity_email_staging.js": "dc10f9f0ffcf9eaf3a526c6c63d31f1c94684f92dc938d8c11d8515c425fd293",
+    "scripts/configure_staging_env.sh": "a02dad0c840bd172737e86ff939cf6be9755714cdc0404aef3e4e0ca7d5cab16",
+    "scripts/validate_production_assets.js": "c7fc2349d370ba4c7f6fb2a95e1d5a0e2a3477fd22c4be2cb7a0b41c745feaee",
+    "scripts/backup_status.sh": "5703707a8685781a1ecedb9c0563edab89163495bd374bfa25cbbbfc1ae2215e",
+    "scripts/bootstrap_azure_vm.sh": "13765da3e7840b3067686d54bf2844d749b1e259e1373454eb6de2be3c1086fc",
+    "scripts/capture_platform_screenshots.js": "3d00e5ee213f1b8c69a2e942b699b78ef73a3f85c87768f9649ef717af52ee25",
+    "scripts/migrate_detector_contextual_dev.js": "e829817936409e1293b8706b139a7c5c843d062fc05c7bc7e462a025e4f8e876",
+    "scripts/backup_database.sh": "9ac3e94e415125b9851627696589e8372bd0130637f25d0949046d55e2d53699",
+    "scripts/lib/backup-core.js": "5c56e691207d2fe70024cb2c4658ad69b268e5fec008eb08428bbf9ad614bc82",
+    "scripts/lib/database-operations.js": "54500f2cc3495dc16f65bb71555baef16f114a99f89c4e65b70c31af108ed55d",
+    "scripts/lib/migration-runner.js": "9cb9e94740a45fd044569bde8af1f0f6f4aeba25e8249c9655862042ec700ae8",
+    ".stitch/landing-mobile.html": "5a8c6e9f7d4a0c833c8f1f64ceb8c88fe9628f6816f9eae4809cbbae1e15d038",
+    ".stitch/landing.html": "2f4d424146b0bb47c080d67b0c1a72fbe22c6b86898d9e8216034538dfaad653",
+    "fotos_equipe_plagio/fabiana.png": "c93265bc9b6687e84741fbc0569a6b3911c99981b86ad833bf0c126d6b8be6d8",
+    "fotos_equipe_plagio/maria.png": "3376abd15518867f20d774a08268087914962228d02df3d0b6a65ac5006b97ab",
+    "fotos_equipe_plagio/alexandre.png": "379771f3a9bf65832b878448ad8b951dd4b01708377580702eb790b1fcad7b56",
+    "fotos_equipe_plagio/edna.png": "538740ee46b4830720579692b7e259c087c450c0d3453f224dc5e9cd8f596dfb",
+    "fotos_equipe_plagio/daniel.png": "f289e7d89f0078651b5a8c2863b5597fb33a521d71a5cc903687c48ba18715ae",
+    "docs/engineering/validate_docs.py": "d37040340ccfe2e0c42660cdfa71db6e0b3fdc03cb1c36351340657d393af899",
+    "docs/engineering/evidence/test-summary.json": "b0c06caa6be6416fe4a4e7526c959c228547b9e34f7b2f52a87044565338c64f",
+    "docs/engineering/evidence/goal11b-staging-validation.json": "0e6e107be8dc37eac8da2bbab98883ba866ef8aeaa652e5b3bc04323bbd7552f",
+    "docs/engineering/evidence/goal07-final-dry-run.json": "6fe77da01d4a8c6e3f716835de0ce840bbc17ef1518808b97b76e676c12b7550",
+    "docs/engineering/evidence/validation.json": "11059af2f610e9bf7ba53d030be7bae0b8e7213c625da676bf7163a68913b092",
+    "docs/engineering/evidence/goal08-validation.json": "f7f893697917dedca55597029009bcae3e6648c2a2e5c50ae91052de2a656dbb",
+    "docs/engineering/evidence/goal07-runtime-verification.json": "29a9a209d794f98b48ab7e0d91e89183e19560bcee81d6ba118b2adee191b599",
+    "docs/engineering/evidence/routes.json": "6ad50159e4011925b992fdfccd5c668fb6b3ae644aea73b7255e2f9ee78a385d",
+    "docs/engineering/evidence/goal12-staging-validation.json": "4174b953a54407ceb9108b6ca43e144a951bce053f9f1cf00c0273f7de96181e",
+    "docs/engineering/evidence/goal11a-staging-validation.json": "fec6d61de885abcce214d4bade8c2cbe500a8606693dcbc98ef6b971c21fc865",
+    "docs/engineering/evidence/goal07-first-dry-run.json": "550b4abd95f4d945a8c17e4b7303afd3986ee6a0078e316876509555ff14b8eb",
+    "docs/engineering/evidence/source-manifest.json": "7b178e353bcc2073c9bfdc8150890ee75027357fbb71de560938054921d8ba3e",
+    "docs/engineering/evidence/goal07-validation.json": "e6aaf1dafbd7b25947867967e4ab54ce8da5a2809b491a0a8f14780383e74c6d",
+    "docs/engineering/evidence/goal07-fixture-apply.json": "fb21c050d0e983021fa120c55ddf634b0b8bbf42b1a544313ab949fdeb628015",
+    "docs/screenshots/jornada-aulas-2026-09-05/professor-390.png": "26852474d1fc61a4b8a9650a7294d1b8b060603cd050cd2c9c39c070dc914e7b",
+    "docs/screenshots/jornada-aulas-2026-09-05/admin-1440.png": "1af595c6d9f32ffe03afe8d72138d5cc727ce0f3124c1ebf7a8cc05884bb8409",
+    "docs/screenshots/jornada-aulas-2026-09-05/admin-autoria-1440.png": "82b8e592b1bacbcc3a50e0cdf837fe4c00a5346f2208dfe6d53c036830ee06dc",
+    "docs/screenshots/jornada-aulas-2026-09-05/aluno-texto-390.png": "e1af6bf5692986bfc2c770c587991798798d89af13ac991d0e231df402fcc47f",
+    "docs/screenshots/jornada-aulas-2026-09-05/gates.json": "f80dd569234987ccca44feeabbc62334e8982bc72cbeb444b430c82b85806f29",
+    "docs/screenshots/jornada-aulas-2026-09-05/validacao.json": "b0c0ab96da45b91118f46d145af3c5c8a0259cbafc3af75cb4762ca4181e01c2",
+    "docs/screenshots/jornada-aulas-2026-09-05/admin-390.png": "7d903a7a3f51f394afcc83d30b668b964e2f7b785b1a14687f4d3b9bb72c5000",
+    "docs/screenshots/jornada-aulas-2026-09-05/aluno-1440.png": "30384d07d055bea6c4110e8b44098f55fbfd352569fc4c06efe7371d1d3d8a67",
+    "docs/screenshots/jornada-aulas-2026-09-05/professor-autoria-1440.png": "a364052545f67bc95f2b6c5f876d59e27e159d6551e675e310c62ccfe55bc0d3",
+    "docs/screenshots/jornada-aulas-2026-09-05/estrutura.json": "81c8241cb03cd657a3d5a792790cf5af39471a69bcad4b242065bbdd07707ceb",
+    "docs/screenshots/jornada-aulas-2026-09-05/aluno-exercicio-390.png": "63745624fa4ae92609b08c598e55820310e4b6741f58f055f007dd3d44a97325",
+    "docs/screenshots/jornada-aulas-2026-09-05/aluno-exercicio-1440.png": "e8c7283b0fa8e747e70f5d0297ccfbff3f720fd13232f6c0c666ef08a9f522a4",
+    "docs/screenshots/jornada-aulas-2026-09-05/professor-1440.png": "8abdc0d23e197399aad958d88393bc0775b3e51e5a3fe5f103f26e2a2425da01",
+    "docs/screenshots/jornada-aulas-2026-09-05/aluno-390.png": "c8816714d669de575065fdae6861c727b79c65ee6708d6b07d2658b32cfe983e",
+    "docs/screenshots/jornada-aulas-2026-09-05/aluno-texto-1440.png": "4d76b263f8b6e6ada0dabc8fb6ac9af5cb834e236b296f8a7864f5fd14d0c1ce",
+    "docs/screenshots/goal13-staging/12-aula-professor-desktop.png": "933655023674adee8d07b79f8d30caa93af3f5f2c60a21a03210d9cb07b7d7bc",
+    "docs/screenshots/goal13-staging/08-curso-hub-mobile.png": "7f1c9e360365c70a8c4907d1fe6c8389050a991bdda2716dbace334e92668b24",
+    "docs/screenshots/goal13-staging/04-aula-aluno-desktop.png": "c0788ae8ded8827d8df57fdfd89d91159c2db08153e5f6984e6b63cb36d4400e",
+    "docs/screenshots/goal13-staging/09-painel-professor-desktop.png": "91ce6bbf79e2f1582094111e028a9fba5080b04130e73af4466eaf7118151163",
+    "docs/screenshots/goal13-staging/10-alunos-professor-mobile.png": "d76304c478236cb09aa290dc197c1d7fe0c329791e499ded70ec701720144b8d",
+    "docs/screenshots/goal13-staging/07-certificados-aluno-desktop.png": "4c3bf9a8a5b49a43e4b285f2a11df6af0014a5b07a85ee22404491e8c774e8d8",
+    "docs/screenshots/goal13-staging/11-aulas-professor-desktop.png": "a758600ed1a2dc7b2c943c89dbdee9e1352faa74985a8faff24ae6a339bee72a",
+    "docs/screenshots/goal13-staging/report.json": "3b0bdb1b2ed2ee3effddd1680abfcfc6c5dd5a1f323ec6f6bd1efbb055ee4495",
+    "docs/screenshots/goal13-staging/03-aulas-aluno-tablet.png": "ded0739c8e1f67cc780cb014618e28e76e21633311cc2cbde42cf95d4031d1b2",
+    "docs/screenshots/goal13-staging/16-painel-admin-desktop.png": "91ce6bbf79e2f1582094111e028a9fba5080b04130e73af4466eaf7118151163",
+    "docs/screenshots/goal13-staging/15-certificados-professor-desktop.png": "252416f26aa887364b4a5e50c7268e3d609c757317410f7d73d1dd4aa4b8aaec",
+    "docs/screenshots/goal13-staging/14-avaliacao-professor-desktop.png": "3dc27b038f7e373d91f22707c2f4a6afa3602eb9493e4b889d2b9ca30a049d5f",
+    "docs/screenshots/goal13-staging/02-curso-hub-desktop.png": "71ccb0c5a15cbfdd84d39b13d1a5095f261ab476a57b9868a5e6e85dd8019859",
+    "docs/screenshots/goal13-staging/06-progresso-aluno-mobile.png": "f5c8818a8cba031a4651faec0b222f551727d90a922df5a46ebc86365568bddc",
+    "docs/screenshots/goal13-staging/01-sala-virtual-desktop.png": "4cba5940b4e03aec555e2628dcf4f82df9a34dd33ceefd7e2993a391630c537e",
+    "docs/screenshots/goal13-staging/05-avaliacoes-aluno-desktop.png": "b184bfce27ee29d81db2eeb426842c4b49e3ddd1cba7e4ee31ad3a2aeb623f09",
+    "docs/screenshots/goal13-staging/13-avaliacoes-professor-mobile.png": "62f2aaf90984595ca799858a3ffbbb7f8e1e0ba3e345d2f2b72253eedd904370",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/manifest.json": "4b66640ca20fbf3daf7ffc75ff2fbe315e80da2799aa94b042bbea9152820d93",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/contato-mobile.png": "fd6154696f27297f096f79b51faa385a97d6092d4bfec4f149d262ba32f46b9d",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/contato-desktop.png": "593d1be58ce215738836c5b2d6fb17cc70497393cc10e81a77b2bff1b6d6afcd",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/desktop/07-questionario-prova.png": "0acd71e4225fe21fbe0b96b34e0133ef97b22823f89be7e7642981be9a7bc251",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/desktop/05-atividade-aberta.png": "edf30f21f0e4e6415fb4c427841e8d8017323a79737845057a99f31ffe98b614",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/desktop/06-questionario-exercicio.png": "4a9666b0279c98cb4b79a97dd9e990a788c6a0194a63dfc6b83a3bf8cb58b9ef",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/desktop/02-conteudo-textual-aberto.png": "3fe59d78b8647d9e5ff5a1039636bd70bc5191d1599403d7db970b4ad2d1de13",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/desktop/03-video-aula-aberta.png": "7ebd8cbcd5be2984e0c8fda2ff11ed419cddddf58d4698bdaef5cfdeb5dcaa09",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/desktop/04-pdfs-disponiveis.png": "f5af7b1f98a1d21c299d9411e12e12004749f9ca243af41271ac0236e9d481bd",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/desktop/01-sala-de-aula-visao-geral.png": "b4bb5f66b9a4f2405c3611eb78864adf6762172f456f9ab894b66cbed7181fbb",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/mobile/07-questionario-prova.png": "0e0fa426167a1ba8ebfa590c6436a677ec9f82b052d52dd22025dee2f8a59d82",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/mobile/05-atividade-aberta.png": "9a9974adc49d268478c1008bb67d1e46dfbbfae54202a7c9cf856fb7ac797e4e",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/mobile/06-questionario-exercicio.png": "dd519becb399d5cdc0d90c51a6c7ce8ae2e903937235c4f84422fc7f9cb345d1",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/mobile/02-conteudo-textual-aberto.png": "91512f389eb31780dc28c1c6306b14af839a7253c21783833dfa0fc5949ddf30",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/mobile/03-video-aula-aberta.png": "7721b5e1badec79c427433ace4ed146ea51be06afeefde7dff7d0b8a4973bab1",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/mobile/04-pdfs-disponiveis.png": "4ebbf1116b0cfaabaa90c237e9be957ca3e65dd47bf32dc3f0e456bebeb6d1ac",
+    "docs/screenshots/visao-aluno-conteudos-2026-09-05/mobile/01-sala-de-aula-visao-geral.png": "0e874a08c5c6b2990056806c3fd619d0050c6df70bea3c5de690afaf0ab0341c",
+    "docs/screenshots/plataforma-completa-2026-09-05/manifest.json": "42fb3e22e6cba0181aa85de41773aa658325ac822043e62c3b50518e031be6b5",
+    "docs/screenshots/plataforma-completa-2026-09-05/00-folha-de-contato-mobile.jpg": "6d8f6f3c4579cf47b214f6c7712871ecff396729e2d458970959abc744f368d5",
+    "docs/screenshots/plataforma-completa-2026-09-05/00-folha-de-contato-desktop.jpg": "42938165e8a99dc4da130c03e7fe69b896a876ac11de94bc1a20bf9dccc994f3",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/12-institucional-cartilha.png": "73e1ef684229144af6ff1803323c6c830385ac2a18534238e13157d4d78e9810",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/04-publico-cadastro.png": "83047e9eb34bcc0abdc6e19731f1bc4ad21b66ee13a442fc7e27935759a00590",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/22-aluno-sala-de-aula.png": "e3ac26a2aad9c6d299e2f0d06c900498d010b9b62a0243e73162040f5a4fa1a5",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/42-admin-turmas.png": "c0dede7c8c4dd59ab69edeb586bb798a4f9d48860a009104968221416b709290",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/08-institucional-sobre.png": "53cebf022eb987bf379ae038c8575cdf65feeabf1a2102b0fb7e54ca5a084d72",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/21-aluno-sala-virtual-e-certificados.png": "b9bd6b613cb1a65e692befb7dfd61570bea97afe9a688a1a330192ef83a552da",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/25-aluno-verificador-contextual.png": "0319e5bcbb8c514ff2b4595ac675bba92c9fb5405d5b92fb8b1c2d3d4d760c15",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/13-institucional-perguntas-frequentes.png": "559c278867167b20b17fc5b2f719dea16560d58a7ea7dd19f78ce554434ab3f3",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/43-admin-visao-da-turma.png": "88f1adcdecca9260bb7e132367224cac087c2ccd73bbc54dbbdaccca354b8fd1",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/35-professor-modal-novo-questionario.png": "c1d90be88a0ae1e09353bc9555ed432ce0d1b86861158785ddb005bd12bdfa7e",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/40-admin-usuarios.png": "c96215124f40a28d26f5730b0ff8f8ae8ea55a4a3f6fdd23320bc8f3532e08ce",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/02-publico-inicio.png": "dfd9411ce85c74a012c6ec1753eb62e88f8f3f9477ad8780a63cd3b7bb70f830",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/10-institucional-parceiros.png": "5fe6b37920292cb7287f1d3a83f885403a78ef3c2ed18587ab6141ac96f4d256",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/06-publico-redefinir-senha-sem-token.png": "6ecb2a3396f27cdcf6aa0d415ebba9399cd519b9ab8ae2b39c3da89af9dc6edb",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/11-institucional-materiais.png": "bb47b0d110140dc06759f5f9b157620e871dd3ca779d3a21c4c731eb20e63fc6",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/07-publico-confirmar-email.png": "59e7f632c20809385a19d722cc8477fbdf32e96a904c288d4599ad3ff2b3c3b1",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/03-publico-login.png": "c42dfa6203f605058e3977aeac6e21291c361b8d66f3e211b5115c8d8f8fe522",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/24-aluno-questionario-prova.png": "12abeb81af0f58ec022c70cad273c67ae93b7dd02f82a9ebff4ed8dcf8851afb",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/41-admin-cursos.png": "779f10948cf4c0565cdcfc51a5f27cb59805ddef934b377d007738d7fb26106d",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/32-professor-modal-editar-matricula.png": "51d5f895e444c114c353b69eff0b1acb3705452fd88ece21d93308806fb9d285",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/05-publico-recuperar-senha.png": "2dfd7e3664296ae69762e675f746fae67c0bc1946372dc35640eddd33784b2ea",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/09-institucional-equipe.png": "3b84035a3fb7869578582a3a9e1073c949f67e25e99dad2407fc6c1d560b9662",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/31-professor-gestao-da-turma.png": "2851b0e2da2480db57071e576ce814e97780e95e8a2e8030ad136329f6d56396",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/34-professor-modal-novo-conteudo.png": "eb87e8e5674536e6e75f91008352d275ec8ce7a87b2eaf4675109ccc29580b4e",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/14-certificados-validacao.png": "1a4c3b71ce0670452b0b192531a75ef50addfbbf42f997cdbcb6c815fdb1cb41",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/01-publico-landing.png": "eea1b5b4f5bacf764f1d0eb5f2863418fe35b45a336bfb0f6e6e38e82c09668a",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/23-aluno-questionario-exercicio.png": "66e5b61ba3c9a0ced3393c70e0917b35be7ff5b880c3ff38b752d0304c5475de",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/30-professor-minhas-turmas.png": "722804591c43ef27a645841cfc1f6d05735fc600b2b5bcc0c1c0e24b0aa6de92",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/33-professor-modal-novo-modulo.png": "af869efefbdd71a456d3621a5b99c46487f835d7c56ca734edd7ce297dbb5e95",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/20-aluno-inicio-e-catalogo.png": "b69f57749d219ae9295b36b39242cfffe812b89828031f5a720ee11f3745e8af",
+    "docs/screenshots/plataforma-completa-2026-09-05/desktop/15-certificados-resultado-revogado.png": "d8dd97208ba5ce0804b08381a69a0035aab37110ff874ada8b875f61162896a4",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/12-institucional-cartilha.png": "7a15155ac4acea634dead4781022a6fdee0458f07d99d6e35975ef0f26446e61",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/04-publico-cadastro.png": "0da3319465dfa8b1ccaeb28ff4434c4eccb58a528fb860c9c778130891c86853",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/22-aluno-sala-de-aula.png": "4272b8e8dbc32b4a6a71b6cf4ad4c0bab20f925e48b4f6158bc71f6c5fa47034",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/42-admin-turmas.png": "87e5a90302a0b7608fdb4912c44009701447ba2fc17f8cff9cf067c071dfa294",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/08-institucional-sobre.png": "5a045caf04afc9bb1528a3c531ea0c76b4fc33b70f192d61e6c1c2250a59db1a",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/21-aluno-sala-virtual-e-certificados.png": "8ac1b2710bda61ac849d11a9d6ba53b2c389c743b2da65aeb5016291fdab8088",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/25-aluno-verificador-contextual.png": "6d1b4dbf29ee5f9ec1098e543e168ccf6c0afa5dd782e6ed3832c73cef9e3ed6",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/13-institucional-perguntas-frequentes.png": "c770f6b903a0ae615b1826ecb419a968318edf7aba797672789f460ce591bd3a",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/43-admin-visao-da-turma.png": "0c6ec1aa23ce4240756c67d433474cd3176c13edb8f54ee589fbfc8aa3139870",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/35-professor-modal-novo-questionario.png": "b9288a9be5746e5fd37665c21cf76bc9d054fabf42051e5920874f7f1dcf61b2",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/40-admin-usuarios.png": "683fcd3600fcd9408e88985109355f705b26f901932719ea3cfceb31d3142ded",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/02-publico-inicio.png": "9e436ffaa83bb902f39cfa0ac8de3e8abb4014660db08bcc706b15cc2330d4e4",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/10-institucional-parceiros.png": "aaa9e8e30949f2674710a1abbb17e45ebc780a296239b8350c3b9f4464fca714",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/06-publico-redefinir-senha-sem-token.png": "177dcca296cffe56ae11439be0f2278ef74ce4b9bd1626fb82a105b712946a4f",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/11-institucional-materiais.png": "9cc34be802e7c4d28546c5a1acf97e4ef4b7d8ce3f16d0ba0cf745875b60503a",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/07-publico-confirmar-email.png": "51675d960792960cc4715a46091f1787f9ba52892e86481c26e16c2017533c8f",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/03-publico-login.png": "decae3ffd2b98357568dd4cc08eda613ed187870e4b66480dcc2e27a2d45e683",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/24-aluno-questionario-prova.png": "dba52b98a31c8c0c9ec2e83c536ebb5c170d2a2e6330b1361ca16e8ad2847f14",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/41-admin-cursos.png": "055c2b69f8c2f7535bf98c66edcc6f1a96fe1fe17aeaeb9fad5ca11a0437fe12",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/32-professor-modal-editar-matricula.png": "d6de9e20a5f0106a7bc9a927010d04e5f6ef5eed611d63ed7e5c4044b1a792ac",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/05-publico-recuperar-senha.png": "9ddf034b1d613f7d0e3b8bc0f02a81bbf64ded855f8a077f3155a20c9976e4dc",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/09-institucional-equipe.png": "4d3d4e6da96bb43b879df83834bc0b8bd746b1f4dab8f58c4642140cb51fb454",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/31-professor-gestao-da-turma.png": "65915798d56807d2ba318658b94b932ee2ace08c9cabb804ca2c3e4c11709f80",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/34-professor-modal-novo-conteudo.png": "d2d68e68877fc30cc4af1296f35186b3fbdf14a3f836a1d4b0437edce909cd01",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/14-certificados-validacao.png": "dcc91b05c18725d9ac15c974659e3d835b1fb96bd4a586b09740e83ff1d4c8bf",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/01-publico-landing.png": "fcb764a4d08a9a7c8d17a94c8baa35545388eb5b65b9dcc4475e82a455e365d3",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/23-aluno-questionario-exercicio.png": "b75abede5b8219c99d40586612085df47e495b22ca4dc6b9c91ea64e1b551e6d",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/30-professor-minhas-turmas.png": "1582a7d6d304617ace95bd67c4a2ce7a78eb7cf7c3d9979189a6c8bd59d645cb",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/33-professor-modal-novo-modulo.png": "9935f9bdafe59f96f1b61ca36edceaa6c748d275fbeb1dc9b161b62b02fc6b9d",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/20-aluno-inicio-e-catalogo.png": "ae9be437292e47481eb633bc0db5eb54ee9d6c2d5a42ff31275fd5d9f530ab52",
+    "docs/screenshots/plataforma-completa-2026-09-05/mobile/15-certificados-resultado-revogado.png": "326c3ea8ab537f92a86ba0b156d8f038e9a1fe7fa1213edb14f91725b5fa17b3",
+    "docs/screenshots/certificado-institucional-2026-09-06/a-curto-2.png": "acfc7d4a33cc9a55acaca7ac5c843b6733b3bd6840344773e973dee25ebffb8e",
+    "docs/screenshots/certificado-institucional-2026-09-06/staging-certificado-2.png": "bbeeadf35edf058edeb736ffc2e5d27bb4fea3d56ff0537ac0331b14fa0106c9",
+    "docs/screenshots/certificado-institucional-2026-09-06/comparativo-pagina-2.png": "15a236dee6ca44727527061011dd63951130a3fe840a221115b5c0cf5b855ff1",
+    "docs/screenshots/certificado-institucional-2026-09-06/b-campos-longos.pdf": "89e2acaf8033051d298d9d40d0fe41efdff9d8c05499836f1a98ece4c36207bb",
+    "docs/screenshots/certificado-institucional-2026-09-06/staging-certificado-1.png": "dfed829ef30d224c19fbd3a1ce1e568440c026842dcc8fd1074c77482eda8d27",
+    "docs/screenshots/certificado-institucional-2026-09-06/b-campos-longos-1.png": "3feee5d581d82714590f4bef2c1386c684da292489fc97f85fc85dd8789aa037",
+    "docs/screenshots/certificado-institucional-2026-09-06/a-curto-1.png": "c772858cd53debfbb3da34e830a3f593476d629f7404f44f3015b1eefdbd7833",
+    "docs/screenshots/certificado-institucional-2026-09-06/c-muitos-conteudos-1.png": "84b74baf72fbbc572961240ec9712703a501386ac4b2cf65fa7122db1923ddc5",
+    "docs/screenshots/certificado-institucional-2026-09-06/c-muitos-conteudos.pdf": "861c2eed123c572d3c5f6d30ad70f086215832e974f155bdd27c9d0696d5c8b0",
+    "docs/screenshots/certificado-institucional-2026-09-06/comparativo-pagina-1.png": "db199c927a2e707bddfcb38cdee516d88fd557e22238d5578f2d3eb9a4dbc287",
+    "docs/screenshots/certificado-institucional-2026-09-06/c-muitos-conteudos-2.png": "2bbd3f1ef58f9afef78f9725c33dfde1b036bbcca939d68abff14602af939b1e",
+    "docs/screenshots/certificado-institucional-2026-09-06/b-campos-longos-2.png": "a64ad3e2c6ab2da5bc0cfc8a42ac901a572c6f77505d107cb346c92a14ffcb0d",
+    "docs/screenshots/certificado-institucional-2026-09-06/a-curto.pdf": "51c5582208acfd473957ae1c28b8d0525d9831a43577a20ff9b6b879b29a1827",
+    "docs/screenshots/certificado-institucional-2026-09-06/staging-certificado-institucional.pdf": "cf0aad4e2fd7103a1c30cf0f77bade53ea9334c13c3ed3d9f4119dd488c3b97a",
+    "docs/screenshots/goal06-atomic-authorization/mobile-encerrada.png": "4d0a5288c9594a0cddc22a22d4d5f87312c48913a82861c4cede4decde1881db",
+    "docs/screenshots/goal06-atomic-authorization/desktop-ownership.png": "7010258d53c00beab4d4e7e5ee846e6a853ba160676fcf079400f776beb21836",
+    "docs/screenshots/goal06-atomic-authorization/desktop-encerrada.png": "d08effcea560eb7227b711233eebf1d4e7c110b9153c9588250f9d015c155e1f",
+    "docs/screenshots/goal06-atomic-authorization/mobile-ownership.png": "a092d0c1223645f3a837d79cdf7cfc11e6138f6443b06287e08f9498789647a4",
+    "docs/screenshots/goal13/07-curso-hub-mobile.png": "8ab7a5f8bf516e3debfdd34914fe60071ca9570603823fdd32e31555f5683705",
+    "docs/screenshots/goal13/12-avaliacao-detalhe-desktop.png": "af885ac51482d4078efdf69c71b6b26f6ed4ea5a4d829ce1aeb2970af25d8716",
+    "docs/screenshots/goal13/10-aulas-professor-desktop.png": "ee8319530ffddc3f15aa20b36f47998ab38f804ce9d42a5a53c1c7162404b715",
+    "docs/screenshots/goal13/06-certificados-aluno-desktop.png": "439196559d7c8b6c3b4006caab3703ba4f408ec5569decb3131c5712a3f30a6c",
+    "docs/screenshots/goal13/report.json": "673eac8aec402d4f9f7092df077a859c848318a033da0813a02a29296e90458e",
+    "docs/screenshots/goal13/03-aulas-aluno-tablet.png": "ba623a4d7818677e0d5c8a848b85d87fa1c968f6cfb768b7b9bd26aeec2e4f2f",
+    "docs/screenshots/goal13/02-curso-hub-desktop.png": "b0ea8ccc516759d0bc76dfaa170b838d0f59b8e5a930d02203058585ba4e8468",
+    "docs/screenshots/goal13/01-sala-virtual-desktop.png": "3a2dbdf58a9270dc10dc83a2a81fb08ff834a06b2516320f3549a8e3bae4a7be",
+    "docs/screenshots/goal13/05-avaliacoes-aluno-desktop.png": "f4a3969b8dece39fd94d642566ddcf72560f080e47190dc4d0683dd9c86f0bc0",
+    "docs/screenshots/goal13/13-avaliacoes-professor-mobile.png": "17380d5e62820cf5527a985c9cd946acb36919062711486e7b9a964f680b649c",
+    "docs/screenshots/goal13/04-aula-detalhe-desktop.png": "d878bcaf4178d6c3e56e17ea21435fb75a5de3831fcb50fd7ff705d06cd00289",
+    "docs/screenshots/goal13/11-avaliacoes-professor-desktop.png": "26457b63b4baa2dd3167ce8b6cbdbd0cdf35f6b6db37cac116f4edc96d08beb4",
+    "docs/screenshots/goal13/09-alunos-professor-mobile.png": "4590de235cf32baad20ce92a36339f61ba0a2c47f1dff33d906a6c48672bdb1d",
+    "docs/screenshots/goal13/08-painel-professor-desktop.png": "f9e9a2c094458186116cf2ddd8e13c05181d808086ed67d65b1adbd04b5f1750",
+    "deploy/systemd/plataforma-backup.timer": "e14daaeb4f1c2e88f4448f9497e3b89a6de06ce72dd09dea3c6f6bc2aaec331d",
+    "deploy/systemd/plataforma-backup.service": "5d3b4a00b2257f4fd76ab6cb92a0eaf4cbc4ae681159dda8ef693409c0c258e6",
+    "deploy/systemd/plataforma-health-check.timer": "183f31723a440f5e0ed6bc5a674da62f617516cf57aa6636204c6c51035f6ba3",
+    "deploy/systemd/plataforma-health-check.service": "a58b41b9219aeaf6e4dba5023fbf88dcb5e61a30ad8752ded3363fef32a8426f",
+    "deploy/systemd/backup.env.example": "2dff0bad697c6946564e8d5865355fd5e50662eee130b4b99bc2381ecf9f07d2",
+    ".github/workflows/ci.yml": "c8187d24d67eb5536659faf2567a0f43b897b42766d980a5a9fa36a9ce2b84e0",
+    "mysql/schema.sql": "ae42b57f15fb1e1ed9e840c5b8aa9bbab39ae71f8a494d3fccd874ce9f410ef7",
+    "mysql/estruturaprojeto": "c8c9ec76b5231e6e02dab89ff2d014f938eeaeb683582d31b4a1991c94a38297",
+    "mysql/site_cursos_db.mwb": "01eff308566bb2856f7faf4b9c20d8923d568def91542fbae4034f5aa66e4b2a",
+    "mysql/init/002-environment-identity.sh": "ada032382f809182c8d2527f520042d01be2ad108224992d31593e0de4e3d721",
+    "mysql/migrations/005_pdf_material_uploads.sql": "bcd8138821cbcca24938981f034266ef41fc07c75950a1eb0a31184826bc5b0a",
+    "mysql/migrations/008_prova_final.sql": "03ebe360167799b92378a9281901cadfca447609228edc51577c2e82f95aad5b",
+    "mysql/migrations/010_enrollment_cycles.sql": "311492a641132f0d71775c41708df2eea1fa8058554163448cf87712185bd8c4",
+    "mysql/migrations/011_storage_lifecycle.sql": "67a746e747309e816a82764aca4508fc0572d89a66822fec8742d02d1b126dd8",
+    "mysql/migrations/007_classroom_learning_path.sql": "6c241e077828f205f6550e8e8b36a3181753244bd39ad4c9986061dbe6589c4f",
+    "mysql/migrations/006_certificados.sql": "df54245d2e388b8319bec21fd5039559fe218a8f437bfa2e0925aee400fbfec9",
+    "mysql/migrations/009_certificate_versioning.sql": "34a3fc3bb73478ca5c74bb443ce38e0998004f9d7989fe42d071cdc6845df5af",
+    "mysql/migrations/003_turma_replication.sql": "28dc6c8da0adb05b270eb2e52b4126a84e0b16f48117b70b7058b85bf929c343",
+    "mysql/migrations/001_mvp_security.sql": "d0b6a9068d17ebedf273c2d659b135519a66b717ae27f0db280ccdb5c69470a3",
+    "mysql/migrations/004_replicacao_request_hash.sql": "e69adf233540d333280030648da57a558ce0baf426483f765cb3b39f86d361c8",
+    "mysql/migrations/012_environment_identity.sql": "5d048059645a30efbb28e4835d26397ff18c1ec8254ad1da4ab58900bf4f6f60",
+    "mysql/migrations/013_runtime_query_indexes.sql": "5ce1f5f00dcb9236026abf729cf658774da6bde310c72fb063d05374f219c24e",
+    "mysql/migrations/002_academic_flow_integrity.sql": "061b5db2895153729c351712e40dd41a48b11074c655e24f284a3295eb36e334",
+    "src/api/services/private-storage.service.js": "0c5ac5193e113bdf7894b6f7dd9cda2a7a766d7baabedfdbb35de6d4a80bf273",
+    "src/api/services/turma-replication.service.js": "17278066fd72272de10d6363ef53cf5ffa153609be913dea4f0194cb95a7b1b9",
+    "src/api/services/certificate-pdf.service.js": "9dc1d184319489c2b9e403466660dcd185c0b8d5db3dd15bd48f1ac7dfccedff",
+    "src/api/services/pdf-validation.worker.js": "89ad0b7f31851829e8b5b8aa8a3bbfdaa5ddcfe52093aff564e2b9ad9254469a",
+    "src/api/services/certificate-rate-limit.service.js": "a8da2e1805ab4ad7d7a0ae410cd22bdd3eec871172cee08cbdb3ebdd32d245b3",
+    "src/api/services/operational-status.service.js": "8af03f4bb03dcad52cccbed8c70a51652a56f03ac1d72834f5c29875bfc6ee69",
+    "src/api/services/certificate-storage.service.js": "4e3225e7c8506e337965e89e41a79570a5d08b1cbfce31102a0b3fe556e56bab",
+    "src/api/services/academic-progress.service.js": "f4105131b6001894e6b3760f9c12afa37859077f6e495671006eb0657a2907f1",
+    "src/api/services/indexed-analysis.service.js": "3eb4afdbb97a6b5278fe794ce336c92a3ddc95bf7a7d9b5823e3264b8e6d5d89",
+    "src/api/services/pdf-validation.service.js": "fc94d5e890cc21c990e089e55d8734b703bc1a6cd877604c6c3618e96d6fd23e",
+    "src/api/services/detector-contextual.service.js": "51d2dcd411ac2c7f4d71862168c0fcf2550c49307db73431017a84b142f8e603",
+    "src/api/services/certificate.service.js": "2b2e7732e2d38c49e19f4535f6a9befd493b87ce769bf34b5f459bda34f74891",
+    "src/api/services/material-lifecycle.service.js": "fafb6c11651f1e6091c6ebf78fdf6591194790d9719a6d040f9c8369caf9d88d",
+    "src/api/services/plagio.service.js": "4dd62a5f8dbef9a2c1234731731b425546034ec937429056e73d308d87a962e8",
+    "src/api/services/academic-access.service.js": "839cedcd298df09fa1a6b06101b97212151b44d609417d4432505bbb92b127fe",
+    "src/api/services/http-metrics.service.js": "4660c95b5c4ea80fc583ade8e2401ae4ed12ed08d1ad6fdf31d5871a45633618",
+    "src/api/services/backup-status.service.js": "d848ffa6546cd974f9b3d536bccb2ac08725d8096b39cd47f049dea3b375e43c",
+    "src/api/services/private-download.service.js": "1ffc47e85aa5b0baa1ec8661b925c8c8641b8a43b1adb7785027b3da53deede7",
+    "src/api/services/material-upload.service.js": "0778ae5a12dc67b0cb986209eb0bab0f4a6a69b48ce0de09cc59383724141b92",
+    "src/api/services/storage-reconciliation.service.js": "547e53c510648269892c9212f169ba30532fb53e8f6c816b23aa74ef469fc01b",
+    "src/api/controllers/auth.controller.js": "4d16d0359d786c16754e6d1a8a06b7540721f835266bfa8da70894a3ee9c0602",
+    "src/api/controllers/conteudos.controller.js": "4002465f6a86a6a92e06b8c30cbed22a57565da6577cd4cc3b88a93a8a1fa35d",
+    "src/api/controllers/indexed-analysis.controller.js": "b7f6b8ca77e5177addecaeafbcb5c17291fb227e4e0ff830f71171b4fc61de14",
+    "src/api/controllers/usuarios.controller.js": "cda80e2a75ff36a8db53886cc0d6985ce434459aca2ba2eae0df648521c3d72c",
+    "src/api/controllers/analises-contextuais.controller.js": "65dcb3df9f3f3f64db8fe8b222388c92957207d3ac9a7a10886c30f7c975de16",
+    "src/api/controllers/plagio.controller.js": "b7aa91562d753556322399b72791e5f6ca9b0a1c6319630047114c13f8b287cf",
+    "src/api/controllers/capabilities.controller.js": "f6c61a9881575fd4a67d02bad95476b2b7f67331790b3b771a5f73ffacc6489f",
+    "src/api/controllers/questoes.controller.js": "0292ad978f49272aeb92ece53855c9f186675279868fd6c78a0c016174e67e2d",
+    "src/api/controllers/matricula.controller.js": "f4bdd8569114d4d979a3271a6ceb58af57e8fc8df0ff5d3ce706947b015fa46a",
+    "src/api/controllers/certificados.controller.js": "241570de68777ed95eab3914a2ceb11c10a7cce0a7308a9a45be7bc6c7c0df79",
+    "src/api/controllers/turmas.controller.js": "e7fab3f9220c1db97c984aac95c9a3493a8728b385cb1604f84de61a25c907f8",
+    "src/api/controllers/cursos.controller.js": "4d98dd2576fcc3331f5cadef6d829b86182f5b9ec59c26e905634616f8a501ed",
+    "src/api/controllers/health.controller.js": "0f9693303403f3627977213b7721133029297c19a94c353928f0b08e31198c7e",
+    "src/api/routes/plagio.routes.js": "27b3e64ec4e18b776e6882563399aec22a8add1ce4b1c551c009af0d19367a3a",
+    "src/api/routes/analises-contextuais.routes.js": "4366da98925d16762d68eb53b3685d3b531110750e5d9bd811ec2895736070f1",
+    "src/api/routes/turmas.routes.js": "96c43209596acf58a6d6f5cc00e832275d1c965935c33082c5265fe48aa7717f",
+    "src/api/routes/usuarios.routes.js": "adaac176a1e6d25eea17bf95d334e3ab19188fb34825b73533de9e93f9cb472e",
+    "src/api/routes/certificados.routes.js": "448b567e09db572993c606baf948946fd8fe8b2c7160b2c971d5eab776fcd57a",
+    "src/api/routes/indexed-analysis.routes.js": "d5083f36482d5a976706410dff3d4e2c5bf11d9c69926ee3395720f71d412853",
+    "src/api/routes/conteudos.routes.js": "bfdffdc307d732e2fe286623b9830cbf44cf849177592ebfe7a092243123d387",
+    "src/api/routes/auth.routes.js": "6dfb4905c37317b491d713ba11f54000107d5e0095c5d1b1bdce46ac9b4d7c17",
+    "src/api/routes/questoes.routes.js": "842badd6783733643d0ab72248b82e158f1365e5fff40883041ce7732120de76",
+    "src/api/routes/capabilities.routes.js": "ce9521a96fed2315f5909c8877ac4498997087caf3a71d0fcc9cac1e6b7e2c3c",
+    "src/api/routes/public-certificados.routes.js": "0c2bef1b8f727e30270f89bba420cb887237f6668547dcc8b2a1145b7db54de2",
+    "src/api/routes/cursos.routes.js": "4c5bd0330bf5faa59cec0e7a34118cbfda9a450dc7d14ff9acad5691c243b681",
+    "src/api/routes/admin.routes.js": "9d483e0997e8723eb2f3dc25492e0af7f2d5d8439680d23e873bcda32304c568",
+    "src/api/routes/matricula.routes.js": "a1b91508c84fc8f0eebf184f155082188797d274f6f7daa646045da4495eb7b1",
+    "src/api/routes/health.routes.js": "41b8f9d7e28823afb0e6eb4f5487db68c539248e44f5fd685e1150bc5b096127",
+    "src/api/models/certificados.models.js": "5d5d8fb9c7048f269efc3263adeb795d7ab292d301b868164567858423c384e7",
+    "src/api/models/analise.model.js": "95580cdd02f42cfe25e5f8b531db3c4aadfb024b21178c7e051e47f0c4ce7c9a",
+    "src/api/models/matricula.models.js": "26690fa5359cbb398579dd753797adf129e10d8456362683f01db013e399a127",
+    "src/api/models/questoes.models.js": "33c1507c06cca39d00911eba2d2b094a513ce13a6c3adfe94a903fe203d3b1df",
+    "src/api/models/usuarios.models.js": "2050d858e6d1be0751569e7e6c63a41d7c2f0416e9b623cd4051b2bb685e0cf2",
+    "src/api/models/turmas.models.js": "b53ef026c10c8bd87953e9ba708155ad47e4555b33189e32da6ba31bd3e2e05b",
+    "src/api/models/analise-contextual.model.js": "b3ce3440c18964221c62f9f089da45bdf07e714f462193c14952b28b7412f924",
+    "src/api/models/conteudos.models.js": "4cdb10d483b8a8cb6f0086b0d11620638fee40fa367a3e4fb18bc7ed263152ac",
+    "src/api/models/cursos.models.js": "3c50d59d69408aaf58758d54838ca4afe5a46f7cdb70c30ccb4a3d9176b86a09",
+    "src/api/models/auth.models.js": "50628974400bf9bca93ebb49d88386658f3695cc3a0fd0f38d6b96a9d0a381e1",
+    "src/config/runtime-config.js": "34a19c0a2f29fe78d0d18af400040993cf0af70bf6ccda06ca154c0cb89545bb",
+    "src/config/database.js": "90541dbad7ebd857a44727f2eb5a0adaa20d09bbbcf880ab06164200ebbfbd15",
+    "src/config/database-pool-errors.js": "683b7a7a9ebccb694374553bed37241814f117ffe7d128742ea2fd490cbb650b",
+    "src/config/certificate-storage.js": "44d9a5ee6a362258972ddca5eba4a450a7b0687de9f9da89c52b2ed9d2f3a3b0",
+    "src/config/database-identity.js": "e966d145979cbcba40628d4a2425913f04231501629ca3876eaaeb01a57a58e5",
+    "src/config/storage-policy.js": "29f7b309f51966a145c66f36613682adfd686ff4eda6168543d438cedff29555",
+    "src/config/loadEnvironment.js": "b1de0e2b3decd7e82c47ee5c68fabc532961243751b21fde152477dd4c9fa92a",
+    "src/config/session.js": "35f2364085b3b2b14515377adb7cc3a3204a93d54f7210c023afe058651cc684",
+    "src/config/material-storage.js": "6f1d1c90577e0116870552d26449ca96bc501972678920d288ef68232e7f79c0",
+    "src/config/env.js": "d8a6ffe2ab6cf5c8218b62ce26b13e72df8e5138e172c67bc93cde80acbcf1f6",
+    "src/config/database-connection.js": "2757960eb0dde94e8ac3804dd7972183924ce1301717430205b6ca897c0fe592",
+    "src/public/cartilha.html": "d945dddcba5406d0bf7d5e9760159f81612a576c6434cbe7f101c31d9c46bf9f",
+    "src/public/sala-aula.html": "23b6d783f35122cb075ea7dfbae6fcba92a19921b9307f3d66627fd02c4109f7",
+    "src/public/sala-progresso.html": "de1c3758489cc9ef4b6b2a10bb2262248272379927d7a128e2dfd0dff27888cf",
+    "src/public/cadastro.html": "51061b424732e179c584de10d3ad1fa75feabfd3a1bb845b094f4d068a95413b",
+    "src/public/perguntas-frequentes.html": "a55dcc1baac5f43013fa2349710b47139935fac884c4441e1c579db400e0b1f1",
+    "src/public/questionario.html": "d34d499adf161ab903f76926779128f60b3013297bb0c721f2627db4eb10d607",
+    "src/public/redefinir-senha.html": "96338d8f2913a702a980f080366edc63a9135295040b5e1cc36b0dc8c21922dd",
+    "src/public/admin.html": "8a46e4e245bbf90e8454380745284af6c726f2e07bac85f4e8f1baa96643e41f",
+    "src/public/professor-turma-aula.html": "75cf2c3c65c9db0016a2b975807e579717483b13f9ddf987a0608ad7d23346ca",
+    "src/public/meus-certificados.html": "2f30df1c9a6d5eaec4d174b4091d57a93dcef0e89743e5b0cfb25a31760acf9e",
+    "src/public/professor-turma-alunos.html": "5b65aeb2d3fc5e38e58510f3b43eebc2ccfbb7c30bbca8efde7b91c58f10b9a8",
+    "src/public/equipe.html": "0528aef014093f754efa19757ae9d29c54ee6943b64ea568a330d707f46f634b",
+    "src/public/sala-aulas.html": "d1001be2a638df1f4d452d45990eb95e44d624b3fc4b636bd9d93e1bf09bcd20",
+    "src/public/professor-turma.html": "2c7841b1aa0e72bb88ad937389a215c34967e8358a533922998efcba55f7f14d",
+    "src/public/index.html": "077e2d805ee6221628fae4a390673e33bc34b0360f499127ff5725fcceac1795",
+    "src/public/verificador.html": "dbe0b1ecee62f9044009cc4ef378eece07934f3d593853f043dc283bc7c69f7c",
+    "src/public/certificados-validar.html": "e41240ce631f28bca9fc3e6297453df8b5666dd07d92dc3dc85c759e8d1a3fbc",
+    "src/public/materiais.html": "5907e69e0fa787604aca1650d52461bdda9f525af7d9ea172611ff05c5c361cd",
+    "src/public/parceiros.html": "4574b358ee41ec0f449b5dc5156b4d4b2ee61f322bbe14a8afff1eec386d3ef7",
+    "src/public/recuperar-senha.html": "541f25819514eff4da18cb7c9f32ee5433a6f13ebe41110af44a223c4131457c",
+    "src/public/verificar-email.html": "1b955a97ddd3226408f515424747215cfb9f639402458c577b323928bdf0f486",
+    "src/public/professor-turma-avaliacoes.html": "1a3dbef5df1e9bd51006cac96e0ee67b22fc6278ed6bad51c211bbfb19061f7e",
+    "src/public/professor-turma-avaliacao.html": "cf7f26539becdfbe1f2a1d7a71c253ad901beaa40fa1648bbd5fc8aaffe42f16",
+    "src/public/favicon.ico": "318b789ff098a057c98c8bd9565b66e4d0b5e099b1ab06332e87ae25f8f7410a",
+    "src/public/sala-avaliacoes.html": "90b15508eb873f5c6a74e1ecbe5b50f6206541301af443c4e451b9c2bd21ff43",
+    "src/public/professor-turma-certificados.html": "3662d287401d929f05aea92c5b6ba864a208f9f2009ec87d8972aced6e79c6f4",
+    "src/public/login.html": "9b0caf5855c14f8fcab750383416c3cd4920eb4ae260357029fdef020c4571a0",
+    "src/public/professor-turma-aulas.html": "0551051724bbd8b6c0e49ca99d1047228f97e6c68127704774327b9e53fba8cd",
+    "src/public/sobre.html": "4188cb4f6c0091e9a40be5f064ad27a54a18dbb4b5478c95782591e77885d8f1",
+    "src/public/professor.html": "d2acc4e7347541f159aa2bb1d71236117ec24e264a2291bff92511bb79af1c45",
+    "src/public/sala-virtual.html": "7b18bdcf705d4cb5fd0b9925e456a0c33733bcefedad91dffdb8068c9c21bf8d",
+    "src/public/landing.html": "0f703bf694b3972d94f957a087b27e2a4b415979c15f1bdf2ebac0717a20d0c2",
+    "src/public/sala-aula-detalhe.html": "a835522329832ac5f0a92d42bc214961fa03eec87fa998e26161df38def0237f",
+    "src/public/js/auth.js": "d37abb85b4d56685d6fa88eebe7c82243b4d19d5949b85677b1aa19bc683f5bc",
+    "src/public/js/meus-certificados.js": "3562f383bc332cfddc4d9a51a36e3d01d198179f2cfbc5858f0c4df250f1207d",
+    "src/public/js/institucional.js": "8c2437e96725e1a7edea5d9052993ba0a3d1c1c1f3e474f30b5054e856083b26",
+    "src/public/js/incremental-editor.js": "a722d5c1dbff7e154f5ae88debea58d9510f576e341cdd4851935def0b61b97e",
+    "src/public/js/script.js": "91808a2d8c6ce3a9bd254383f2009bcf95c4ced0e2c93754cc74b7942d73ce59",
+    "src/public/js/academic-ui.js": "22d7de1f14d358b89a8b3f0fa02d4399a27ce46a5afa97f9ebf88eb065031662",
+    "src/public/js/sala-avaliacoes.js": "07b333d0e427dc2de18bf7a2ad50a3ca6104bc853028f5088f46ae32ce575710",
+    "src/public/js/sala-aula-hub.js": "7b47849cad8d0c9fb13e8e442a0916029b928992e513c19684d6c78567cba70d",
+    "src/public/js/professor-turma-alunos.js": "ccf5db0ca77e35d54eb20e7accde9d3f9bff9485d2c26085ba330a9bded741c7",
+    "src/public/js/cadastro.js": "617214305a6385baefa3b24a3241e303b8502700fcee61fb347b3b5159449bb0",
+    "src/public/js/questionario.js": "c9f947df0a2a8ec067aafd67b76a7b1a03226c1a905e1726eebda57809247fbb",
+    "src/public/js/api.js": "6e0851b64eae4463b929fb09fa25f9b1e4e125dd8ff9232ab48b5aec0bbcd658",
+    "src/public/js/page-scroll.js": "c55e652b7f07aa540fc5bbef94509bd42fb7cf0acad8e349181d999e2f7211ec",
+    "src/public/js/security-utils.js": "5d6eb4d54325b70b828d9f4d9c3cb646e8398328df129b6a9410cd28e99615ae",
+    "src/public/js/learning-path.js": "b520d481d90c99761ed4b7387333f8b11e3c265e98ece4cb6c0791e2ecc78864",
+    "src/public/js/modal.js": "f07799d965e8dc608b5c051627571426dcde98c31a21823ceb902479b8c7b7ba",
+    "src/public/js/admin.js": "1635853fa38c58c30c8136279f019cabee4ed0f441989817aaa43b70e9fd7d98",
+    "src/public/js/theme.js": "59dcf7634c89541470f2fb80c2f74725d26f9d8220ff76907e8a23209ef8f20d",
+    "src/public/js/session-ui.js": "1ea41e1c2ac4f95a60a14b0a663b908abdab9f2d3536427c5458c367b154e2ee",
+    "src/public/js/verificar-email.js": "94a5099e04bae0fecd86cbb084076e62bab73174e87033d8b46a721cb940209c",
+    "src/public/js/student-course-context.js": "f4627e9a28c0fc7c4d4f44d8d25f27cd183819ad92aa6165b188f5448ed7cb73",
+    "src/public/js/professor.js": "f8fdc410c3ff395a9ee507e0fdd9077c6ba71f53b5f354244dbf7fc22eac9509",
+    "src/public/js/professor-turma-avaliacoes.js": "7a9828ece05fba51a07cd75e9ba5080b106faef9bb86e0e63f36d3f94f6696a9",
+    "src/public/js/questionario-disponibilidade.js": "bbdbdcc8f420510c8618914fd52fbf509340ea45c790099c8b44e937fd663382",
+    "src/public/js/admin-dialog.js": "873ff551bd298bb8cd6fa704531d5298a4070b162ed3b4354283938bf013172f",
+    "src/public/js/professor-turma-aula.js": "4826a6a7efafbeee2e0037f23432c844c8cdc789a7d23a5e7b2513520cc9b4a7",
+    "src/public/js/sala-aula-detalhe.js": "14a2819716502e9afeb2bf247de263bcd21469e6e65d48c336c5b63d4d93eca7",
+    "src/public/js/sala-aulas.js": "3256e32158bf86df506a4db72bdf943265e45624aaa43af50b579167c51e4b6a",
+    "src/public/js/academic-dialog.js": "e44b83e06cca0362257dc4342059a37677ee08489e46a0472eb4bc740500492e",
+    "src/public/js/navigation.js": "d9f947b58a55aa8136378b7f1e5a4c86b9c81e82cf5f79c0b1d6591fc2221574",
+    "src/public/js/landing.js": "14c9d8979a6303eb7c722c5df3cf96083186fbf732d33413931058720e674734",
+    "src/public/js/sala-progresso.js": "54caf14ad03fe49ca2021f074b7879e71b6f00d82d0dbce0131e848956629d59",
+    "src/public/js/professor-turma-aulas.js": "95092e3ae9ab39194d061812e342a64cac2c77398b9910b85de64958b3853898",
+    "src/public/js/redefinir-senha.js": "8e0de147bd63ef0f55cad0e1c42f6200a0f9e56421088797d6dba34ca9359734",
+    "src/public/js/professor-turma-avaliacao.js": "26d0880e9e81405451ad75fbaf53f9d23220e9879ad0ccb69ef0afbca9b52f3e",
+    "src/public/js/private-pdf.js": "b346f2f953ce660c630fc4b8d287c55008d11097fbf480d025d7c39fffbd0757",
+    "src/public/js/certificados-validar.js": "cc9ff7a4d9787102755560ad2b54c58b4d3b311c3816377143274abb988600eb",
+    "src/public/js/verificador.js": "9606ca6de0a4bfcd88264c6d1942641672b80b37baa0a39896a610fc989b4066",
+    "src/public/js/utils.js": "7327051e77bb2b239479722ddd57eba3b552b438c70aa951c2d0a829edbdb44d",
+    "src/public/js/sala-virtual.js": "e39167d9b5b1ce8b106170b4a59adb59fc8373cd3949ae94cff9649cf06a2475",
+    "src/public/js/recuperar-senha.js": "4be3e3ddad78e9da98c666c2375775357fa88adddad5da906e3cd94e510f1a7b",
+    "src/public/js/cache.js": "43b61bf7935692a7eb6b08febd622298f60aaaf005bd8ac31d1bb7871627de07",
+    "src/public/js/professor-turma-certificados.js": "fc8e0a3adcabc78e025d0793682b2982889a84d438c2a3019ba13df8b963cfac",
+    "src/public/js/login.js": "74c7cc239005e58d67191079862eaa59057dfac1680686e68eec0ca9803b91ed",
+    "src/public/js/academic-area.js": "398ebff5cc53af326f230df2f24dad90614cd01ab3aeb5c6be7464b153b7319f",
+    "src/public/js/teacher-class-context.js": "f59a92b323e05dea0de8729ac9c187620bbaef34a375c8eb318822a44f8373cd",
+    "src/public/js/professor-turma-dashboard.js": "d658f039d82b761f36edc198f374a96748d083d7b064e9edd714d99dc603d4c0",
+    "src/public/assets/materiais/guia-desenvolvimento-web.pdf": "96194d2a1f03423ca0b5165ebae1d08472c041ce7aead927580fcb2c1db855e5",
+    "src/public/assets/materiais/checklist-acessibilidade.pdf": "3e2a79cf666d75c9935ace34165cb0496dbb3d3d75115afc842e2439b524dabb",
+    "src/public/assets/materiais/guia-integridade-academica.pdf": "54ff30503385987ea5bce64c58c263273eacb72523334125d5b0c41eb5738977",
+    "src/public/assets/landing/papagaio-detalhado.webp": "af10e6492138d22a36250f4d51d67b495c9496fe0fc4814bfe541c8a56498e97",
+    "src/public/assets/landing/logo-plagio.webp": "ae2598d91539b095d75f0508c495baa12998be45272ce59505a7cf4978f1ef43",
+    "src/public/assets/institucional/material-identifica.webp": "9b88b1e8bf45e5d66a1e4539843f2bae87e4d6afbb851361e035d0a81a773bf7",
+    "src/public/assets/institucional/equipe-registro-3.webp": "fcffbd19763981409d5273fc977d35ff563806ba6052c75548f2a1efc55b9058",
+    "src/public/assets/institucional/equipe-registro-5.webp": "d47e0bac0187d5bd83a7dd11a27b577dafc5d42c77c4b387e1b8e099e20bf99d",
+    "src/public/assets/institucional/equipe-registro-1.webp": "10acee23b7fca7b8d3797859bc91caf58f85e9fdfec46995452515bae276f531",
+    "src/public/assets/institucional/material-originalidade.webp": "5f4bd5fa5f1ef036ab1770c8f5a0ebd5f5b1aa15f6b23d03aed5536fa0ea8b53",
+    "src/public/assets/institucional/material-xadrez.webp": "31cfda3ab8d87c0c6d10cfddcc85249f37af09c7ab39b20f1a432f6ef65dc5c0",
+    "src/public/assets/institucional/uniguairaca.webp": "0b9b3ddbc27e271f56e33f1d32d936c20f9b72c023a6f69d73c6398016634cb0",
+    "src/public/assets/institucional/material-mascara.webp": "853f0c72761f1594a4b17333add81bef12874e0322d1e1d385b40ac669d0f658",
+    "src/public/assets/institucional/material-marionete.webp": "09e4ea35570df4db39ec72db062add5d065a7fa53e80ee95a5b8cdebc4525279",
+    "src/public/assets/institucional/daniel-passos.webp": "dcf9fe902446383cdb5814432d9062c31a7b27f90267c142f1cfe1c167bdf281",
+    "src/public/assets/institucional/ppgect.webp": "1ab2fba08e824ba02e496df6dee20c7e632cdc43884f753ab400b2e14c755b2a",
+    "src/public/assets/institucional/fundacao-araucaria.webp": "adb2bfe3e6b758d3f36dbfd6c98754068d4477d652681f081c0364e79f980ff4",
+    "src/public/assets/institucional/maria-eduarda-macedo.webp": "2d8a21b35956ead8876e8ddd01dbe0593e4e61aeab18c32c00c435bd1044de37",
+    "src/public/assets/institucional/utfpr.webp": "b95a7972a40299d5b4ac2731fc37246bf83b67a78beb00e07456a182cccd6fe6",
+    "src/public/assets/institucional/equipe-registro-4.webp": "b51765dd5f3c41ffa636bb8f61555c9af5e40f9fbda169407979c0838097a8b8",
+    "src/public/assets/institucional/faculdade-guarapuava.webp": "61fe90df775d31045b4575bf5ac95a68dddb52489104a0c08aca6b4beea1d310",
+    "src/public/assets/institucional/equipe-registro-2.webp": "23e94f5713b8cc6bc248618c0a0aa7ebc16f775d44a90faf9632d619da02feeb",
+    "src/public/assets/institucional/edna-ferreira-silva.webp": "725d28b31ef381970096d3e571f9f19703a3d90804b642d9c574946bfff7aec0",
+    "src/public/assets/institucional/joao-paulo-aires.webp": "97dc489402472cee6b0db52f9334316e087413394ae7158720013568845c9d5a",
+    "src/public/assets/institucional/alexandre-costa.webp": "85f4e8f5955cf9ff017337c789f5685772f4da53ba44f2b5b902d51ebcca5c10",
+    "src/public/assets/institucional/fabiana-pinheiro.webp": "fe15201fa0192c399122a825135e16e39a7f793fc6533efa18fa46b00ab9dd71",
+    "src/public/css/institucional.css": "11cd5153778bceac741a477c406c6af5bb1a98b643c29d173bdcedcec424131e",
+    "src/public/css/components.css": "4db94cd4d4535ca2528df83186aae32bdb0e944367b2c1cc8e14555960c8d98c",
+    "src/public/css/tokens.css": "28f044e9664e5940d8fecf442364b6cc3a619ab7a15c18d130b7d61a13ccd3ba",
+    "src/public/css/style.css": "7d2bd5160521e44f012076e8ca1787734044d500bccf433b15f96afd15f0ee6b",
+    "src/public/css/responsive.css": "535cb88b0b357c7cd17e2f0c29004a5d9240e915264496c58a796ff7a3e994a3",
+    "src/public/css/layouts.css": "139c81239cd47cd6c584a754b2c8925f3ca16eccc685fd036397cd32bd605625",
+    "src/public/css/utilities.css": "25d24a7dce40dafed9ea589f2e8a147b2e8f2de09b33a9e5cfc41a1b1c7f9bbb",
+    "src/public/css/learning-path.css": "46bb0c5041c6d971c173816b31bb72783457ea87b6925ee6c40f22315d62eadc",
+    "src/public/css/base.css": "7b6928432d13bc2ce8c5c18d268e24a542e68b8d304666738a5947a4b28642cb",
+    "src/public/css/landing/landing.css": "c2689d3fd70b21aa166aa96f5327fe2e2707034df9e53989b3ea234afda6aff7",
+    "src/public/css/landing/landing-responsive.css": "c92c2ec12206d4f28da3d702bce724cdfe5287eae31f14287737f643f9a2784a",
+    "src/services/email.service.js": "e645063cc9d5331ed378031540485a8fbf7eeb952ba04f6dd43ad8cb68f345f6",
+    "src/assets/certificates/logo-utfpr.png": "d8f4cd0e2f1c24b11c891e4d0c2a75e39b36fe93047fb9699b025db624b5b3ef",
+    "src/assets/certificates/faixa-amarela.png": "143eb23ed179118828fe092d24a431db2491eb8f73d0b1aa1c8d8ede64d0d031",
+    "src/assets/certificates/brasao-republica.jpg": "e99aea3d976a24138737169b8dd748b692930916d9d6d5c5fb03d4b2fa6f61bc",
+    "src/__tests__/detector-contextual.service.test.js": "6871ffded747c2fb2f8c8c095d9c0336b558da98b4df7e7c899fa11935e4ed2d",
+    "src/__tests__/private-storage.service.test.js": "02f0f10eb24ad1ae79e1dc6b284edcd3e5c780760ed41f984f143e9367531440",
+    "src/__tests__/cursos.controller.test.js": "c0903e38cd149a84a9a766e6fec517f3d182c259df51231d97f5769a12624d1e",
+    "src/__tests__/certificate-rate-limit.test.js": "9fe5442385280139e065e21a1f21acb8958b20d063f9cf5731122a0208843da6",
+    "src/__tests__/plagio.service.test.js": "499ae0f72bfea68072de8fed2cef3f7f492cfd0053fee0dbd2da389481979de7",
+    "src/__tests__/indexed-analysis.routes.test.js": "433fabfa1cbc6aff7d1c5357b5ed44212de7cfc55327fbdd3b7102a3db92c62c",
+    "src/__tests__/certificate.infrastructure.test.js": "3b5429222353b3285f7cffc6356d954494691a72130f6a1f18d470f3977932a2",
+    "src/__tests__/goal4.interface.test.js": "c2906dece4aa1962070c90a61d8a1665649011fdabaf839ac01699ace8dd643a",
+    "src/__tests__/goal8.landing.test.js": "08988e4b36de052f0d34aed83889a394312595ad17478da48300cf4b4e1202db",
+    "src/__tests__/visual.foundation.test.js": "3b28e9462438f3b0c99b2cf60d78804a65fe3d84b69d24ddf4a106749bb3617b",
+    "src/__tests__/admin.dialog.test.js": "37106a0dfaf984f9def493827621c7c1f2a7fa696359a46b42dc80fa4336004b",
+    "src/__tests__/private-download.service.test.js": "ccaa39466912948cfc2cea7516de8913bf7880d1274b055d2c3828980f088bc9",
+    "src/__tests__/backup-infrastructure.test.js": "0bf649e3c474ec8958593c27aaaa8a16b958b7fdba4b49a95e681e65fec52217",
+    "src/__tests__/academic-access.test.js": "e5a91e9069b1ca3a348681fbdea4e82a5cae65db2ba66bbde285feafbff3efc5",
+    "src/__tests__/indexed-analysis.service.test.js": "4c8c67f3b916710f85ccd34564147eefa88b80e9e2079d1bfe20af2e4ac20794",
+    "src/__tests__/goal3.models.test.js": "a0441dee1a44fd5f7913652afee1cd3fdb922fea56095c4eee2d1cf16476c3d0",
+    "src/__tests__/schema_contract.test.js": "4523203c7aaeec1dd444a29c32a5b3b07daaedf2f83ce71f45428a7437aae3c6",
+    "src/__tests__/turmas.controller.test.js": "b4de001ed93ea05f4a8c3e3d5f309212a23ec45100c47423779640aa70d3fe4e",
+    "src/__tests__/certificate-storage.service.test.js": "70555ceaac88810ba16b0c185839f77dd08106cd2f5f292e6948d4d0c06d6645",
+    "src/__tests__/identity-email-flow.routes.test.js": "72048127eb56e36add61064d0fa80bb86effbad17b3e716cc64b8333ba0bc67a",
+    "src/__tests__/api.frontend.test.js": "fcff08b4bc61942f90b08d581a3ad5e3a9f6e08bb0e14fef0e00da4e713157cc",
+    "src/__tests__/health.controller.test.js": "f0c33d4dbbb3accec3e3e712b764557adf840c0f9ec660cdac3b247de87a6eda",
+    "src/__tests__/pdf-upload.frontend.test.js": "74d52325055ed76ed71b34a7242affcd4ddd24a07aaba418272e9c305f200d34",
+    "src/__tests__/sala-virtual.resilience.test.js": "2d7bc9d2ca1c0a07462c25b11c7db8b60501b4febcd46e383856752affee9a83",
+    "src/__tests__/env.test.js": "e9ed23acefcc78100157cb53e70a85647de8ca74c988ac85dd976e3ad7c23a57",
+    "src/__tests__/analises-contextuais.controller.test.js": "4b769aa4f299d0613feaf6adbf90294418488e3bd3e627ca25ee8ff336bc4f63",
+    "src/__tests__/usuarios.controller.test.js": "051fb0e1cb1ad6646f7f14f453db5d00a46263d806ec02599742908d1e20c14d",
+    "src/__tests__/certificate-pdf.service.test.js": "006e63d9419966cc8140e595cfac13920c6efdd65c90b57babe58a1ef04e1a21",
+    "src/__tests__/logger.test.js": "aba97afe4598c087b78031c0e40e4e7224e548c46087fe951f4b0637eb2f2625",
+    "src/__tests__/admin.routes.security.test.js": "45a3f378f18e6173fcafa800824fa6c69e2d643948f24ce4461023118c971315",
+    "src/__tests__/institutional.pages.test.js": "5a29c058d9de48ea6618c63293aae125d31b8cd94af25bf02f18d51be892cf1b",
+    "src/__tests__/conteudos.routes.security.test.js": "69afcd912081fcd1069e970393a1a73ba9051c82e9fcb792ea2dfbb5cefaf733",
+    "src/__tests__/email.service.test.js": "ba588e79bebab0941acd75349e9240526f9fa300aa3bea10483156e57668addc",
+    "src/__tests__/auth.controller.test.js": "bbc458b7be0daa98cba1ab2540fda492f3b255f135bfa6260f77c47741310bdf",
+    "src/__tests__/goal4.models.test.js": "f15d4606d0131948a2f527c07d6be25561ef10b255ace0243bf5f02f67835c3e",
+    "src/__tests__/test_database_safety.test.js": "39d10529f08fcf82c76578877f7a3ed69cf58985349c8d4d2eb7df40e3e1dece",
+    "src/__tests__/learning-path.frontend.test.js": "5f4d732b873337bab34013d4d7f2e5a58988906983f93b861ea7adc9d4ef8e30",
+    "src/__tests__/private-pdf.frontend.test.js": "0dc1ea3e705f4c42b87b23e1439ff0f4662bb695c239d63283ac53bb65ad7b0e",
+    "src/__tests__/turma-replication.frontend.test.js": "e7e2360b9c9d50aa075598b1cdee9894828ca7d2d0aee309b5432e260c4c72aa",
+    "src/__tests__/session.frontend.test.js": "cf92bd79d10ccff1fbde1c0b7075945b56be0c2706782a9363f05b8f15b27c14",
+    "src/__tests__/questionario.frontend.test.js": "f7b4313f8954a072060c61cedd8164708d8cf19ef469f10a05cf3a1bc6cc5711",
+    "src/__tests__/information-architecture.frontend.test.js": "9b169206257055cd119bae38cb4228970b00d07da3a2c531aa2fcdd72bc205c5",
+    "src/__tests__/frontend.security.test.js": "5434e1a0ef042be70664491b7d52b5631e7ede68cae303c8560fa31345f28835",
+    "src/__tests__/goal3.routes.test.js": "afc5c3fad4388344dbf73cab4d1ab644987db2f8e338b558a246010455ef6ae0",
+    "src/__tests__/incremental-editor.frontend.test.js": "3c7c36c3b87257b26b477bbd682fc3adf053f38e09f705bf1d977b0ea5e9c616",
+    "src/__tests__/goal6.frontend.test.js": "3508696e18c70751265612ee76d480b9fc4cb8c95ce2f20be08eabce17c0b1e2",
+    "src/__tests__/matricula.model.test.js": "b2e16f9a4abdb2a2f57019ab900db01ee1558616c5d09cc34f11a0e66010f1d4",
+    "src/__tests__/certificate.service.test.js": "d5549d3066f8b280e286f85dc67d523f7d1c8acadb28712ae7f4b206d6cc8d9b",
+    "src/__tests__/goal5.interface.test.js": "a601aa1902cb6a000d4635902de3450d01feb3c80c15525662051ce3941fbb1b",
+    "src/__tests__/visual.public-auth.test.js": "39cb0084a969d179e8f1a8071f4e27790b92529294e57f930a7bbd4c84a27b6c",
+    "src/__tests__/migration-runner.test.js": "30cd66ca350b9cfba0f071785deac2087bf82a60ad9f9e0596b52e47a5457f3b",
+    "src/__tests__/assessment-authoring.frontend.test.js": "d7d2ddaf3cca5207eaab42ce057450826780725d42e18046dc4cc2854555733f",
+    "src/__tests__/material-upload.service.test.js": "7e1bf34f3f2130e6dbf394f9fff641dde95359ef777272985e272a2a911401df",
+    "src/__tests__/middlewares.test.js": "3697e6d83c8bc5ccb8c42b18e43a67fbe410875b1dba1c76bc3bcc2d0ddd9a23",
+    "src/__tests__/seed_admin_inicial.test.js": "915286ad1dc19a77fa9efe8f1a3e6136e9f48f6eb49fc8a366e46236fb22af0c",
+    "src/__tests__/visual.student-teacher.test.js": "b2e3023ad001396d6f10792bac0fbf9e7a829e53b6d44c1b5097f4cae058fceb",
+    "src/__tests__/analise-contextual.model.test.js": "9971845f7b7126b5fcd1e75571ad9dc762b601572fe27670df44c697e79afcf1",
+    "src/__tests__/mvp-security.frontend.test.js": "4186a16663e5369a748fb750bbb0cac12a7d974973a894f08b718982ce088351",
+    "src/__tests__/http-response.test.js": "f719926796a1297f066384bacccba58d131d998ebf8de81051446b5ea6ee2f4b",
+    "src/__tests__/academic-progress.test.js": "10e8ee6d4c90536e1ad9e5a2ed867d0c4cef3ead88d9af2a649ef1a6a286e57a",
+    "src/__tests__/backup-core.test.js": "4b538a11a8a2f5909fafe1dc9ace1e1421ee373acf173252ae3937dd5dd92bc1",
+    "src/__tests__/auth.model.test.js": "63330ee57ab11fbfbb0e22ff0a725f3e49d5ae8fb19d6634085029a8f69bcbff",
+    "src/__tests__/matricula.controller.test.js": "750f4a3242bb57883a11226e2c9742dcd1649de20d8331213abeb67b1ff6e398",
+    "src/__tests__/checkProfessorPermission.test.js": "8ee15155cd2ed9e191ab52f362b455c8e633075310af0ad15ee3b06ea0d06d72",
+    "src/__tests__/runtime-observability.test.js": "8ebc331c66cb24abec3a1ca5889489def9e6c94dc4316db3a5312620a44387b7",
+    "src/__tests__/database-isolation.test.js": "7709e3c43eedf2c6860929275dc5fee7e6b06fafe2734732fda3526642e0ce8b",
+    "src/__tests__/certificates.frontend.test.js": "166ee79b098ef24e69fdc6d292689977ee21f5e81d22af9d60a33a052b075fba",
+    "src/__tests__/detector-contextual.validation.test.js": "06d8cf61653b2447ca2111c3eda4d40a72dbd66f2d69ab52945b8856df6ecec8",
+    "src/__tests__/fixtures/encrypted-material.pdf": "8a2527fb23216a7bfe80488bef5e44fbffb884ce5eae36e428f250bb8f0b74d0",
+    "src/__tests__/fixtures/detector-contextual.fixture.js": "0f16094ce71d9d1ab5b54721517f900a0019fbd7e1dc37f651ddc350603c2274",
+    "src/__tests__/fixtures/valid-material.pdf": "6707d1bb250be8e9422a6f4542d868de5ff0adaec7d81919ac2a12efc4a66435",
+    "src/__tests__/fixtures/valid-xref-table.pdf": "711e925c67f7b02d740f7b23702d225fd0cdaeee73d18f15c56a1543360748a3",
+    "src/__tests__/integration/runtime-load.integration.test.js": "5a8d76c5856e6dc6a7ed35d1520a2beacfd6a36e1beabd3d2e13b43a57378032",
+    "src/__tests__/integration/migration-contract.integration.test.js": "277cbb636902652753ad084337db0b41d171d1982f5231dc1eb02bc4540a4281",
+    "src/__tests__/integration/cursos-turmas.integration.test.js": "12a03c7454c76c1d9576f0c9e8b130cb2946ba11b6bb1c8fc3ea6920191c29cd",
+    "src/__tests__/integration/academic-fixtures.js": "2aa434e3b1159beb31100f9dbb9c835ce8844ec7b4a8dceb819f5996388d8047",
+    "src/__tests__/integration/pool-saturation.integration.test.js": "e3edc8026714b3a1e4594b871498b335523d15eb3ef6aa07d98acb44e75a6cf1",
+    "src/__tests__/integration/certificados.integration.test.js": "b6f7c8dd1ca95f5ff2442f9186d8e0f4f5fe6b6b49ad133d4e17935a89a52e08",
+    "src/__tests__/integration/storage-integrity.integration.test.js": "2ff7c0ec67e42391b67d13db12cb045a1f3584c95ff31780553feff2e7ef2408",
+    "src/__tests__/integration/setup.js": "721600c6eb1a01d0789fde740127500d1e8d3cff5ac05fa00b680f7118c22499",
+    "src/__tests__/integration/turma-replication.integration.test.js": "8c83eba40bc75f8c6f14042f0b199f95a3ef444482bb56971237dff1065cb625",
+    "src/__tests__/integration/plagio.test.js": "2771234bad191966381ad9567cdc6607b489db67dc849ad72908b90f38a0ec01",
+    "src/__tests__/integration/pdf-upload.integration.test.js": "a01f01e69c3f3ec80beba468229ca552c915447383902f0958030f05115f70bf",
+    "src/__tests__/integration/enrollment-lifecycle.integration.test.js": "fca1fb5cbd75d97d741f19b8749636ae71520a3e91803c7fe093db94f1cba9c6",
+    "src/__tests__/integration/goal3-fluxos.integration.test.js": "fc62839992220fb271bfeefb42e0e8ecae61c99c10066a9ecad35aa9ba3c8d3a",
+    "src/__tests__/integration/professor-content-management.integration.test.js": "00eca1c479a31853e82409455ea2214cd598f5c937480d35b6210b535822e742",
+    "src/__tests__/integration/detector-contextual.test.js": "1d10a0843b9e2e708023f63824cbec028c74815ca46cf2916530814d536a758d",
+    "src/__tests__/integration/auth.integration.test.js": "50ab6fe42e89a34f5d758eb30bb71049ed4240520f1808e5f294f8a385009bdf",
+    "src/__tests__/integration/academic-exam.integration.test.js": "11e4cead98518ae2cdcf67e2a8cde58c2586f3c38512b19bee75eec9f0635e75",
+    "src/__tests__/integration/atomic-academic-authorization.integration.test.js": "9ddd1051f57b6b8cb0077c35b491ecd823fcfc894b76ff943607dc8635eed5a2",
+    "src/__tests__/integration/mvp-security.integration.test.js": "2b4cb187ea6b049ba65cb82ef294be8acf775eba4f1dee5129171134796e5cb6",
+    "src/__tests__/integration/matriculas.integration.test.js": "c65dd55bc4ad79815c5ddb1a16d6596f3016abca4abab8a7862864f049db95f7",
+    "src/__tests__/integration/goal4-admin.integration.test.js": "257c7c4d5ef91bf51ac56ed9f10ca3dbaaf5571c971b36ced43a2a0c08741fd3",
+    "src/middlewares/checkProfessorPermission.middleware.js": "f175a27222caca6ddaee5e258640fbc41ff07d0adb4d451fa71ad96b8d5e7b9a",
+    "src/middlewares/checkRole.middleware.js": "7deca6b48604162a5a5bff0265f0d7e068519daab2379c2b9ae6ba79da1f2dd3",
+    "src/middlewares/checkAuth.middleware.js": "d1cae6125567c98901decdef12b2922eae34420674a4e01356433926e730c1cf",
+    "src/middlewares/indexedAnalysis.validation.js": "59b76fa1b77fab2f7c580d4c57325bc1513495215f265f6de11a5e5805e45a9e",
+    "src/middlewares/detectorRateLimit.middleware.js": "e243d6879db49b436cdb3cd482a7997a7188e208ee22bba3ceabafa31b308295",
+    "src/middlewares/requestContext.middleware.js": "86238d1ad599d7f4818d11779d805eed4d525011d48567350e9001a62a078a90",
+    "src/middlewares/emailVerificationRateLimit.middleware.js": "c9f6bdabcda17fbf41c2e20bd8679682e1f3d02eaabb5d5cc40dacee336518af",
+    "src/middlewares/featureFlag.middleware.js": "4accf37909f6ec4c5b74618a2cbbcf154f238ea52f1dec42526d76f64dcfddb9",
+    "src/middlewares/httpObservability.middleware.js": "c9765428cc5a90913e569401de7b770ac12a48bdd2b788810453b35926b4efaf",
+    "src/middlewares/detectorContextual.validation.js": "d2eef409cb404b472334527e1d37502fd6dc0923c33c7da68d5db56f207e48ce",
+    "src/middlewares/checkUserPermission.middleware.js": "a7d555cd13907195b424c666051d498d80e5d8bbe5ac9ab04b32afbc706da9f2",
+    "src/middlewares/indexedAnalysisRateLimit.middleware.js": "42fa53efcd50479c1e7d267da02c4e941445e3a3916376991a53fc6b1b3acae6",
+    "src/utils/http-response.js": "60f0457844c727bdba9729c40ac3c87aa21a9124d853ecdb0dd0c5f5b7a9bf74",
+    "src/utils/identity.js": "f3aea1ce0e205c488464011e5104dddb271f742c5c0aadf89108b9b5e4df3284",
+    "src/utils/logger.js": "f1a70aab1e0978ec23c70f01082fb0ba1a1f9a99c2fd2e9f2d70dcb7119d572e",
+    "src/utils/pagination.js": "f67d348d9d9481b7ab8b4536ea3649675a6c7a6ff91dac7a3e969ff28c1eaedc",
+    ".agents/skills/ui-ux-design-pro/cli/tsconfig.json": "11a68339a9c6a0c04a67b95dff9eefd9a92c42fa35161411048405272ab192c8",
+    ".agents/skills/ui-ux-design-pro/cli/index.ts": "7c8c6b4856959e74458c6e42150342bcdde381069a6656d09a101790a3340380",
+    ".agents/skills/ui-ux-design-pro/cli/bun.lock": "a1fa0a850c36e687ca947c2a088ca69aa93bcab221ce819f92e90620b26f67f9",
+    ".agents/skills/ui-ux-design-pro/cli/.gitignore": "a4d1c39e4068ff63c2407ea4ad8ba88f153c0f8f7adbf6f5f8564963bd557bc3",
+    ".agents/skills/ui-ux-design-pro/cli/package.json": "70fb417a4cccfeaaede0a2f26286c5b8d19c97b8273f22f4c34ead7d03de63c3",
+    ".agents/skills/ui-ux-design-pro/cli/lib/search.ts": "9224f859fe0fc2a736e63162620a62a7325425cbb9921ba07c566bd48044c174",
+    ".agents/skills/ui-ux-design-pro/cli/lib/generators.ts": "c8b781e7b1c6453f1059822cf4c3884195b4a8a73f0de328266ab74a74dbe553",
+    ".agents/skills/ui-ux-design-pro/cli/commands/generate.ts": "1717747f57711169936be4e53a4083485c69afee89d72ba9fd7233058a9a13ca",
+    ".agents/skills/ui-ux-design-pro/cli/commands/icons.ts": "504d2cb7d70a3ef68b5132b5f6a6bcbca567855b702c65876d9371bf27f9d1c9",
+    ".agents/skills/ui-ux-design-pro/cli/commands/audit.ts": "bfc854cd1af265f0f3fee83590153c52518da71c15932470e016e2753fb44022",
+    ".agents/skills/ui-ux-design-pro/cli/commands/search.ts": "aef70fcd3c0edb1c54ccb87e3a254a531515aa4439c8fa67b0b66ebcc385ac96",
+    ".agents/skills/ui-ux-design-pro/cli/data/landing.csv": "53ded1b6cc0b3fd1864a33fde773a894b8d4b13672ac97beda846775fc02fe2b",
+    ".agents/skills/ui-ux-design-pro/cli/data/products.csv": "e8f7db04570f0e370c1856f2a9ca0d939e1bbffcfeb9cbc1e3286a9fd71ff4fb",
+    ".agents/skills/ui-ux-design-pro/cli/data/icons.csv": "351fe61ba45b8146c66de6ea7d67297654639d79a94f537b4d0bad570058c28f",
+    ".agents/skills/ui-ux-design-pro/cli/data/ui-reasoning.csv": "4854a1edb1d9a8288405e73ebdf9455f8fba54611234f2a1f208bd8aa56c2e90",
+    ".agents/skills/ui-ux-design-pro/cli/data/ux-guidelines.csv": "826def982bc0769a365f117107a198ba51c9bd2d4eaf83465aaf3cbf93834f2a",
+    ".agents/skills/ui-ux-design-pro/cli/data/react-performance.csv": "904c8afcda229629545912dde0e8ac37503757131f0169f80b016f1f58c4fd3f",
+    ".agents/skills/ui-ux-design-pro/cli/data/colors.csv": "74c2ef954c17b9b721bc782447263ebd5ec1b123531830ef88bc5ad28bda3e60",
+    ".agents/skills/ui-ux-design-pro/cli/data/charts.csv": "aa30aff0dabc529a614f5eb18f7a623f363036f69bd963348c85e186663efba3",
+    ".agents/skills/ui-ux-design-pro/cli/data/styles.csv": "affa87f40ded5510d6facbffae881c46d7e0057b54561c0e58d2390fa797fa01",
+    ".agents/skills/ui-ux-design-pro/cli/data/icon-libraries.csv": "665305d23eb86ea25c7606ec80e9aeecdb24d79c06c0d9b6b95a8190dd5aa6c5",
+    ".agents/skills/ui-ux-design-pro/cli/data/ai-hallucinations.csv": "b6fc4e6d85c33b91cc8a57969531164d57d993305c991c3bd77a0187a760540f",
+    ".agents/skills/ui-ux-design-pro/cli/data/web-interface.csv": "7c3e4e96e3bdcec070545ea5f9a78e48e5ff0147a2027fe491096b7970d10895",
+    ".agents/skills/ui-ux-design-pro/cli/data/typography.csv": "f7b726709b39f6c9b16467985883e0db5434fb071d4cd780083e8bfe0a48c588",
+    ".agents/skills/ui-ux-design-pro/cli/data/components.csv": "b984ffde9e555b6779387b756e26801697b7316c2d6b11f2791a91f9345ed7f0",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/jetpack-compose.csv": "6c8fd4b0391c342c12b0af15610cd5becbeccaef0bbe8dcfc01d928c3195d93e",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/nuxtjs.csv": "f7a3f2d9542856d00199f85c6c023b7c284cc698e2e6e12d61afce2edacb24d6",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/nuxt-ui.csv": "05d6e74501b2b6a636faed32450622759f49a5bcafad971f5f4e7eba0eb7be71",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/solidjs.csv": "4a91a1ab871f8285170f1acd99c9cc6a49f08e467b389751edbc2d7b683d5656",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/shadcn.csv": "395c2e415ef6f48a474acccdc8eb2c7258a6ed751a5037ba171a2d8823e02ded",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/flutter.csv": "e470e6bc2bcd8562667cc764d1e1afb0be0a30ca4dc9ec12fa18b19d46f156bd",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/react-native.csv": "a08ca77fcf6b6d9531982dce465366296013bfcf12d2938ac72ad57cf0c4f085",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/astro.csv": "ad18dae3ab6d148d37d144592df80dc1825b6c9e86d9d2d68fdda77434206a37",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/remix.csv": "f1a329c85e9abddb23eda5346444f8e98d77aa8e2123a872cb00a020b7e8862a",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/svelte.csv": "bc8d158994a8bdf412830a9dd5e5a5534edd2f367a6e50e0ebd4d76f592dfa3f",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/vue.csv": "9b793c3f4eec85f77a758c09322f2b62f3b3ca549bb713ccf0849ef885934395",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/react.csv": "b6e3eb0e4c9c01bd00ffb951d5ca224a19d488b4544c75436f48cf92ff12bf45",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/nextjs.csv": "06a8e8c13bd44696c6ebb4cb6c4d8dea440e3de8cce77616512529ed29258f0c",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/angular.csv": "cc061385062ca2c9909b44185e64ebbb88080f7a9edb4fd5f62030c3a66c0913",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/html-tailwind.csv": "1f004891dd189f6bc2a7717401e3100244326e7e2f3963a79bf7b2349d85e091",
+    ".agents/skills/ui-ux-design-pro/cli/data/stacks/swiftui.csv": "e87cb9eee208bb753bdab96d4a261c7f830c4317ee90ec098316b248fc32be85"
+  },
+  "reference_audit": {
+    "searched": "code, scripts, tests, Dockerfile/.dockerignore, Compose/Caddy, CI, deploy, documentation including Goals",
+    "coverage": "package.json produces coverage; eslint/git/docker exclude it; no consumer of rendered report files found; four raw result files archived byte-for-byte",
+    "document_moves": "No runtime/test/config dependency on moved Markdown paths; staging bundle includes docs recursively; internal links rebased",
+    "screenshots": "Kept in docs/screenshots because capture/validation scripts use these paths"
+  },
+  "gitignore_change": "Unignore only /docs/engineering/history/*.md so former ignored Markdown drafts can accompany documentation; existing runtime/cache ignore rules unchanged",
+  "history_edits": "History notices, navigation/path rebasing, and replacement of obsolete fixed demo password with placeholder in DADOS_MOCK_TESTE.md",
+  "runtime_changes": false,
+  "preexisting_deleted_source_files": [
+    "src/public/js/professor-turma.js",
+    "src/public/js/sala-aula.js"
+  ],
+  "retained_uncertain": [
+    "audit-autoria.js",
+    "audit-report.html",
+    "color-report.html",
+    "layout.html",
+    "fotos_equipe_plagio/",
+    ".stitch/",
+    ".impeccable/",
+    ".deployments/",
+    ".azure-staging/",
+    "historical seed/audit scripts",
+    "sibling workspace directories outside repository"
+  ]
+}

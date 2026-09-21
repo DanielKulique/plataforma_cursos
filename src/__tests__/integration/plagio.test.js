@@ -13,7 +13,7 @@ jest.mock('../../api/services/plagio.service', () => ({
 
 const request = require('supertest');
 const plagioService = require('../../api/services/plagio.service');
-const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword } = require('./setup');
+const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword, getSessionToken } = require('./setup');
 const { app } = require('../../../index');
 const applicationDb = require('../../config/database');
 
@@ -34,7 +34,7 @@ describe('Testes de Integração - Plágio', () => {
                 senha: testPassword
             });
 
-        alunoToken = login.body.token;
+        alunoToken = getSessionToken(login);
     });
 
     afterEach(async () => {

@@ -1,0 +1,580 @@
+{
+  "version": 1,
+  "course": {
+    "name": "Plágio não copie essa ideia 3.0",
+    "hours": null,
+    "suggestedHours": 6
+  },
+  "class": {
+    "name": "Turma 2026/2",
+    "status": "FECHADA",
+    "teacherEmail": null,
+    "startDate": null,
+    "endDate": null
+  },
+  "adminEmail": "danielricardokulique@gmail.com",
+  "lessons": [
+    {
+      "order": 1,
+      "title": "Estudo de Caso",
+      "contents": [
+        {
+          "type": "VIDEO",
+          "title": "Estudo de Caso",
+          "url": "https://www.youtube.com/watch?v=JeaZc8_hqAk",
+          "order": 1
+        },
+        {
+          "type": "LINK",
+          "title": "Plágio: não copie essa ideia",
+          "url": "https://repositorio.utfpr.edu.br/jspui/handle/1/2902",
+          "order": 2
+        },
+        {
+          "type": "PDF",
+          "title": "Cartilha Antiplágio",
+          "file": "Cartilha Antiplágio.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/17vnYTANCUxYnkYfO3Q0bNgVPHlgVk9Ec/view",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Introdução ao Curso",
+      "contents": [
+        {
+          "type": "VIDEO",
+          "title": "Introdução ao Curso",
+          "url": "https://www.youtube.com/watch?v=-U6o1uTg0Hk",
+          "order": 4
+        },
+        {
+          "type": "PDF",
+          "title": "Como verificar se há plágio no texto?",
+          "file": "2017 - Passos para verificar se há plágio no texto.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1abkbsyhpeivK-NJDT24-yvJXQIESBN6q/view",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "title": "O que é plágio?",
+      "contents": [
+        {
+          "type": "VIDEO",
+          "title": "O que é plágio?",
+          "url": "https://www.youtube.com/watch?v=TRq7-e8SEJ0",
+          "order": 6
+        },
+        {
+          "type": "PDF",
+          "title": "Como reconhecer o plágio?",
+          "file": "Como reconhecer o plágio - baseado no material da Indiana University.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1oLFg7Jyuexgb_VIusivL2iFTAIshPYvH/view",
+          "order": 7
+        },
+        {
+          "type": "PDF",
+          "title": "Recomendações OAB — Combate ao plágio",
+          "file": "2010 - Recomendações OAB-CE.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1rutTJPcyPzXXBPgZnMPE4YMzzF39gvV7/view",
+          "order": 8
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "title": "Outras Desonestidades",
+      "contents": [
+        {
+          "type": "VIDEO",
+          "title": "Outras Desonestidades",
+          "url": "https://www.youtube.com/watch?v=_u9bxkHcwU8",
+          "order": 9
+        },
+        {
+          "type": "PDF",
+          "title": "Rigor e Integridade na Condução da Pesquisa Científica",
+          "file": "2013 - Rigor e integridade na condução em Ciências - Academia Brasileira de Ciências.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1WdD7g4CvvIqMQ1Strg5jlxCGqfEsQWN7/view",
+          "order": 10
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "title": "Fichamento de pesquisa",
+      "contents": [
+        {
+          "type": "VIDEO",
+          "title": "Fichamento de pesquisa",
+          "url": "https://www.youtube.com/watch?v=uWDl6rR5LEw",
+          "order": 11
+        },
+        {
+          "type": "LINK",
+          "title": "Google Acadêmico",
+          "url": "https://scholar.google.com.br/?hl=pt",
+          "order": 12
+        },
+        {
+          "type": "XLSX",
+          "title": "Check-list para pesquisadores",
+          "file": "Check-list para pesquisadores - baseado no material do UKRIO.xlsx",
+          "sourceUrl": "https://drive.google.com/file/d/10owrij1ckyzqCKwt9IGdQGtcAM2Dp4FP/view",
+          "order": 13
+        },
+        {
+          "type": "XLSX",
+          "title": "Modelo de Fichamento de Trabalhos",
+          "file": "Modelo de Fichamento de Trabalhos.xlsx",
+          "sourceUrl": "https://drive.google.com/file/d/13MhbteIyV96Dfr3tmHHdOYLOEaIEm9Vd/view",
+          "order": 14
+        },
+        {
+          "type": "PDF",
+          "title": "UKRIO — Recommended Checklist for Researchers",
+          "file": "UKRIO-Recommended-Checklist-for-Researchers.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1MIaRbl3Md9-ngDlCNT63M3W0zKA7YHQA/view",
+          "order": 15
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Uso Ético de Ferramentas de Inteligência Artificial (IA)",
+      "contents": [
+        {
+          "type": "VIDEO",
+          "title": "Uso Ético de Ferramentas de Inteligência Artificial (IA)",
+          "url": "https://www.youtube.com/watch?v=cEisacCvVvI",
+          "order": 16
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "title": "Detectando Plágio em Documentos",
+      "contents": [
+        {
+          "type": "VIDEO",
+          "title": "Detectando Plágio em Documentos",
+          "url": "https://www.youtube.com/watch?v=_80ZNlYxEc4",
+          "order": 17
+        },
+        {
+          "type": "LINK",
+          "title": "Plagiarism Detector",
+          "url": "https://plagiarismdetector.net/",
+          "order": 18
+        },
+        {
+          "type": "LINK",
+          "title": "DupliChecker",
+          "url": "https://www.duplichecker.com/pt",
+          "order": 19
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "title": "Códigos de Conduta e Casos Reais",
+      "contents": [
+        {
+          "type": "VIDEO",
+          "title": "Códigos de Conduta e Casos Reais",
+          "url": "https://www.youtube.com/watch?v=G-_NX8ieKt8",
+          "order": 20
+        },
+        {
+          "type": "PDF",
+          "title": "Declaração de Singapura sobre Integridade em Pesquisa",
+          "file": "2010 - Declaração de Singapura.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1VlvNpX7Gp-s6AAzoBV4ALo6C4mkqqVHN/view",
+          "order": 21
+        },
+        {
+          "type": "PDF",
+          "title": "Relatório da Comissão de Integridade de Pesquisa do CNPq",
+          "file": "2011 - CNPq - Relatorio-Comissao- Integridade-do-CNPq.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/19OPeWiMWAsWUifvDrx3oksJ05vtWPTdU/view",
+          "order": 22
+        },
+        {
+          "type": "PDF",
+          "title": "Declaração Conjunta sobre Integridade em Pesquisa — II BRISPE",
+          "file": "2012 - Declaração conjunta II BRISPE.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1iyKoVEViHixBLoV-2Uy_qnjEA9a5Rxhx/view",
+          "order": 23
+        },
+        {
+          "type": "PDF",
+          "title": "FAPESP — Código de Boas Práticas Científicas",
+          "file": "2014 - FAPESP-Codigo de Boas Praticas Cientificas.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1iW7sls32SsarTPf70nHWToThJCoj9lGJ/view",
+          "order": 24
+        },
+        {
+          "type": "PDF",
+          "title": "ORI — Introduction to the Responsible Conduct of Research",
+          "file": "2007 - ORI Introduction to the Responsible Conduct of Research.pdf",
+          "sourceUrl": "https://drive.google.com/file/d/1nR8gzGGmMPIIJCRyW0cHtkmKl3-AdlYz/view",
+          "order": 25
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "title": "Teste Final (Certificado)",
+      "contents": []
+    }
+  ],
+  "assessments": [
+    {
+      "title": "Simulado",
+      "type": "EXERCICIO",
+      "final": false,
+      "lessonOrder": 9,
+      "order": 1,
+      "active": false,
+      "complete": true,
+      "sourceFile": "Simulado.pdf",
+      "declaredPoints": 180,
+      "questions": [
+        {
+          "order": 1,
+          "text": "Reprovar ou ser expulso da Instituição é consequência de que ato?",
+          "options": [
+            "Desacatar professor em sala de aula.",
+            "Cometer plágio.",
+            "Referenciar autores ao escrever.",
+            "Refazer trabalhos já feitos."
+          ],
+          "points": 10,
+          "answerStatus": "PROPOSTO",
+          "correctOption": null,
+          "sourceNote": "Cometer plágio. Status: PROPOSTO - Resposta esperada pelo contexto pedagógico do formulário.",
+          "complete": true
+        },
+        {
+          "order": 2,
+          "text": "O que é o cozimento de dados?",
+          "options": [
+            "Usar a IA para gerar dados.",
+            "Colocar os dados em um canto e deixar por um tempo.",
+            "Pegar dados de vários locais.",
+            "Copiar dados de outros."
+          ],
+          "points": 10,
+          "answerStatus": "REVISAR",
+          "correctOption": null,
+          "sourceNote": "REVISAR - nenhuma das alternativas apresentadas corresponde de forma adequada à definição usual de \"cooking data\". Status: REVISAR - A noção de cozimento/manipulação de dados envolve selecionar, omitir, alterar ou criar observações para produzir um resultado desejado. Revisar enunciado/alternativas antes da publicação.",
+          "complete": true
+        },
+        {
+          "order": 3,
+          "text": "Quando você coloca o nome de um colega em um trabalho que ele não ajudou a fazer, isso é considerado:",
+          "options": [
+            "Plágio.",
+            "Jogo de interesse.",
+            "Má conduta acadêmica.",
+            "Algo permitido na academia."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 3,
+          "sourceNote": "Má conduta acadêmica. Status: CONFIRMADO - O CNPq estabelece que somente pessoas com contribuição significativa merecem autoria.",
+          "complete": true
+        },
+        {
+          "order": 4,
+          "text": "Quando você escolhe os dados para publicar, isso é considerado:",
+          "options": [
+            "Plágio.",
+            "Jogo de interesse.",
+            "Má conduta acadêmica.",
+            "Algo permitido na academia."
+          ],
+          "points": 10,
+          "answerStatus": "PROPOSTO",
+          "correctOption": null,
+          "sourceNote": "Má conduta acadêmica. Status: PROPOSTO - Interpretação: seleção tendenciosa/cherry-picking de dados para publicação.",
+          "complete": true
+        },
+        {
+          "order": 5,
+          "text": "Independente do material ser seu, ele precisa ser referenciado. Estamos falando de:",
+          "options": [
+            "Plágio.",
+            "Autoplágio."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 2,
+          "sourceNote": "Autoplágio. Status: CONFIRMADO - O material do curso define autoplágio como reutilização de produção própria sem as devidas referências.",
+          "complete": true
+        },
+        {
+          "order": 6,
+          "text": "O uso da IA pode gerar plágio?",
+          "options": [
+            "Sim.",
+            "Não."
+          ],
+          "points": 10,
+          "answerStatus": "PROPOSTO",
+          "correctOption": null,
+          "sourceNote": "Sim. Status: PROPOSTO - Compatível com a abordagem do curso sobre uso ético de IA.",
+          "complete": true
+        },
+        {
+          "order": 7,
+          "text": "Para auxiliar a organizar as referências durante a pesquisa, recomenda-se o uso de:",
+          "options": [
+            "Fotos de livros.",
+            "Fichamento.",
+            "Riscar os livros e artigos."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 2,
+          "sourceNote": "Fichamento. Status: CONFIRMADO - A Aula 5 do curso é dedicada ao fichamento de pesquisa.",
+          "complete": true
+        },
+        {
+          "order": 8,
+          "text": "Uma paráfrase é quando você pega a ideia do autor, mas a reescreve com suas palavras fazendo a devida citação.",
+          "options": [
+            "Verdadeiro.",
+            "Falso."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 1,
+          "sourceNote": "Verdadeiro. Status: CONFIRMADO - O material \"Como reconhecer o plágio\" exige citação e referência para ideia parafraseada.",
+          "complete": true
+        },
+        {
+          "order": 9,
+          "text": "Uma paráfrase precisa ser referenciada, mesmo não copiando literalmente a escrita do autor.",
+          "options": [
+            "Verdadeiro.",
+            "Falso."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 1,
+          "sourceNote": "Verdadeiro. Status: CONFIRMADO - A paráfrase continua usando ideia de outra fonte.",
+          "complete": true
+        },
+        {
+          "order": 10,
+          "text": "Quando faço uma citação direta, ou seja, cópia literal do autor, é preciso referenciar.",
+          "options": [
+            "Verdadeiro.",
+            "Falso."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 1,
+          "sourceNote": "Verdadeiro. Status: CONFIRMADO - Citação direta deve indicar fonte e referência.",
+          "complete": true
+        },
+        {
+          "order": 11,
+          "text": "Quando faço uma citação indireta, não preciso referenciar.",
+          "options": [
+            "Verdadeiro.",
+            "Falso."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 2,
+          "sourceNote": "Falso. Status: CONFIRMADO - Citação indireta/paráfrase também exige referência.",
+          "complete": true
+        },
+        {
+          "order": 12,
+          "text": "Não posso utilizar IA em nenhuma circunstância.",
+          "options": [
+            "Verdadeiro.",
+            "Falso."
+          ],
+          "points": 10,
+          "answerStatus": "PROPOSTO",
+          "correctOption": null,
+          "sourceNote": "Falso. Status: PROPOSTO - O Teste Final visível inclui uso permitido de IA para revisão de texto/gramática.",
+          "complete": true
+        },
+        {
+          "order": 13,
+          "text": "Com relação ao código de conduta, o CNPq/2011 tem:",
+          "options": [
+            "8 princípios básicos do pesquisador.",
+            "21 diretrizes de conduta do pesquisador.",
+            "5 princípios básicos do pesquisador.",
+            "12 diretrizes de conduta do pesquisador."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 2,
+          "sourceNote": "21 diretrizes de conduta do pesquisador. Status: CONFIRMADO - O relatório do CNPq enumera diretrizes 1 a 21.",
+          "complete": true
+        },
+        {
+          "order": 14,
+          "text": "Pode acontecer plágio acidental?",
+          "options": [
+            "Sim.",
+            "Não."
+          ],
+          "points": 10,
+          "answerStatus": "PROPOSTO",
+          "correctOption": null,
+          "sourceNote": "Sim. Status: PROPOSTO - O formulário distingue explicitamente plágio acidental.",
+          "complete": true
+        },
+        {
+          "order": 15,
+          "text": "O plágio acidental ocorre quando:",
+          "options": [
+            "O pesquisador esquece de referenciar.",
+            "O pesquisador troca o nome do autor.",
+            "O pesquisador referencia de maneira incorreta."
+          ],
+          "points": 10,
+          "answerStatus": "PROPOSTO",
+          "correctOption": null,
+          "sourceNote": "O pesquisador esquece de referenciar. Status: PROPOSTO - Resposta esperada pela formulação do questionário.",
+          "complete": true
+        },
+        {
+          "order": 16,
+          "text": "O plágio \"mosaico\" ocorre quando:",
+          "options": [
+            "O pesquisador utiliza várias fontes, copia trechos alternados e não referencia nenhum deles.",
+            "O pesquisador copia e cola na íntegra, sem referenciar.",
+            "O pesquisador substitui palavras por sinônimos e não referencia o autor."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 1,
+          "sourceNote": "O pesquisador utiliza várias fontes, copia trechos alternados e não referencia nenhum deles. Status: CONFIRMADO - Corresponde à ideia de montagem/patchwork de trechos não referenciados.",
+          "complete": true
+        },
+        {
+          "order": 17,
+          "text": "O plágio \"clonagem\" ocorre quando:",
+          "options": [
+            "O pesquisador utiliza várias fontes, copia trechos alternados e não referencia nenhum deles.",
+            "O pesquisador copia e cola na íntegra, sem referenciar.",
+            "O pesquisador substitui palavras por sinônimos e não referencia o autor."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 2,
+          "sourceNote": "O pesquisador copia e cola na íntegra, sem referenciar. Status: CONFIRMADO - Corresponde à cópia integral sem atribuição.",
+          "complete": true
+        },
+        {
+          "order": 18,
+          "text": "O plágio \"busca e substituição\" ocorre quando:",
+          "options": [
+            "O pesquisador utiliza várias fontes, copia trechos alternados e não referencia nenhum deles.",
+            "O pesquisador copia e cola na íntegra, sem referenciar.",
+            "O pesquisador substitui palavras por sinônimos e não referencia o autor."
+          ],
+          "points": 10,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 3,
+          "sourceNote": "O pesquisador substitui palavras por sinônimos e não referencia o autor. Status: CONFIRMADO - Corresponde à substituição superficial de termos sem atribuição da fonte.",
+          "complete": true
+        }
+      ]
+    },
+    {
+      "title": "Teste Final",
+      "type": "PROVA",
+      "final": true,
+      "lessonOrder": 9,
+      "order": 2,
+      "active": false,
+      "complete": false,
+      "sourceFile": "TESTE FINAL - Google Formulários.pdf",
+      "declaredPoints": 100,
+      "questions": [
+        {
+          "order": 1,
+          "text": "Quando faço uma citação indireta, não preciso referenciar.",
+          "options": [
+            "Verdadeiro",
+            "Falso"
+          ],
+          "points": null,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 2,
+          "sourceNote": "Falso. Status: CONFIRMADO - Citação indireta/paráfrase também deve indicar a fonte.",
+          "complete": true
+        },
+        {
+          "order": 2,
+          "text": "O uso da IA é permitido quando:",
+          "options": [
+            "Utilizo para gerar dados.",
+            "Utilizo para revisar textos ou gramática.",
+            "Utilizo para escrever o meu texto.",
+            "Utilizo para sugestão de palavras."
+          ],
+          "points": null,
+          "answerStatus": "PROPOSTO",
+          "correctOption": null,
+          "sourceNote": "Utilizo para revisar textos ou gramática. Status: PROPOSTO - É a alternativa mais coerente com o enfoque de uso ético apresentado no curso. Conferir com o gabarito original do Google Forms antes da publicação.",
+          "complete": true
+        },
+        {
+          "order": 3,
+          "text": "É uma das 21 diretrizes do CNPq/2011:",
+          "options": [
+            "Copiar parte do texto de outro autor.",
+            "Sempre dar crédito às fontes.",
+            "Selecionar as fontes serão creditadas."
+          ],
+          "points": null,
+          "answerStatus": "CONFIRMADO",
+          "correctOption": 2,
+          "sourceNote": "Sempre dar crédito às fontes. Status: CONFIRMADO - A Diretriz 1 do relatório do CNPq estabelece que o autor deve sempre dar crédito às fontes que fundamentam diretamente o trabalho.",
+          "complete": true
+        },
+        {
+          "order": 4,
+          "text": "O plágio acidental ocorre quando:",
+          "options": [
+            "O pesquisador esquece de referenciar.",
+            "O pesquisador troca o nome do autor."
+          ],
+          "points": null,
+          "answerStatus": "PROPOSTO",
+          "correctOption": null,
+          "sourceNote": "O pesquisador esquece de referenciar. Status: PROPOSTO - O PDF visível corta as alternativas seguintes; importar somente após conferir a lista completa no formulário original.",
+          "complete": false
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "file": "questionarios_e_gabaritos_codex.pdf",
+      "sha256": "61f1a894894c2774bba6d18a5934c8bd6e1e2888e32279489bf07cc70d45b11c"
+    },
+    {
+      "file": "Simulado.pdf",
+      "sha256": "b4adfbf2276ff48236545797513d1855c6d5619abc7f2e4b8db5407569602c55"
+    },
+    {
+      "file": "TESTE FINAL - Google Formulários.pdf",
+      "sha256": "739755944d7757be8de4eb9caa0aa292008bcc694e06a1a686a7d24dfbc3f653"
+    }
+  ]
+}

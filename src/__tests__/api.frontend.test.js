@@ -46,7 +46,7 @@ function loadApi(fetchImpl) {
     };
     const testConsole = { warn: jest.fn(), error: jest.fn() };
     const factory = new Function(
-        'getToken',
+        'authenticatedFetch',
         'clearToken',
         'cacheManager',
         'fetch',
@@ -56,7 +56,7 @@ function loadApi(fetchImpl) {
     );
     return {
         client: factory(
-            jest.fn().mockReturnValue('token-de-teste'),
+            fetchImpl,
             clearToken,
             cacheManager,
             fetchImpl,
@@ -93,6 +93,63 @@ describe('cliente HTTP do frontend', () => {
         expect(fetchImpl).toHaveBeenCalledTimes(2);
         expect(TestAbortController.instances).toHaveLength(2);
         expect(fetchImpl.mock.calls[0][1].signal).not.toBe(fetchImpl.mock.calls[1][1].signal);
+    });
+
+    it('processa JSON em 200 e não tenta fazer parse de 204', async () => {
+        const ok = response(200, { data: 'ok' });
+        const empty = response(204);
+        const fetchImpl = jest.fn().mockResolvedValueOnce(ok).mockResolvedValueOnce(empty);
+        const { client } = loadApi(fetchImpl);
+
+        await expect(client.get('/json', { retries: 1 })).resolves.toEqual({ data: 'ok' });
+        await expect(client.del('/sem-corpo')).resolves.toBeNull();
+        expect(empty.json).not.toHaveBeenCalled();
+    });
+
+    it('aceita o envelope canônico de erro e preserva conflito de domínio', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(response(409, {
+            error: 'A avaliação possui histórico e não pode ser alterada.',
+            code: 'QUESTIONARIO_COM_HISTORICO'
+        }));
+        const { client } = loadApi(fetchImpl);
+
+        await expect(client.get('/conflito', { retries: 1 })).rejects.toMatchObject({
+            status: 409,
+            message: 'A avaliação possui histórico e não pode ser alterada.'
+        });
+    });
+
+    it('ignora detalhe técnico recebido em 500', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(response(500, {
+            error: 'ER_LOCK_DEADLOCK SQL at internal-host'
+        }));
+        const { client } = loadApi(fetchImpl);
+
+        await expect(client.get('/falha', { retries: 1 })).rejects.toMatchObject({
+            status: 500,
+            message: 'O servidor não conseguiu concluir a solicitação.'
+        });
+    });
+
+    it('converte resposta de sucesso não-JSON em erro controlado', async () => {
+        const invalid = response(200);
+        invalid.json.mockRejectedValue(new SyntaxError('Unexpected token <'));
+        const { client } = loadApi(jest.fn().mockResolvedValue(invalid));
+
+        await expect(client.get('/proxy-html', { retries: 1 })).rejects.toMatchObject({
+            status: 502,
+            message: 'O servidor retornou uma resposta inválida.'
+        });
+    });
+
+    it('converte falha de rede em mensagem segura', async () => {
+        const fetchImpl = jest.fn().mockRejectedValue(new TypeError('Failed to fetch internal-host'));
+        const { client } = loadApi(fetchImpl);
+
+        await expect(client.get('/offline', { retries: 1 })).rejects.toMatchObject({
+            status: 0,
+            message: 'Não foi possível conectar ao servidor.'
+        });
     });
 
     it.each([

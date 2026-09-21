@@ -1,6 +1,7 @@
 const matriculaModel = require('../models/matricula.models');
 const { validationResult } = require('express-validator');
 const logger = require('../../utils/logger');
+const { paginated, parsePagination } = require('../../utils/pagination');
 
 // Criar nova matrícula (aluno entra em nova turma)
 async function criarMatricula(req, res) {
@@ -75,11 +76,16 @@ async function buscarMatriculasDaTurma(req, res) {
         if (!await matriculaModel.turmaExiste(id_turma)) {
             return res.status(404).json({ message: 'Turma não encontrada.' });
         }
-        const matriculas = await matriculaModel.buscarMatriculaPorTurma(id_turma);
+        const pagination = parsePagination(req.query);
+        const matriculas = await matriculaModel.buscarMatriculaPorTurma(id_turma, pagination);
 
-        return res.status(200).json({ matriculas });
+        return res.status(200).json({
+            ...paginated(matriculas.items, matriculas.total, pagination),
+            matriculas: matriculas.items
+        });
     } catch (error) {
         logger.error('matricula.turma_lista.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
+        if (error.status === 400) return res.status(400).json({ message: error.message, code: error.code });
         return res.status(500).json({
             message: 'Ocorreu um erro no servidor.'
         });
@@ -121,13 +127,16 @@ async function atualizarMatricula(req, res) {
             });
         }
 
-        await matriculaModel.atualizarMatricula(id, dadosParaAtualizar);
+        await matriculaModel.atualizarMatricula(id, dadosParaAtualizar, req.user);
 
         return res.status(200).json({
             message: 'Matrícula atualizada com sucesso!'
         });
     } catch (error) {
         logger.error('matricula.atualizacao.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
+        if (error.status && error.status < 500) {
+            return res.status(error.status).json({ message: error.message, code: error.code });
+        }
         if (error.message === 'Nenhum campo válido para atualizar.') {
             return res.status(400).json({ message: error.message });
         }
@@ -152,6 +161,9 @@ async function cancelarMatricula(req, res) {
         });
     } catch (error) {
         logger.error('matricula.cancelamento.falhou', { requestId: req.id, actorId: req.user?.id_usuario, error });
+        if (error.status && error.status < 500) {
+            return res.status(error.status).json({ message: error.message, code: error.code });
+        }
         if (
             error.message === 'Matrícula não encontrada para cancelar!' ||
             error.message === 'Matrícula não encontrada!'

@@ -12,15 +12,18 @@ async function enviarParaAnaliseIA(texto_original, texto_suspeito) {
         const response = await fetch(IA_ANALISE_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                ...(process.env.MOTOR_IA_INTERNAL_API_TOKEN
+                    ? { 'X-Internal-Service-Token': process.env.MOTOR_IA_INTERNAL_API_TOKEN }
+                    : {})
             },
             body: JSON.stringify({ texto_original, texto_suspeito }),
             signal: AbortSignal.timeout(TIMEOUT_MS)
         });
 
         if (!response.ok) {
-            const details = await response.text();
-            const error = new Error(`Falha ao analisar texto na IA externa (${response.status}). ${details}`.trim());
+            await response.body?.cancel?.();
+            const error = new Error(`Falha ao analisar texto na IA externa (${response.status}).`);
             error.status = response.status === 503 ? 503 : 502;
             throw error;
         }

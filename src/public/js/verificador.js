@@ -4,11 +4,9 @@ import { lockPageScroll } from './page-scroll.js';
 import {
   createIncrementalCoordinator,
   currentReferences,
-  reconcileEditorSegments,
-  responseMatchesSegment
+  reconcileEditorSegments
 } from './incremental-editor.js';
 
-const CONTEXTUAL_ENDPOINT = '/analises/contextual';
 const INCREMENTAL_ENDPOINT = '/analises/contextual/segmento';
 const COMPLETE_ENDPOINT = '/analises/contextual/documento';
 const LIMITS = Object.freeze({ documento: 100000, fonte: 50000, autores: 20 });
@@ -302,6 +300,7 @@ const incrementalStatus = byId('incrementalStatus');
 const incrementalSegments = byId('incrementalSegments');
 let isAnalyzing = false;
 let hasResult = false;
+let detectorAvailable = false;
 let segmentSequence = 0;
 let editorSegments = [];
 const segmentViews = new Map();
@@ -523,6 +522,10 @@ function renderResult(payload) {
 }
 
 async function runAnalysis() {
+  if (!detectorAvailable) {
+    setFeedback('O verificador experimental está desabilitado neste ambiente.', 'error');
+    return;
+  }
   if (isAnalyzing) return;
   if (!validateForm()) { setAnalysisState('invalid', 'Existem campos que precisam ser revisados.'); return; }
   setFeedback();
@@ -649,7 +652,7 @@ const incrementalCoordinator = createIncrementalCoordinator({
 });
 
 function scheduleIncremental(segment) {
-  if (!segment?.analisavel) return;
+  if (!detectorAvailable || !segment?.analisavel) return;
   if (fields.modoFontes.value !== 'BUSCA_AUTOMATICA' && !fields.fonteComparada.value.trim()) {
     incrementalCoordinator.cancel(segment.segmento_id);
     setIncrementalSegmentState(segment, 'SEM_FONTE');
@@ -776,4 +779,12 @@ updateCounter('documento');
 updateCounter('fonte');
 resetResults();
 updateSourceMode();
-initSessionUI({ requiredRoles: ['ALUNO', 'PROFESSOR', 'ADMIN'] });
+initSessionUI({ requiredRoles: ['ALUNO', 'PROFESSOR', 'ADMIN'] }).then((session) => {
+  detectorAvailable = session.capabilities?.features?.detector?.enabled === true;
+  if (detectorAvailable) return;
+  incrementalCoordinator.cancelAll();
+  form.querySelectorAll('input, textarea, select, button').forEach((control) => {
+    control.disabled = true;
+  });
+  setFeedback('O verificador experimental está desabilitado neste ambiente.', 'error');
+});

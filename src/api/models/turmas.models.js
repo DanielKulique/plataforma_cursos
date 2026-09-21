@@ -118,7 +118,23 @@ async function atualizarTurma(id, dadosParaAtualizar) {
             throw erroDominio('Status de turma inválido.', 400, 'STATUS_INVALIDO');
         }
         validarDatas(final.data_inicio, final.data_fim);
-        await validarReferencias(connection, final.id_curso, final.id_professor);
+        if (final.id_curso !== Number(atual.id_curso)) {
+            for (const [tabela, chave] of [['Modulos', 'id_modulo'], ['Conteudos', 'id_conteudo'],
+                ['Questionarios', 'id_questionario'], ['Matriculas', 'id_matricula']]) {
+                const [vinculos] = await connection.query(
+                    `SELECT ${chave} FROM ${tabela} WHERE id_turma = ? LIMIT 1 FOR UPDATE`, [id]
+                );
+                if (vinculos.length) throw erroDominio(
+                    'Turma com estrutura ou histórico acadêmico não pode trocar de curso.',
+                    409, 'TURMA_COM_ESTRUTURA'
+                );
+            }
+        }
+        // Validar apenas referências alteradas evita locks exclusivos de curso/professor
+        // compartilhados por outras turmas em encerramento e alterações de metadados.
+        if (final.id_curso !== Number(atual.id_curso) || final.id_professor !== Number(atual.id_professor)) {
+            await validarReferencias(connection, final.id_curso, final.id_professor);
+        }
 
         const setClause = colunas.map((coluna) => `${coluna} = ?`).join(', ');
         const valores = colunas.map((coluna) => final[coluna]);
@@ -150,9 +166,13 @@ async function buscarTurmaPorId(id) {
     return rows[0];
 }
 
-async function buscarTodasTurmas() {
-    const [rows] = await db.query(`${SELECT_TURMA_ENRIQUECIDA} ORDER BY t.data_inicio DESC, t.id_turma DESC`);
-    return rows;
+async function buscarTodasTurmas(pagination) {
+    const [[count]] = await db.query('SELECT COUNT(*) AS total FROM Turmas');
+    const [rows] = await db.query(
+        `${SELECT_TURMA_ENRIQUECIDA} ORDER BY t.data_inicio DESC, t.id_turma DESC LIMIT ? OFFSET ?`,
+        [pagination.limit, pagination.offset]
+    );
+    return { items: rows, total: Number(count.total) };
 }
 
 async function buscarTurmasDoProfessor(id_professor) {

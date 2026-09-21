@@ -21,10 +21,14 @@ jobs:
       DB_USER: appuser
       DB_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
       DB_NAME: plataforma_cursos_test
+      DB_ENVIRONMENT_IDENTITY: plataforma_cursos_test
+      ALLOW_EPHEMERAL_CI_MYSQL: I_UNDERSTAND_EPHEMERAL_CI_MYSQL
+      CI_EPHEMERAL_MYSQL_ID: plataforma-cursos-ci-${{ github.run_id }}
       JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}
       TEST_SEED_PASSWORD: ${{ secrets.CI_TEST_SEED_PASSWORD }}
       MOTOR_IA_INTERNAL_API_TOKEN: ci-ephemeral-internal-token
       MOTOR_IA_API_URL: http://127.0.0.1:8000
+      DETECTOR_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -89,16 +93,21 @@ jobs:
           NODE
       - name: Verificar sintaxe JavaScript
         run: find . -path './node_modules' -prune -o -path './coverage' -prune -o -name '*.js' -type f -print0 | xargs -0 -n1 node --experimental-default-type=module --check
-      - name: Recriar banco descartável e aplicar schema canônico
-        run: npm run db:test:setup
-        env:
-          DB_USER: root
-          DB_PASSWORD: ${{ secrets.CI_MYSQL_ROOT_PASSWORD }}
+      - name: Verificar isolamento estático do banco
+        run: npm run db:isolation:verify
+      - name: Validar parser, checksums e contrato estrutural de migrations
+        run: npm run test:migrations:unit
+      - name: Migrar banco efêmero totalmente vazio
+        run: npm run db:migrate
+      - name: Verificar ledger e checksums
+        run: npm run db:migrate:status
+      - name: Validar schema final completo
+        run: npm run db:schema:validate -- --json
+      - name: Provar identidade do MySQL efêmero
+        run: npm run db:identity:verify
       - name: Aplicar seed canônico
         run: npm run db:test:seed
-      - name: Executar regressões de segurança
-        run: npm run test:security
-      - name: Executar contratos do gateway de recuperação
-        run: npx jest --runInBand --coverage=false --runTestsByPath src/__tests__/indexed-analysis.service.test.js src/__tests__/indexed-analysis.routes.test.js
-      - name: Executar cobertura, unitários e integrações
+      - name: Executar a suíte completa sem retry
         run: npm run test:all
+      - name: Construir a imagem de produção
+        run: docker build --tag plataforma-cursos:ci .

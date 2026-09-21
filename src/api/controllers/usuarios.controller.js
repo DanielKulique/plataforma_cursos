@@ -1,6 +1,10 @@
 const usuariosModel = require('../models/usuarios.models');
 const { validationResult } = require('express-validator');
 const logger = require('../../utils/logger');
+const { clearSessionCookie } = require('../../config/session');
+const { enviarCodigoVerificacaoEmail } = require('../../services/email.service');
+const { sendHttpError } = require('../../utils/http-response');
+const { paginated, parsePagination } = require('../../utils/pagination');
 
 function responderValidacao(req, res) {
     const errors = validationResult(req);
@@ -14,19 +18,48 @@ function responderValidacao(req, res) {
 }
 
 function responderErro(res, error, mensagemPadrao) {
-    if (error?.status) {
-        return res.status(error.status).json({ message: error.message, code: error.code });
-    }
-    return res.status(500).json({ message: mensagemPadrao });
+    return sendHttpError(res, error, { internalMessage: mensagemPadrao, legacyKey: 'message' });
 }
 
 async function criarUsuario(req, res) {
     if (responderValidacao(req, res)) return;
 
     try {
-        const novoUsuario = await usuariosModel.criarUsuario({ ...req.body, tipo: 'ALUNO' });
-        logger.info('usuario.publico.criado', { requestId: req.id, userId: novoUsuario.id_usuario });
-        return res.status(201).json(novoUsuario);
+        const cadastro = await usuariosModel.criarAlunoComVerificacao(req.body);
+        const novoUsuario = cadastro.usuario;
+        let emailEnviado = false;
+
+        try {
+            const envio = await enviarCodigoVerificacaoEmail({
+                to: novoUsuario.email,
+                codigo: cadastro.verificacao.codigo,
+                expiraEm: cadastro.verificacao.expira_em
+            });
+            emailEnviado = envio?.enviado === true;
+        } catch (error) {
+            logger.error('usuario.publico.email_verificacao.falhou', {
+                requestId: req.id,
+                userId: novoUsuario.id_usuario,
+                code: error.code || 'EMAIL_PROVIDER_ERROR'
+            });
+        }
+
+        logger.info('usuario.publico.criado', {
+            requestId: req.id,
+            userId: novoUsuario.id_usuario,
+            emailEnviado
+        });
+        return res.status(201).json({
+            ...novoUsuario,
+            mensagem: emailEnviado
+                ? 'Cadastro realizado. Enviamos o código de verificação por e-mail.'
+                : 'Cadastro realizado, mas não foi possível confirmar o envio do código. Solicite um novo envio.',
+            verificacao: {
+                estado: 'PENDENTE',
+                email_enviado: emailEnviado,
+                expira_em: cadastro.verificacao.expira_em
+            }
+        });
     } catch (error) {
         logger.error('usuario.publico.falhou', { requestId: req.id, error });
         return responderErro(res, error, 'Ocorreu um erro no servidor ao criar o usuário.');
@@ -92,8 +125,9 @@ async function alterarSenha(req, res) {
             req.body.senha_atual,
             req.body.nova_senha
         );
+        clearSessionCookie(res);
         logger.info('usuario.senha.alterada', { requestId: req.id, userId: req.user?.id_usuario });
-        return res.status(200).json({ message: 'Senha alterada com sucesso.' });
+        return res.status(200).json({ message: 'Senha alterada com sucesso. Entre novamente.' });
     } catch (error) {
         logger.error('usuario.senha.alteracao.falhou', {
             requestId: req.id,
@@ -120,11 +154,13 @@ async function buscarUsuarioPorId(req, res) {
 
 async function buscarTodosUsuarios(req, res) {
     try {
-        const usuarios = await usuariosModel.buscarTodosUsuarios();
-        logger.info('usuario.lista.consultada', { requestId: req.id, total: usuarios.length });
-        return res.status(200).json(usuarios);
+        const pagination = parsePagination(req.query);
+        const usuarios = await usuariosModel.buscarTodosUsuarios(pagination);
+        logger.info('usuario.lista.consultada', { requestId: req.id, total: usuarios.total });
+        return res.status(200).json(paginated(usuarios.items, usuarios.total, pagination));
     } catch (error) {
         logger.error('usuario.lista.falhou', { requestId: req.id, error });
+        if (error.status === 400) return responderErro(res, error, error.message);
         return res.status(500).json({ message: 'Ocorreu um erro no servidor.' });
     }
 }
@@ -167,7 +203,8 @@ async function criarUsuarioAdmin(req, res) {
     if (responderValidacao(req, res)) return;
 
     try {
-        const novoUsuario = await usuariosModel.criarUsuario(req.body);
+        const cadastro = await usuariosModel.criarUsuarioAdministrativo(req.body);
+        const novoUsuario = cadastro.usuario;
         logger.info('usuario.admin.criado', {
             requestId: req.id,
             actorId: req.user?.id_usuario,

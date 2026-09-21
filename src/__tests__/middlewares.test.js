@@ -28,14 +28,14 @@ describe('Middlewares de Autenticação', () => {
             const tokenUser = { id_usuario: 1, tipo: 'ALUNO' };
             const currentUser = { id_usuario: 1, nome_completo: 'Usuário Atual', tipo: 'PROFESSOR' };
             jwt.verify.mockReturnValue(tokenUser);
-            authModel.buscarUsuarioPorId.mockResolvedValue(currentUser);
+            authModel.buscarUsuarioSessao.mockResolvedValue({ ...currentUser, versao_sessao: 0 });
 
             req.headers['authorization'] = 'Bearer valid-token';
 
             await checkAuth(req, res, next);
 
             expect(jwt.verify).toHaveBeenCalledWith('valid-token', process.env.JWT_SECRET);
-            expect(authModel.buscarUsuarioPorId).toHaveBeenCalledWith(1);
+            expect(authModel.buscarUsuarioSessao).toHaveBeenCalledWith(1);
             expect(req.user).toEqual(currentUser);
             expect(next).toHaveBeenCalled();
         });
@@ -78,13 +78,13 @@ describe('Middlewares de Autenticação', () => {
             await checkAuth(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(401);
-            expect(authModel.buscarUsuarioPorId).not.toHaveBeenCalled();
+            expect(authModel.buscarUsuarioSessao).not.toHaveBeenCalled();
             expect(next).not.toHaveBeenCalled();
         });
 
         it('deve invalidar a sessão quando o usuário não existir mais', async () => {
             jwt.verify.mockReturnValue({ id_usuario: 99, tipo: 'ADMIN' });
-            authModel.buscarUsuarioPorId.mockRejectedValue(new Error('Usuário não encontrado'));
+            authModel.buscarUsuarioSessao.mockRejectedValue(new Error('Usuário não encontrado'));
             req.headers['authorization'] = 'Bearer valid-token';
 
             await checkAuth(req, res, next);
@@ -96,7 +96,7 @@ describe('Middlewares de Autenticação', () => {
 
         it('deve responder 500 sem detalhes quando a consulta de sessão falhar', async () => {
             jwt.verify.mockReturnValue({ id_usuario: 1, tipo: 'ALUNO' });
-            authModel.buscarUsuarioPorId.mockRejectedValue(new Error('falha SQL sensível'));
+            authModel.buscarUsuarioSessao.mockRejectedValue(new Error('falha SQL sensível'));
             req.headers['authorization'] = 'Bearer valid-token';
 
             await checkAuth(req, res, next);

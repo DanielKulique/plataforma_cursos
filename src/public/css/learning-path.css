@@ -1,0 +1,54 @@
+/* Learning path reuses the existing academic palette and spacing. */
+.classroom-page .classroom-summary { display: grid; gap: var(--space-2); }
+.classroom-page .classroom-summary h1 { font-size: var(--font-size-2xl, 2rem); margin: 0; }
+.classroom-page .classroom-summary p { margin: 0; }
+.classroom-page .classroom-summary .academic-progress { max-inline-size: 48rem; margin-block: var(--space-3); }
+.classroom-summary__meta { font-weight: 600; }
+.classroom-page details summary { cursor: pointer; padding-block: var(--space-3); }
+.classroom-page details[open] summary { margin-block-end: var(--space-2); }
+.classroom-page .classroom-path { min-inline-size: 0; }
+.classroom-page .lesson-filters { margin-block: var(--space-4); }
+.classroom-page .lesson-filters input { display: block; max-inline-size: 40rem; inline-size: 100%; margin-block: var(--space-2) var(--space-4); }
+.classroom-page #lista-conteudos { display: grid; gap: var(--space-4); padding: 0; list-style: none; }
+.classroom-page .lesson { border: 1px solid var(--color-border); border-radius: var(--radius-lg, 12px); background: var(--color-surface); overflow-wrap: anywhere; min-inline-size: 0; }
+.classroom-page .lesson-heading { margin: 0; font: inherit; }
+.classroom-page .lesson-toggle { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); inline-size: 100%; padding: var(--space-5); text-align: start; color: var(--color-text); background: transparent; border: 0; cursor: pointer; border-radius: inherit; }
+.classroom-page .lesson-toggle:hover { background: var(--color-surface-elevated); }
+.classroom-page .lesson-copy { display: grid; gap: var(--space-2); min-inline-size: 0; }
+.classroom-page .lesson-title { font-size: 1.125rem; font-weight: 600; }
+.classroom-page .lesson-meta { font-size: .875rem; font-weight: 400; color: var(--color-text-secondary); }
+.classroom-page .lesson-indicator { flex-shrink: 0; }
+.classroom-page .lesson-toggle[aria-expanded="true"] .lesson-indicator { transform: rotate(180deg); }
+.classroom-page .lesson-panel { padding: 0 var(--space-5) var(--space-5); }
+.classroom-page .lesson-items { padding: 0; list-style: none; }
+.classroom-page .lesson-items > li { border-block-start: 1px solid var(--color-border); }
+.classroom-page .lesson-items .module-item { padding: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.classroom-page .module-item-action { min-inline-size: 0; text-decoration: none; }
+.classroom-page .module-item-body { min-inline-size: 0; }
+.classroom-page .lesson-viewer { margin-block: var(--space-4); padding: var(--space-4); background: var(--color-surface-inset); border-radius: var(--radius-lg, 12px); }
+.classroom-page .lesson-viewer__context { margin-block: 0 var(--space-3); font-weight: 600; }
+.classroom-page .lesson-viewer .academic-panel { border: 0; box-shadow: none; background: transparent; padding: 0; margin-block: var(--space-4); }
+.classroom-page .lesson-viewer .content-reader { max-inline-size: 72ch; }
+.classroom-page #avaliacoes-finais, .classroom-page #materiais-complementares { margin-block-start: var(--space-8); }
+.classroom-page button:focus-visible, .classroom-page summary:focus-visible, .classroom-page a:focus-visible { outline: 2px solid var(--color-text); outline-offset: 3px; }
+@media (max-width: 40rem) {
+  .classroom-page .lesson-toggle { padding: var(--space-4); }
+  .classroom-page .lesson-panel { padding: 0 var(--space-3) var(--space-3); }
+  .classroom-page .lesson-viewer { padding: var(--space-3); }
+  .classroom-page .module-item-action { display: flex; flex-wrap: wrap; }
+  .classroom-page .module-item-body { flex: 1 1 12rem; }
+  .classroom-page .module-item-status { margin-inline-start: 0; }
+}
+.classroom-page .academic-main { gap: var(--space-4); }
+.classroom-page .academic-back-link { margin-block-end: 0; }
+.classroom-page .classroom-summary { padding: var(--space-4); box-shadow: none; }
+.classroom-page .classroom-summary .academic-progress { margin-block: var(--space-1); }
+.classroom-page .lesson-items .module-item { border: 0; border-block-start: 1px solid var(--color-border); overflow: visible; }
+.classroom-page a.module-item-action { display: flex; flex-wrap: wrap; }
+.classroom-page a.module-item-action .module-item-body { flex: 1 1 12rem; }
+.classroom-page .module-item-status { white-space: normal; }
+.classroom-page .lesson-viewer .content-reader { border: 0; background: transparent; padding: 0; }
+.classroom-page .lesson-viewer { scroll-margin-block-start: 6rem; }
+
+/* O requisito de liberação precisa continuar legível quando a ação está bloqueada. */
+.final-exam-action[aria-disabled="true"] { opacity: 1; }

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Valide publicamente um certificado emitido pela plataforma usando o código ou o PDF original.">
+  <title>Validar certificado — Plágio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Work+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layouts.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+</head>
+<body class="academic-page certificate-validation-page">
+  <a class="skip-link" href="#conteudo-principal">Pular para a validação</a>
+
+  <header class="academic-header">
+    <nav class="academic-nav" aria-label="Navegação da validação de certificado">
+      <a class="nav-brand" href="/index.html" aria-label="Plágio — página inicial">
+        <img class="brand-mark brand-logo" src="/assets/landing/papagaio-detalhado.webp" width="256" height="256" alt="" aria-hidden="true">
+        <span class="brand-texts"><span class="brand-name">Plágio</span><span class="brand-sub">Não Copie Essa Ideia 4.0</span></span>
+      </a>
+      <div class="nav-links" id="primary-navigation">
+        <a href="/index.html">Catálogo</a>
+        <a href="/certificados/validar" aria-current="page">Validar certificado</a>
+        <a href="/verificador.html">Verificador contextual</a>
+      </div>
+      <div class="nav-right">
+        <button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Abrir menu de navegação">
+          <span class="mobile-nav-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="mobile-nav-toggle__label">Menu</span>
+        </button>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema"><span class="icon-moon" aria-hidden="true">🌙</span><span class="icon-sun" aria-hidden="true">☀️</span></button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="academic-main" id="conteudo-principal" tabindex="-1">
+    <section class="academic-hero certificate-validation-hero" aria-labelledby="titulo-pagina">
+      <div class="academic-hero__content">
+        <h1 id="titulo-pagina">Confirme um certificado emitido pela plataforma</h1>
+        <p>Use o código impresso no documento ou envie o PDF original. A consulta é pública e não exige login.</p>
+      </div>
+      <div class="certificate-validation-seal" aria-hidden="true"><span></span><span></span></div>
+    </section>
+
+    <section class="academic-panel certificate-validation-shell" aria-labelledby="titulo-metodos">
+      <header class="academic-panel__header">
+        <div>
+          <h2 id="titulo-metodos">Escolha como validar</h2>
+          <p>O arquivo enviado é comparado ao documento original e descartado após a consulta.</p>
+        </div>
+      </header>
+
+      <div class="certificate-validation-methods">
+        <form id="form-validar-codigo" class="certificate-validation-method" aria-busy="false">
+          <div>
+            <h3>Consultar pelo código</h3>
+            <p>Digite o identificador completo exibido no rodapé do certificado.</p>
+          </div>
+          <div class="form-group">
+            <label for="codigo-certificado">Código do certificado</label>
+            <input id="codigo-certificado" name="codigo" type="text" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CERT-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX" required>
+          </div>
+          <button id="validar-codigo" class="btn btn-primary" type="submit">Validar código</button>
+        </form>
+
+        <form id="form-validar-arquivo" class="certificate-validation-method" aria-busy="false">
+          <div>
+            <h3>Conferir o PDF original</h3>
+            <p>Selecione um único PDF de até 10 MB. Qualquer alteração no arquivo muda o resultado.</p>
+          </div>
+          <div class="form-group certificate-file-field">
+            <label for="arquivo-certificado">Certificado em PDF</label>
+            <input id="arquivo-certificado" name="arquivo" type="file" accept="application/pdf,.pdf" data-max-bytes="10485760" required aria-describedby="arquivo-certificado-status">
+            <span id="arquivo-certificado-status">Nenhum arquivo selecionado.</span>
+          </div>
+          <button id="validar-arquivo" class="btn btn-ghost" type="submit">Verificar arquivo</button>
+        </form>
+      </div>
+      <p id="mensagem-validacao" class="ui-message is-info" role="status" aria-live="polite" hidden></p>
+    </section>
+
+    <section id="resultado-validacao" class="academic-panel certificate-validation-result" aria-labelledby="titulo-resultado" hidden>
+      <div class="certificate-result-heading">
+        <span id="marcador-resultado" class="certificate-result-mark" aria-hidden="true"></span>
+        <div><h2 id="titulo-resultado" tabindex="-1"></h2><p id="descricao-resultado"></p></div>
+      </div>
+      <dl id="dados-certificado" class="academic-data-list" hidden>
+        <div><dt>Aluno</dt><dd id="resultado-aluno"></dd></div>
+        <div><dt>Curso</dt><dd id="resultado-curso"></dd></div>
+        <div><dt>Turma</dt><dd id="resultado-turma"></dd></div>
+        <div><dt>Carga horária</dt><dd id="resultado-carga"></dd></div>
+        <div><dt>Emissão</dt><dd id="resultado-emissao"></dd></div>
+        <div><dt>Código</dt><dd id="resultado-codigo" class="certificate-code"></dd></div>
+      </dl>
+    </section>
+  </main>
+
+  <script type="module" src="/js/theme.js"></script>
+  <script type="module" src="/js/navigation.js"></script>
+  <script type="module" src="/js/certificados-validar.js"></script>
+</body>
+</html>

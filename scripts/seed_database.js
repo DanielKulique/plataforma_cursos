@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 const { assertDevelopmentDatabase, assertTestDatabaseIsDisposable } = require('./test_database_safety');
 const { assertCanonicalSchema } = require('./schema_contract');
 const { loadEnvironment } = require('../src/config/loadEnvironment');
+const { assertDatabaseConnectionEnvironment, describeDatabaseTarget } = require('../src/config/database-connection');
+const { assertDatabaseIdentity } = require('../src/config/database-identity');
 
 const mode = process.argv[2];
 if (!['dev', 'test'].includes(mode)) throw new Error('Uso: node scripts/seed_database.js <dev|test>');
@@ -26,11 +28,12 @@ if (!seedPassword || String(seedPassword).length < 8) {
     throw new Error(`Defina ${variable} com ao menos 8 caracteres para o seed de ${mode === 'test' ? 'teste' : 'desenvolvimento'}.`);
 }
 
+const target = assertDatabaseConnectionEnvironment(process.env);
 const config = {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    host: target.host,
+    port: target.port,
+    user: target.user,
+    password: target.password,
     database
 };
 
@@ -75,6 +78,7 @@ async function seedDatabase() {
 
     const connection = await mysql.createConnection(config);
     try {
+        await assertDatabaseIdentity(connection, target);
         await assertCanonicalSchema(connection, database);
         const passwordHash = await bcrypt.hash(seedPassword, 10);
         await connection.beginTransaction();
@@ -166,6 +170,7 @@ async function seedDatabase() {
     }
 }
 
+console.log(JSON.stringify(describeDatabaseTarget(process.env), null, 2));
 seedDatabase().catch((error) => {
     console.error(`Falha no seed de ${database}: ${error.message}`);
     process.exitCode = 1;

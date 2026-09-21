@@ -1,0 +1,184 @@
+{
+  "goal": "BACKUP_RESTORE_DISASTER_RECOVERY",
+  "status": "READY",
+  "validated_at": "2026-09-15T00:20:08Z",
+  "targets": {
+    "rpo_hours": 24,
+    "rto_hours": 4
+  },
+  "backup": {
+    "backup_id": "backup-20260914T061501Z-dbe1247a-e441-4328-be82-5b5555278d79",
+    "created_at": "2026-09-14T06:15:01Z",
+    "duration_seconds": 25,
+    "local_size_bytes": 442872,
+    "format_version": 1,
+    "tables": 19,
+    "latest_migration": "011",
+    "materials": {
+      "total": 7,
+      "active": 3,
+      "retained": 4
+    },
+    "certificates": {
+      "total": 4,
+      "active": 2,
+      "revoked": 2
+    },
+    "content_checksum_entries": 14
+  },
+  "offsite": {
+    "provider": "azure_blob",
+    "storage_account": "platcursosbk20260912",
+    "container": "plataforma-backups",
+    "prefix": "plataforma-cursos/backups",
+    "region": "chilecentral",
+    "package_size_bytes": 381788,
+    "package_sha256": "813855bbd7f545bd5a9f9649e503ddf36590489fb6f84c379f3b91673edaebfa",
+    "objects": [
+      "package.tar.gz",
+      "package.sha256",
+      "complete.json"
+    ],
+    "public_access": false,
+    "minimum_tls": "TLS1_2",
+    "encryption_at_rest": true,
+    "authentication": "vm_managed_identity",
+    "role_scope": "container",
+    "retention_days": 30,
+    "upload_verified_by_redownload": true
+  },
+  "restore_drill": {
+    "source": "OFFSITE",
+    "status": "DRILL_VERIFIED",
+    "download_seconds": 9,
+    "restore_internal_seconds": 15,
+    "rto_observed_seconds": 50,
+    "duration_seconds": {
+      "build": 4,
+      "download": 9,
+      "validation": 2,
+      "database": 3,
+      "storage": 3,
+      "reconciliation": 3,
+      "startup": 4,
+      "smoke": 0
+    },
+    "smoke_mode": "AUTHENTICATED",
+    "completed_at": "2026-09-15T00:20:08.791462Z",
+    "schema_verified": true,
+    "database_counts_verified": true,
+    "material_hashes_verified": true,
+    "certificate_bytes_verified": true,
+    "reconciliation_severe_findings": 0,
+    "application_health_verified": true,
+    "isolated_resources_after_cleanup": 0
+  },
+  "rpo_observation": {
+    "checked_at": "2026-09-15T00:35:53.042946Z",
+    "backup_id": "backup-20260915T003433Z-90482b60-96a9-45a4-8239-7d890412d66f",
+    "local_status": "RPO_OK",
+    "offsite_status": "RPO_OK",
+    "age_seconds": 80,
+    "same_latest_good_id": true
+  },
+  "latest_good_validation": {
+    "local_and_remote_backup_id": "backup-20260915T003433Z-90482b60-96a9-45a4-8239-7d890412d66f",
+    "remote_pointer_consumed": true,
+    "completion_marker_verified": true,
+    "package_manifest_and_hashes_verified": true,
+    "audit_download_removed": true
+  },
+  "scheduler": {
+    "unit": "plataforma-backup.timer",
+    "enabled": true,
+    "active": true,
+    "schedule": "03:15 America/Sao_Paulo daily",
+    "persistent": true,
+    "last_trigger_utc": "2026-09-14T06:15:01Z",
+    "next_elapse_utc": "2026-09-15T06:15:00Z",
+    "last_service_result": "success",
+    "last_service_exit": 0
+  },
+  "retention_validation": {
+    "local_retention_days": 7,
+    "offsite_retention_days": 30,
+    "synthetic_old_remote_objects_before": 3,
+    "synthetic_old_remote_objects_after": 0,
+    "outside_backup_prefix_sentinel_preserved_during_cleanup": true,
+    "fixtures_removed_after_validation": true,
+    "schedule_configurable_via_BACKUP_SCHEDULE": true
+  },
+  "failure_injection": {
+    "overlap_lock_exit": 75,
+    "after_dump_exit": 86,
+    "during_upload_exit": 87,
+    "during_upload_package_object_observed": true,
+    "during_upload_completion_marker_absent": true,
+    "injected_remote_prefix_cleaned_after_validation": true,
+    "mysql_import_exit": 88,
+    "in_place_target_mismatch_exit": 64,
+    "corrupt_checksum_rejected_before_mutation": true,
+    "latest_good_preserved": true,
+    "staging_health_preserved": true
+  },
+  "tests": {
+    "backup_core": {
+      "passed": 14
+    },
+    "backup_core_and_private_storage": {
+      "passed": 23
+    },
+    "post_hardening_directed": {
+      "suites_passed": 4,
+      "tests_passed": 35
+    },
+    "certificate_infrastructure_and_backup_core": {
+      "passed": 19
+    },
+    "goal07_mysql_regression": {
+      "passed": 19
+    },
+    "unit_full": {
+      "suites_passed": 59,
+      "tests_passed": 609,
+      "coverage_percent": {
+        "statements": 61.63,
+        "branches": 55.39,
+        "functions": 63.2,
+        "lines": 64.93
+      }
+    },
+    "integration_full": {
+      "suites_passed": 16,
+      "tests_passed": 253,
+      "duration_seconds": 132.21,
+      "database": "plataforma_cursos_test",
+      "mysql": "8.4",
+      "cleanup_verified": true
+    },
+    "lint": "passed",
+    "build": "passed",
+    "npm_audit": 0,
+    "npm_audit_omit_dev": 0,
+    "git_diff_check": "passed"
+  },
+  "staging": {
+    "vm": "plataforma-cursos-demo",
+    "application_health_status": 200,
+    "test_database_after_cleanup": false,
+    "test_containers_after_cleanup": 0,
+    "test_volumes_after_cleanup": 0,
+    "temporary_mysql_trigger_trust_restored_to": 0
+  },
+  "baseline": {
+    "D-10": "RESOLVED",
+    "D-11": "RESOLVED"
+  },
+  "limitations": [
+    "offsite is off-host but remains in the same Azure region",
+    "no point-in-time recovery or archived binlog",
+    "no high availability or multi-region disaster recovery",
+    "observed RTO applies to the current small dataset",
+    "secrets must be supplied separately during recovery"
+  ]
+}

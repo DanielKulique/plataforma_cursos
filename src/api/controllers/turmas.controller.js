@@ -1,6 +1,9 @@
 const turmaModel = require('../models/turmas.models');
+const turmaReplicationService = require('../services/turma-replication.service');
 const { validationResult } = require('express-validator');
 const logger = require('../../utils/logger');
+const { sendHttpError } = require('../../utils/http-response');
+const { paginated, parsePagination } = require('../../utils/pagination');
 
 function responderValidacao(req, res) {
     const errors = validationResult(req);
@@ -10,10 +13,7 @@ function responderValidacao(req, res) {
 }
 
 function responderErro(res, error, mensagemPadrao) {
-    if (error?.status) {
-        return res.status(error.status).json({ message: error.message, code: error.code });
-    }
-    return res.status(500).json({ message: mensagemPadrao });
+    return sendHttpError(res, error, { internalMessage: mensagemPadrao, legacyKey: 'message' });
 }
 
 async function criarTurma(req, res) {
@@ -56,10 +56,12 @@ async function buscarTurmaPorId(req, res) {
 
 async function buscarTodasTurmas(req, res) {
     try {
-        const turmas = await turmaModel.buscarTodasTurmas();
-        return res.status(200).json(turmas);
+        const pagination = parsePagination(req.query);
+        const turmas = await turmaModel.buscarTodasTurmas(pagination);
+        return res.status(200).json(paginated(turmas.items, turmas.total, pagination));
     } catch (error) {
         logger.error('turma.lista.falhou', { requestId: req.id, error });
+        if (error.status === 400) return responderErro(res, error, error.message);
         return res.status(500).json({ message: 'Ocorreu um erro no servidor.' });
     }
 }
@@ -90,11 +92,58 @@ async function deletarTurma(req, res) {
     }
 }
 
+async function buscarResumoReplicacao(req, res) {
+    if (responderValidacao(req, res)) return;
+    try {
+        const resumo = await turmaReplicationService.buscarResumo(req.params.id);
+        return res.status(200).json(resumo);
+    } catch (error) {
+        logger.error('turma.replicacao_resumo.falhou', {
+            requestId: req.id,
+            actorId: req.user?.id_usuario,
+            classId: Number(req.params.id),
+            error
+        });
+        return responderErro(res, error, 'Não foi possível consultar a estrutura da turma.');
+    }
+}
+
+async function replicarTurma(req, res) {
+    if (responderValidacao(req, res)) return;
+    try {
+        const resultado = await turmaReplicationService.replicarTurma(req.params.id, req.body, {
+            id_usuario_admin: req.user.id_usuario,
+            chave_idempotencia: req.get('Idempotency-Key')
+        });
+        logger.info('turma.replicada', {
+            requestId: req.id,
+            actorId: req.user?.id_usuario,
+            sourceClassId: Number(req.params.id),
+            classId: resultado.turma.id_turma,
+            reused: resultado.reutilizada
+        });
+        return res.status(resultado.reutilizada ? 200 : 201).json({
+            message: 'Turma replicada com sucesso.',
+            ...resultado
+        });
+    } catch (error) {
+        logger.error('turma.replicacao.falhou', {
+            requestId: req.id,
+            actorId: req.user?.id_usuario,
+            sourceClassId: Number(req.params.id),
+            error
+        });
+        return responderErro(res, error, 'Ocorreu um erro no servidor ao replicar a turma.');
+    }
+}
+
 module.exports = {
     criarTurma,
     atualizarTurma,
     buscarTurmaPorId,
     buscarTodasTurmas,
     buscarTurmasDoProfessor,
-    deletarTurma
+    deletarTurma,
+    buscarResumoReplicacao,
+    replicarTurma
 };

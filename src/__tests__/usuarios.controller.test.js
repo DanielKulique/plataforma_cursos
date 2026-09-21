@@ -3,8 +3,10 @@ const express = require('express');
 const usuariosController = require('../api/controllers/usuarios.controller');
 const usuariosRoutes = require('../api/routes/usuarios.routes');
 const usuariosModel = require('../api/models/usuarios.models');
+const emailService = require('../services/email.service');
 
 jest.mock('../api/models/usuarios.models');
+jest.mock('../services/email.service');
 jest.mock('../middlewares/checkAuth.middleware', () => (req, res, next) => next());
 jest.mock('../middlewares/checkRole.middleware', () => (role) => (req, res, next) => next());
 jest.mock('../middlewares/checkUserPermission.middleware', () => (req, res, next) => next());
@@ -17,6 +19,7 @@ app.use('/api/usuarios', usuariosRoutes);
 describe('Usuarios Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        emailService.enviarCodigoVerificacaoEmail.mockResolvedValue({ enviado: true, modo: 'resend' });
     });
 
     describe('POST /api/usuarios', () => {
@@ -28,13 +31,17 @@ describe('Usuarios Controller', () => {
         });
 
         it('deve criar ALUNO mesmo quando o banco está vazio', async () => {
-            usuariosModel.criarUsuario.mockImplementation(async (dados) => ({ id_usuario: 1, ...dados, senha: undefined }));
+            usuariosModel.criarAlunoComVerificacao.mockImplementation(async (dados) => ({
+                usuario: { id_usuario: 1, ...dados, tipo: 'ALUNO', senha: undefined },
+                verificacao: { codigo: '123456', expira_em: new Date('2026-09-07T18:00:00Z') }
+            }));
 
             const response = await request(app).post('/api/usuarios').send(cadastroValido('1'));
 
             expect(response.status).toBe(201);
             expect(response.body.tipo).toBe('ALUNO');
-            expect(usuariosModel.criarUsuario).toHaveBeenCalledWith(expect.objectContaining({ tipo: 'ALUNO' }));
+            expect(usuariosModel.criarAlunoComVerificacao).toHaveBeenCalledWith(expect.objectContaining({ email: 'aluno1@example.com' }));
+            expect(response.body.verificacao).toMatchObject({ estado: 'PENDENTE', email_enviado: true });
             expect(usuariosModel.count).toBeUndefined();
         });
 
@@ -42,12 +49,15 @@ describe('Usuarios Controller', () => {
             const response = await request(app).post('/api/usuarios').send({ ...cadastroValido(sufixo), tipo });
 
             expect(response.status).toBe(400);
-            expect(usuariosModel.criarUsuario).not.toHaveBeenCalled();
+            expect(usuariosModel.criarAlunoComVerificacao).not.toHaveBeenCalled();
         });
 
         it('duas requisições simultâneas devem criar somente alunos', async () => {
             let id = 0;
-            usuariosModel.criarUsuario.mockImplementation(async (dados) => ({ id_usuario: ++id, ...dados, senha: undefined }));
+            usuariosModel.criarAlunoComVerificacao.mockImplementation(async (dados) => ({
+                usuario: { id_usuario: ++id, ...dados, tipo: 'ALUNO', senha: undefined },
+                verificacao: { codigo: '123456', expira_em: new Date('2026-09-07T18:00:00Z') }
+            }));
 
             const responses = await Promise.all([
                 request(app).post('/api/usuarios').send(cadastroValido('2')),
@@ -56,7 +66,23 @@ describe('Usuarios Controller', () => {
 
             expect(responses.map((response) => response.status)).toEqual([201, 201]);
             expect(responses.map((response) => response.body.tipo)).toEqual(['ALUNO', 'ALUNO']);
-            expect(usuariosModel.criarUsuario.mock.calls.every(([dados]) => dados.tipo === 'ALUNO')).toBe(true);
+            expect(usuariosModel.criarAlunoComVerificacao).toHaveBeenCalledTimes(2);
+        });
+
+        it('mantém cadastro pendente e recuperável quando o provedor falha', async () => {
+            usuariosModel.criarAlunoComVerificacao.mockResolvedValue({
+                usuario: { id_usuario: 9, email: 'aluno9@example.com', tipo: 'ALUNO' },
+                verificacao: { codigo: '654321', expira_em: new Date('2026-09-07T18:00:00Z') }
+            });
+            emailService.enviarCodigoVerificacaoEmail.mockRejectedValue(
+                Object.assign(new Error('falha'), { code: 'EMAIL_PROVIDER_ERROR' })
+            );
+
+            const response = await request(app).post('/api/usuarios').send(cadastroValido('9'));
+
+            expect(response.status).toBe(201);
+            expect(response.body.verificacao).toMatchObject({ estado: 'PENDENTE', email_enviado: false });
+            expect(usuariosModel.criarAlunoComVerificacao).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -77,12 +103,12 @@ describe('Usuarios Controller', () => {
                 }
             ];
 
-            usuariosModel.buscarTodosUsuarios.mockResolvedValue(usuariosMock);
+            usuariosModel.buscarTodosUsuarios.mockResolvedValue({ items: usuariosMock, total: 2 });
 
             const response = await request(app).get('/api/usuarios');
 
             expect(response.status).toBe(200);
-            expect(response.body).toEqual(usuariosMock);
+            expect(response.body).toEqual({ items: usuariosMock, page: 1, limit: 50, total: 2 });
         });
 
         it('deve retornar erro 500 quando houver falha no servidor', async () => {
@@ -91,6 +117,21 @@ describe('Usuarios Controller', () => {
             const response = await request(app).get('/api/usuarios');
 
             expect(response.status).toBe(500);
+        });
+
+        it('aplica página, limita limit máximo e aceita página vazia com total', async () => {
+            usuariosModel.buscarTodosUsuarios.mockResolvedValue({ items: [], total: 237 });
+            const response = await request(app).get('/api/usuarios?page=3&limit=999999');
+            expect(response.status).toBe(200);
+            expect(usuariosModel.buscarTodosUsuarios).toHaveBeenCalledWith({ page: 3, limit: 100, offset: 200 });
+            expect(response.body).toEqual({ items: [], page: 3, limit: 100, total: 237 });
+        });
+
+        it('rejeita paginação inválida', async () => {
+            const response = await request(app).get('/api/usuarios?page=0');
+            expect(response.status).toBe(400);
+            expect(response.body.code).toBe('PAGINACAO_INVALIDA');
+            expect(usuariosModel.buscarTodosUsuarios).not.toHaveBeenCalled();
         });
     });
 

@@ -87,7 +87,8 @@ describe('Goal Visual 6 - consolidação do frontend', () => {
         expect(css.tokens).toContain('--breakpoint-navigation: 56.25rem');
         expect(css.tokens).toContain('--breakpoint-wide: 75rem');
         expect(css.tokens).toContain('--content-width: 75rem');
-        expect(css.tokens).toContain('--duration-normal: 180ms');
+        expect(css.tokens).toContain('--duration-normal: 280ms');
+        expect(css.tokens).toContain('--motion-organic-normal: 600ms');
     });
 
     it('mantém apenas as exceções documentadas de !important', () => {

@@ -1,0 +1,13 @@
+{
+  "documents": 25,
+  "requirements": {
+    "RF": 47,
+    "RNF": 26,
+    "RN": 41
+  },
+  "http_operations": 86,
+  "mermaid_blocks": 20,
+  "local_links_checked": 106,
+  "source_files_verified": 332,
+  "errors": []
+}

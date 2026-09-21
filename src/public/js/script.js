@@ -3,7 +3,7 @@
  * @description Carrega e exibe cursos e turmas disponíveis
  */
 
-import { getToken } from './auth.js';
+import { authenticatedFetch } from './auth.js';
 import { getCursos, getTurmas, handleAPIError } from './api.js';
 import { initSessionUI } from './session-ui.js';
 import {
@@ -195,12 +195,7 @@ async function carregarMatriculasDoAluno() {
     }
 
     try {
-        const token = getToken();
-        const response = await fetch(`/api/matriculas/aluno/${usuarioLogado.id_usuario}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        const response = await authenticatedFetch(`/api/matriculas/aluno/${usuarioLogado.id_usuario}`);
 
         if (response.ok) {
             const matriculas = await response.json();
@@ -220,9 +215,7 @@ async function carregarMatriculasDoAluno() {
  * Realiza matrícula em uma turma
  */
 async function matricularEmTurma(idTurma, nomeTurma) {
-    const token = getToken();
-
-    if (!token) {
+    if (!usuarioLogado) {
         // Usuário não está logado, redirecionar para login
         window.location.href = '/login.html?motivo=auth&redirect=/index.html';
         return;
@@ -239,11 +232,10 @@ async function matricularEmTurma(idTurma, nomeTurma) {
         if (!confirmado) return;
 
         // Fazer requisição para API
-        const response = await fetch('/api/matriculas', {
+        const response = await authenticatedFetch('/api/matriculas', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ id_turma: idTurma })
         });

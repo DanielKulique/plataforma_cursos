@@ -1,0 +1,28 @@
+name: plataforma-cursos-production
+
+# Always combine with compose.yaml. A new database is initialized by db:migrate.
+# Do not mount schema.sql/identity initialization: that would require a baseline.
+services:
+  db:
+    volumes: !override
+      - mysql_data:/var/lib/mysql
+  app:
+    build:
+      args:
+        APP_RELEASE_SHA: ${APP_RELEASE_SHA:?Defina o SHA confirmado no GitHub}
+    environment:
+      APP_RELEASE_SHA: ${APP_RELEASE_SHA:?Defina o SHA confirmado no GitHub}
+      APP_ENV: production
+      DETECTOR_ENABLED: 'false'
+      INITIAL_ADMIN_PASSWORD: ''
+volumes:
+  mysql_data:
+    name: plataforma_cursos_production_mysql84
+  material_uploads:
+    name: plataforma_cursos_production_materials
+  certificate_uploads:
+    name: plataforma_cursos_production_certificates
+  caddy_data:
+    name: plataforma_cursos_production_caddy_data
+  caddy_config:
+    name: plataforma_cursos_production_caddy_config

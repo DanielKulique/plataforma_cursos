@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-18",
+  "goal": "11B_RUNTIME_CONFIGURATION_OBSERVABILITY",
+  "command": "npm test -- --silent",
+  "success": true,
+  "suites": 67,
+  "passed_suites": 67,
+  "tests": 689,
+  "passed": 689,
+  "failed": 0,
+  "pending": 0,
+  "coverage_percent": {
+    "statements": 63.19,
+    "branches": 56.64,
+    "functions": 65.09,
+    "lines": 66.36
+  },
+  "integration": {
+    "command": "npm run test:integration -- --silent",
+    "environment": "MySQL 8.4.11 Docker descartavel; 127.0.0.1:33307; plataforma_cursos_test",
+    "full_run": {
+      "suites": 19,
+      "passed_suites": 19,
+      "tests": 262,
+      "passed": 262,
+      "failed": 0
+    }
+  },
+  "migration_013": "fresh database 001-013, ledger/checksums, schema contract and no-op passed",
+  "lint": "passed",
+  "build": "passed",
+  "docker_build": "passed",
+  "audit_high": {
+    "all": 0,
+    "production": 0
+  },
+  "diff_check": "passed",
+  "staging": "Goal 11B runtime smoke passed; see goal11b-staging-validation.json",
+  "previous_baseline": {
+    "date": "2026-09-15",
+    "unit_tests": 648,
+    "integration_cases": 253
+  }
+}

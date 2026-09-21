@@ -12,6 +12,13 @@ function requestAbortSignal(req) {
     return controller.signal;
 }
 
+function infrastructureMessage(status) {
+    if (status === 502) return 'O serviço de análise retornou uma resposta inválida.';
+    if (status === 503) return 'O serviço de análise está temporariamente indisponível.';
+    if (status === 504) return 'A análise excedeu o tempo limite.';
+    return 'Erro interno do servidor.';
+}
+
 function sendError(req, res, error, startedAt, mode) {
     const status = Number(error.status) || 500;
     logger.error('detector.contextual.failed', {
@@ -32,9 +39,7 @@ function sendError(req, res, error, startedAt, mode) {
     if (status === 499 && req.aborted) return undefined;
     return res.status(status).json({
         codigo: error.code || 'DETECTOR_ERRO_INTERNO',
-        mensagem: status < 500 ? error.message : (
-            error.code?.startsWith('DETECTOR_') ? error.message : 'Não foi possível concluir a análise.'
-        ),
+        mensagem: status < 500 ? error.message : infrastructureMessage(status),
         request_id: req.id
     });
 }

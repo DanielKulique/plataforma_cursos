@@ -4,6 +4,8 @@
 .env.*
 !.env.example
 !.env.test.example
+!.env.production.example
+!.env.staging.example
 
 # backups / lixo
 *.bak
@@ -15,6 +17,8 @@ coverage/
 
 # node
 node_modules/
+storage/
+backups/
 
 # logs
 *.log
@@ -24,6 +28,13 @@ node_modules/
 
 # tooling local do Codex/agentes
 .agents/
+.azure-staging/
+.azure-production/
+.impeccable/
+.stitch/
+fotos_equipe_plagio/
+production-content/materials/
+.deployments/
 skills-lock.json
 
 # relatórios e rascunhos mantidos apenas para consulta local
@@ -36,3 +47,6 @@ audit-autoria.js
 audit-report.html
 color-report.html
 layout.html
+
+# Documentação histórica consolidada; mantém ignorados os rascunhos locais da raiz.
+!/docs/engineering/history/*.md

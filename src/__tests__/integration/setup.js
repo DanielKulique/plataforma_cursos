@@ -11,21 +11,30 @@
 const mysql = require('mysql2/promise');
 const { assertTestDatabaseIsDisposable } = require('../../../scripts/test_database_safety');
 const { loadEnvironment } = require('../../config/loadEnvironment');
+const { databaseClientConfig, describeDatabaseTarget } = require('../../config/database-connection');
+const { assertDatabaseIdentity } = require('../../config/database-identity');
+const { SESSION_COOKIE_NAME } = require('../../config/session');
 loadEnvironment('test');
 
 // Configuração do banco de dados de teste
-const testDbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+const testDbConfig = databaseClientConfig(process.env, {
     waitForConnections: true,
     connectionLimit: 5,
-    queueLimit: 0
-};
+    queueLimit: 10
+});
 
 // Pool de conexão para testes
 let testPool = null;
+let cachedSeedPassword = null;
+let cachedSeedHash = null;
+
+async function getSeedPasswordHash(password) {
+    if (cachedSeedHash && cachedSeedPassword === password) return cachedSeedHash;
+    const bcrypt = require('bcrypt');
+    cachedSeedHash = await bcrypt.hash(password, 10);
+    cachedSeedPassword = password;
+    return cachedSeedHash;
+}
 
 /**
  * Inicializa o pool de conexões de teste
@@ -38,9 +47,12 @@ async function initTestPool() {
         // Testa conexão
         try {
             const connection = await testPool.getConnection();
-            await connection.ping();
+            await assertDatabaseIdentity(connection, {
+                database: testDbConfig.database,
+                identity: process.env.DB_ENVIRONMENT_IDENTITY
+            });
             connection.release();
-            console.log('✓ Pool de testes conectado com sucesso');
+            console.log(`✓ Pool de testes validado: ${JSON.stringify(describeDatabaseTarget(process.env))}`);
         } catch (error) {
             console.error('✗ Erro ao conectar pool de testes:', error.message);
             console.error('Certifique-se de rodar: npm run db:test:setup');
@@ -58,21 +70,26 @@ async function clearDatabase() {
     const pool = await initTestPool();
     assertTestDatabaseIsDisposable(process.env);
     const connection = await pool.getConnection();
+    let transactionStarted = false;
     
     try {
         // Desabilita checks de chave estrangeira temporariamente
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
+        await connection.beginTransaction();
+        transactionStarted = true;
         
-        // Limpa tabelas na ordem correta (ignora se não existir)
+        // Limpa tabelas em uma única transação (ignora se não existir).
+        // DELETE evita o lock/flush de DDL que TRUNCATE impõe milhares de vezes
+        // durante a suíte completa, sem reduzir o isolamento entre os testes.
         const tables = [
-            'AnalisesContextuais', 'AnalisesPlagio', 'ConteudosProgresso', 'ProgressoAluno', 'Conteudos', 'Modulos',
+            'AnalisesContextuais', 'AnalisesPlagio', 'PasswordResetTokens', 'ConteudosProgresso', 'ProgressoAluno', 'Certificados', 'Conteudos', 'Modulos',
             'Q_Respostas', 'Q_Tentativas', 'Q_Opcoes', 'Q_Perguntas', 'Questionarios',
-            'Matriculas', 'Turmas', 'Cursos', 'EmailVerificacoes', 'Usuarios'
+            'Matriculas', 'ReplicacoesTurma', 'Turmas', 'Cursos', 'ArquivosMateriais', 'EmailVerificacoes', 'Usuarios'
         ];
         
         for (const table of tables) {
             try {
-                await connection.query(`TRUNCATE TABLE ${table}`);
+                await connection.query(`DELETE FROM ${table}`);
             } catch (err) {
                 // Ignora erro de tabela inexistente
                 if (err.code !== 'ER_NO_SUCH_TABLE') {
@@ -80,9 +97,17 @@ async function clearDatabase() {
                 }
             }
         }
+
+        await connection.commit();
+        transactionStarted = false;
+
+        // Os tokens reutilizados pelas suítes apontam para os três usuários fixos
+        // do seed (IDs 1, 2 e 3). Somente essa sequência precisa ser reiniciada.
+        await connection.query('ALTER TABLE Usuarios AUTO_INCREMENT = 1');
         
         console.log('✓ Banco de dados limpo');
     } catch (error) {
+        if (transactionStarted) await connection.rollback().catch(() => undefined);
         console.error('✗ Erro ao limpar banco:', error.message);
         throw error;
     } finally {
@@ -97,7 +122,6 @@ async function clearDatabase() {
  */
 async function seedBasicData() {
     const pool = await initTestPool();
-    const bcrypt = require('bcrypt');
     const testPassword = String(process.env.TEST_SEED_PASSWORD || '');
 
     if (testPassword.length < 8) {
@@ -105,7 +129,7 @@ async function seedBasicData() {
     }
 
     try {
-        const senhaHash = await bcrypt.hash(testPassword, 10);
+        const senhaHash = await getSeedPasswordHash(testPassword);
 
         // Cria usuários de teste
         await pool.query(`
@@ -155,6 +179,18 @@ async function closeTestPool() {
     }
 }
 
+function getSessionToken(response) {
+    const cookies = response.headers['set-cookie'] || [];
+    const prefix = `${SESSION_COOKIE_NAME}=`;
+    const sessionCookie = cookies.find((cookie) => cookie.startsWith(prefix));
+
+    if (!sessionCookie) {
+        throw new Error(`Resposta não contém o cookie de sessão ${SESSION_COOKIE_NAME}.`);
+    }
+
+    return decodeURIComponent(sessionCookie.slice(prefix.length).split(';')[0]);
+}
+
 // Exporta para uso nos testes
 module.exports = {
     initTestPool,
@@ -162,6 +198,7 @@ module.exports = {
     seedBasicData,
     closeTestPool,
     testDbConfig,
+    getSessionToken,
     getTestPassword: () => {
         const password = String(process.env.TEST_SEED_PASSWORD || '');
         if (password.length < 8) throw new Error('TEST_SEED_PASSWORD não configurada.');

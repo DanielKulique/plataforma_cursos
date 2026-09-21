@@ -44,13 +44,11 @@ export function reconcileEditorSegments(previous, text, createId) {
         && before[before.length - 1 - suffix].texto === parsed[parsed.length - 1 - suffix].texto) suffix += 1;
     const oldMiddle = before.slice(prefix, before.length - suffix);
     const result = parsed.map((item, index) => {
-        let existing = null;
-        if (index < prefix) existing = before[index];
-        else if (index >= parsed.length - suffix) {
-            existing = before[before.length - (parsed.length - index)];
-        } else {
-            existing = oldMiddle[index - prefix] || null;
-        }
+        const existing = index < prefix
+            ? before[index]
+            : index >= parsed.length - suffix
+                ? before[before.length - (parsed.length - index)]
+                : oldMiddle[index - prefix] || null;
         if (!existing) {
             return { ...item, segmento_id: createId(), indice: index, versao: 1 };
         }

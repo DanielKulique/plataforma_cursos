@@ -1,0 +1,15 @@
+services:
+  db:
+    command: ["--log-bin-trust-function-creators=1"]
+    environment:
+      PLATFORM_TEST_DATABASE: plataforma_cursos_test
+      PLATFORM_TEST_DB_IDENTITY: plataforma_cursos_test
+    ports:
+      - "127.0.0.1:33307:3306"
+
+volumes:
+  mysql_data:
+    name: plataforma_cursos_local_mysql84_data
+    labels:
+      br.edu.utfpr.owner: plataforma_cursos
+      br.edu.utfpr.purpose: local-development-database

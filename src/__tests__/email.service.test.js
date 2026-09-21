@@ -6,7 +6,7 @@ const { enviarCodigoVerificacaoEmail } = require('../services/email.service');
 jest.mock('resend', () => ({
     Resend: jest.fn().mockImplementation(() => ({
         emails: {
-            send: jest.fn().mockResolvedValue({ id: 'mock-email-id' })
+            send: jest.fn().mockResolvedValue({ data: { id: 'mock-email-id' }, error: null, headers: null })
         }
     }))
 }));
@@ -21,6 +21,10 @@ describe('Email Service', () => {
 
     afterAll(() => {
         process.env = originalEnv;
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     describe('enviarCodigoVerificacaoEmail', () => {
@@ -42,6 +46,23 @@ describe('Email Service', () => {
             const logs = JSON.stringify(logger.warn.mock.calls);
             expect(logs).not.toContain('test@example.com');
             expect(logs).not.toContain('123456');
+        });
+
+        it('deve permitir desabilitar entrega explicitamente no staging de produção', async () => {
+            process.env.NODE_ENV = 'production';
+            process.env.EMAIL_DELIVERY_ENABLED = 'false';
+            delete process.env.RESEND_API_KEY;
+
+            const result = await enviarCodigoVerificacaoEmail({
+                to: 'demo@example.test',
+                codigo: '123456'
+            });
+
+            expect(result).toEqual({ enviado: false, modo: 'disabled' });
+            expect(logger.warn).toHaveBeenCalledWith(
+                'email.verificacao.nao_enviado',
+                { reason: 'EMAIL_DELIVERY_DISABLED' }
+            );
         });
 
         it('deve usar valores padrão quando MAIL_FROM e APP_NAME não estiverem configurados', async () => {
@@ -85,7 +106,7 @@ describe('Email Service', () => {
             process.env.APP_NAME = 'Plataforma Teste';
 
             const { Resend } = require('resend');
-            const mockSend = jest.fn().mockResolvedValue({ id: 'email-id' });
+            const mockSend = jest.fn().mockResolvedValue({ data: { id: 'email-id' }, error: null, headers: null });
 
             Resend.mockImplementation(() => ({
                 emails: {
@@ -111,7 +132,7 @@ describe('Email Service', () => {
             process.env.RESEND_API_KEY = 're_test_key';
 
             const { Resend } = require('resend');
-            const mockSend = jest.fn().mockResolvedValue({ id: 'email-id' });
+            const mockSend = jest.fn().mockResolvedValue({ data: { id: 'email-id' }, error: null, headers: null });
 
             Resend.mockImplementation(() => ({
                 emails: {
@@ -148,7 +169,51 @@ describe('Email Service', () => {
                     codigo: '123456',
                     expiraEm: '10 minutos'
                 })
-            ).rejects.toThrow('API error');
+            ).rejects.toMatchObject({ code: 'EMAIL_PROVIDER_ERROR', status: 503 });
+        });
+
+        it('trata erro retornado pelo SDK mesmo sem exceção', async () => {
+            process.env.RESEND_API_KEY = 're_test_key';
+            const { Resend } = require('resend');
+            Resend.mockImplementation(() => ({
+                emails: {
+                    send: jest.fn().mockResolvedValue({
+                        data: null,
+                        error: { name: 'rate_limit_exceeded', statusCode: 429, message: 'quota' },
+                        headers: null
+                    })
+                }
+            }));
+
+            await expect(enviarCodigoVerificacaoEmail({
+                to: 'test@example.com',
+                codigo: '123456'
+            })).rejects.toMatchObject({ code: 'EMAIL_PROVIDER_ERROR', status: 503 });
+            expect(logger.error).toHaveBeenCalledWith('email.verificacao.falhou', expect.objectContaining({
+                reason: 'rate_limit_exceeded',
+                statusCode: 429
+            }));
+        });
+
+        it('trata timeout do provedor de forma explícita', async () => {
+            jest.useFakeTimers();
+            process.env.RESEND_API_KEY = 're_test_key';
+            process.env.EMAIL_PROVIDER_TIMEOUT_MS = '1000';
+            const { Resend } = require('resend');
+            Resend.mockImplementation(() => ({
+                emails: { send: jest.fn(() => new Promise(() => {})) }
+            }));
+
+            const envio = enviarCodigoVerificacaoEmail({
+                to: 'test@example.com',
+                codigo: '123456'
+            });
+            const expectativa = expect(envio).rejects.toMatchObject({
+                code: 'EMAIL_PROVIDER_TIMEOUT',
+                status: 503
+            });
+            await jest.advanceTimersByTimeAsync(1000);
+            await expectativa;
         });
     });
 });

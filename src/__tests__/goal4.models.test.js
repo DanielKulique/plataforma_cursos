@@ -49,6 +49,53 @@ describe('Goal 4 - modelo de usuários', () => {
         expect(result.telefone).toBeNull();
     });
 
+    it('cria ALUNO e verificação pendente na mesma transação', async () => {
+        const conn = connectionMock();
+        conn.query
+            .mockResolvedValueOnce([{ affectedRows: 1, insertId: 18 }])
+            .mockResolvedValueOnce([{ affectedRows: 1 }]);
+        db.getConnection.mockResolvedValue(conn);
+
+        const cadastro = await usuarios.criarAlunoComVerificacao({
+            nome_completo: 'Aluno Pendente',
+            cpf: '12345678901',
+            email: ' ALUNO@EXAMPLE.TEST ',
+            senha: 'Senha@123'
+        });
+
+        expect(conn.beginTransaction).toHaveBeenCalledTimes(1);
+        expect(conn.query.mock.calls[0][0]).toContain('INSERT INTO Usuarios');
+        expect(conn.query.mock.calls[1][0]).toContain('INSERT INTO EmailVerificacoes');
+        expect(conn.query.mock.calls[1][1][2]).toBe(0);
+        expect(conn.commit).toHaveBeenCalledTimes(1);
+        expect(conn.release).toHaveBeenCalledTimes(1);
+        expect(cadastro.usuario).toMatchObject({
+            id_usuario: 18,
+            email: 'aluno@example.test',
+            tipo: 'ALUNO'
+        });
+        expect(cadastro.verificacao).toMatchObject({ verificado: false });
+    });
+
+    it('reverte também o usuário se a criação da verificação falhar', async () => {
+        const conn = connectionMock();
+        conn.query
+            .mockResolvedValueOnce([{ affectedRows: 1, insertId: 19 }])
+            .mockRejectedValueOnce(new Error('falha de verificação'));
+        db.getConnection.mockResolvedValue(conn);
+
+        await expect(usuarios.criarAlunoComVerificacao({
+            nome_completo: 'Aluno Rollback',
+            cpf: '12345678902',
+            email: 'rollback@example.test',
+            senha: 'Senha@123'
+        })).rejects.toThrow('falha de verificação');
+
+        expect(conn.rollback).toHaveBeenCalledTimes(1);
+        expect(conn.commit).not.toHaveBeenCalled();
+        expect(conn.release).toHaveBeenCalledTimes(1);
+    });
+
     it.each([
         ['cpf', 'CPF_DUPLICADO'],
         ['email', 'EMAIL_DUPLICADO'],
@@ -78,8 +125,9 @@ describe('Goal 4 - modelo de usuários', () => {
         await expect(usuarios.buscarUsuarioPorId(1)).resolves.toEqual({ id_usuario: 1 });
         db.query.mockResolvedValueOnce([[]]);
         await expect(usuarios.buscarUsuarioPorId(99)).rejects.toMatchObject({ status: 404 });
-        db.query.mockResolvedValueOnce([[]]);
-        await expect(usuarios.buscarTodosUsuarios()).resolves.toEqual([]);
+        db.query.mockResolvedValueOnce([[{ total: 0 }]]).mockResolvedValueOnce([[]]);
+        await expect(usuarios.buscarTodosUsuarios({ limit: 50, offset: 0 }))
+            .resolves.toEqual({ items: [], total: 0 });
         db.query.mockResolvedValueOnce([[{ email: 'ocupado@test', cpf: '11111111111' }]]);
         await expect(usuarios.verificarDisponibilidade('ocupado@test', '22222222222')).resolves.toEqual({
             email_disponivel: false,
@@ -160,7 +208,10 @@ describe('Goal 4 - modelo de usuários', () => {
         bcrypt.compare.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
         bcrypt.hash.mockResolvedValueOnce('hash-novo');
         await expect(usuarios.alterarSenha(1, 1, 'certa', 'nova')).resolves.toBe(true);
-        expect(conn.query).toHaveBeenLastCalledWith('UPDATE Usuarios SET senha = ? WHERE id_usuario = ?', ['hash-novo', 1]);
+        expect(conn.query).toHaveBeenLastCalledWith(
+            'UPDATE Usuarios SET senha = ?, versao_sessao = versao_sessao + 1 WHERE id_usuario = ?',
+            ['hash-novo', 1]
+        );
         expect(conn.commit).toHaveBeenCalled();
     });
 
@@ -317,8 +368,9 @@ describe('Goal 4 - modelo de turmas', () => {
         await expect(turmas.buscarTurmaPorId(1)).resolves.toMatchObject({ nome_curso: 'C' });
         db.query.mockResolvedValueOnce([[]]);
         await expect(turmas.buscarTurmaPorId(9)).rejects.toMatchObject({ status: 404 });
-        db.query.mockResolvedValueOnce([[]]);
-        await expect(turmas.buscarTodasTurmas()).resolves.toEqual([]);
+        db.query.mockResolvedValueOnce([[{ total: 0 }]]).mockResolvedValueOnce([[]]);
+        await expect(turmas.buscarTodasTurmas({ limit: 50, offset: 0 }))
+            .resolves.toEqual({ items: [], total: 0 });
         db.query.mockResolvedValueOnce([[{ id_turma: 1 }]]);
         await expect(turmas.buscarTurmasDoProfessor(2)).resolves.toHaveLength(1);
         db.query.mockResolvedValueOnce([[{ id_turma: 1 }]]);

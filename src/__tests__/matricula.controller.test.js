@@ -175,7 +175,7 @@ describe('Matricula Controller', () => {
                 }
             ];
 
-            matriculaModel.buscarMatriculaPorTurma.mockResolvedValue(matriculasMock);
+            matriculaModel.buscarMatriculaPorTurma.mockResolvedValue({ items: matriculasMock, total: 2 });
 
             const response = await request(app).get('/api/matriculas/turma/5');
 
@@ -184,12 +184,27 @@ describe('Matricula Controller', () => {
         });
 
         it('deve retornar coleção vazia com 200 quando não houver matrículas na turma', async () => {
-            matriculaModel.buscarMatriculaPorTurma.mockResolvedValue([]);
+            matriculaModel.buscarMatriculaPorTurma.mockResolvedValue({ items: [], total: 0 });
 
             const response = await request(app).get('/api/matriculas/turma/5');
 
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ matriculas: [] });
+            expect(response.body).toEqual({ items: [], matriculas: [], page: 1, limit: 50, total: 0 });
+        });
+
+        it('aplica limite máximo e offset previsível', async () => {
+            matriculaModel.buscarMatriculaPorTurma.mockResolvedValue({ items: [], total: 500 });
+            const response = await request(app).get('/api/matriculas/turma/5?page=2&limit=999999');
+            expect(response.status).toBe(200);
+            expect(matriculaModel.buscarMatriculaPorTurma)
+                .toHaveBeenCalledWith('5', { page: 2, limit: 100, offset: 100 });
+            expect(response.body).toMatchObject({ page: 2, limit: 100, total: 500 });
+        });
+
+        it('rejeita página inválida sem consultar a coleção', async () => {
+            const response = await request(app).get('/api/matriculas/turma/5?page=0');
+            expect(response.status).toBe(400);
+            expect(matriculaModel.buscarMatriculaPorTurma).not.toHaveBeenCalled();
         });
 
         it('deve retornar 404 quando a turma não existir', async () => {

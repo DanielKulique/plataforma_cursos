@@ -1,57 +1,87 @@
-const {
-    EXPECTED_COLUMNS,
-    EXPECTED_ENUMS,
-    REQUIRED_UNIQUE_INDEXES,
-    assertCanonicalSchema
-} = require('../../scripts/schema_contract');
+const { normalizeColumn, validateCanonicalSchema } = require('../../scripts/schema_contract');
 
-function canonicalConnection(overrides = {}) {
-    const tables = Object.keys(EXPECTED_COLUMNS).sort().map((TABLE_NAME) => ({ TABLE_NAME }));
-    const columns = Object.entries(EXPECTED_COLUMNS).flatMap(([TABLE_NAME, names]) => names.map((COLUMN_NAME, index) => ({
-        TABLE_NAME,
-        COLUMN_NAME,
-        ORDINAL_POSITION: index + 1,
-        COLUMN_TYPE: EXPECTED_ENUMS[`${TABLE_NAME}.${COLUMN_NAME}`] || 'varchar(255)'
-    })));
-    const indexes = Object.entries(REQUIRED_UNIQUE_INDEXES).flatMap(([TABLE_NAME, definitions]) =>
-        Object.entries(definitions).flatMap(([INDEX_NAME, names]) => names.map((COLUMN_NAME, index) => ({
-            TABLE_NAME, INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX: index + 1, NON_UNIQUE: 0
-        })))
-    );
+const baseRows = Object.freeze({
+    tables: [{ TABLE_NAME: 'Example', ENGINE: 'InnoDB', TABLE_COLLATION: 'utf8mb4_unicode_ci' }],
+    columns: [{
+        TABLE_NAME: 'Example', COLUMN_NAME: 'id', ORDINAL_POSITION: 1,
+        COLUMN_TYPE: 'bigint unsigned', IS_NULLABLE: 'NO', COLUMN_DEFAULT: null,
+        EXTRA: 'auto_increment', GENERATION_EXPRESSION: '', CHARACTER_SET_NAME: null, COLLATION_NAME: null
+    }],
+    indexes: [{
+        TABLE_NAME: 'Example', INDEX_NAME: 'PRIMARY', NON_UNIQUE: 0, INDEX_TYPE: 'BTREE',
+        SEQ_IN_INDEX: 1, COLUMN_NAME: 'id', SUB_PART: null, COLLATION: 'A'
+    }],
+    foreignKeys: [],
+    checks: [{ TABLE_NAME: 'Example', CONSTRAINT_NAME: 'chk_example_id', CHECK_CLAUSE: '(`id` > 0)' }]
+});
 
+const contract = Object.freeze({
+    expectedVersion: 12,
+    tables: {
+        Example: {
+            engine: 'innodb',
+            collation: 'utf8mb4_unicode_ci',
+            columns: [{
+                name: 'id', ordinal: 1, type: 'bigint unsigned', nullable: false, default: null,
+                extra: 'auto_increment', generationExpression: '', characterSet: null, collation: null
+            }],
+            indexes: [{
+                name: 'PRIMARY', unique: true, type: 'btree',
+                columns: [{ name: 'id', ordinal: 1, prefixLength: null, order: 'A' }]
+            }],
+            foreignKeys: [],
+            checks: [{ name: 'chk_example_id', clause: 'id > 0' }]
+        }
+    }
+});
+
+function connection(overrides = {}) {
+    const rows = { ...baseRows, ...overrides };
     return {
         query: jest.fn(async (sql) => {
-            if (sql.includes('INFORMATION_SCHEMA.TABLES')) return [overrides.tables || tables];
-            if (sql.includes('INFORMATION_SCHEMA.COLUMNS')) return [overrides.columns || columns];
-            if (sql.includes('INFORMATION_SCHEMA.STATISTICS')) return [overrides.indexes || indexes];
+            if (sql.includes('INFORMATION_SCHEMA.TABLES')) return [rows.tables];
+            if (sql.includes('INFORMATION_SCHEMA.COLUMNS')) return [rows.columns];
+            if (sql.includes('INFORMATION_SCHEMA.STATISTICS')) return [rows.indexes];
+            if (sql.includes('REFERENTIAL_CONSTRAINTS')) return [rows.foreignKeys];
+            if (sql.includes('CHECK_CONSTRAINTS')) return [rows.checks];
             throw new Error(`Consulta inesperada: ${sql}`);
         })
     };
 }
 
-describe('contrato do schema canônico', () => {
-    it('aceita todas as tabelas, colunas, enums e índices esperados', async () => {
-        await expect(assertCanonicalSchema(canonicalConnection(), 'plataforma_cursos_dev'))
-            .resolves.toEqual({ database: 'plataforma_cursos_dev', tables: 15 });
+describe('contrato estrutural completo do schema', () => {
+    it('normaliza sintaxe SQL sem apagar a caixa de literais semânticos', () => {
+        expect(normalizeColumn({
+            ...baseRows.columns[0],
+            COLUMN_TYPE: "ENUM('ATIVO','Revogado')",
+            COLUMN_DEFAULT: 'ATIVO'
+        })).toMatchObject({ type: "enum('ATIVO','Revogado')", default: 'ATIVO' });
     });
 
-    it('detecta o drift legado id_usuario em Matriculas', async () => {
-        const canonical = canonicalConnection();
-        const [columns] = await canonical.query('INFORMATION_SCHEMA.COLUMNS');
-        const legacyColumns = columns.map((column) => column.TABLE_NAME === 'Matriculas' && column.COLUMN_NAME === 'id_aluno'
-            ? { ...column, COLUMN_NAME: 'id_usuario' }
-            : column);
-
-        await expect(assertCanonicalSchema(canonicalConnection({ columns: legacyColumns }), 'plataforma_cursos_dev'))
-            .rejects.toMatchObject({ code: 'SCHEMA_INCOMPATIVEL' });
-    });
-
-    it('detecta tabela inesperada antes de qualquer migração automática', async () => {
-        const connection = canonicalConnection({
-            tables: [...Object.keys(EXPECTED_COLUMNS).map((TABLE_NAME) => ({ TABLE_NAME })), { TABLE_NAME: 'ProgressoAluno' }]
+    it('valida engine, colunas, PK e CHECK com output contável', async () => {
+        await expect(validateCanonicalSchema(connection(), 'test', { contract })).resolves.toMatchObject({
+            status: 'ok', tablesChecked: 1, columnsChecked: 1, indexesChecked: 1,
+            primaryKeysChecked: 1, checksChecked: 1, errors: []
         });
+    });
 
-        await expect(assertCanonicalSchema(connection, 'plataforma_cursos_dev'))
-            .rejects.toThrow('tabelas inesperadas: ProgressoAluno');
+    it.each([
+        ['tipo', { columns: [{ ...baseRows.columns[0], COLUMN_TYPE: 'int' }] }, 'COLUMN_DEFINITION_MISMATCH'],
+        ['nullable', { columns: [{ ...baseRows.columns[0], IS_NULLABLE: 'YES' }] }, 'COLUMN_DEFINITION_MISMATCH'],
+        ['primary key', { indexes: [] }, 'INDEX_MISSING'],
+        ['check', { checks: [] }, 'CHECK_MISSING']
+    ])('detecta drift de %s', async (_label, overrides, expectedType) => {
+        const result = await validateCanonicalSchema(connection(overrides), 'test', { contract });
+        expect(result.status).toBe('error');
+        expect(result.errors).toEqual(expect.arrayContaining([expect.objectContaining({ type: expectedType })]));
+    });
+
+    it('trata tabela extra como erro sem tentar apagá-la', async () => {
+        const result = await validateCanonicalSchema(connection({
+            tables: [...baseRows.tables, { TABLE_NAME: 'Surpresa', ENGINE: 'InnoDB', TABLE_COLLATION: 'utf8mb4_unicode_ci' }]
+        }), 'test', { contract });
+        expect(result.errors).toEqual(expect.arrayContaining([
+            expect.objectContaining({ type: 'UNEXPECTED_TABLE', table: 'Surpresa' })
+        ]));
     });
 });

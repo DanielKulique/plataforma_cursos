@@ -1,0 +1,84 @@
+{
+  "mode": "DRY_RUN",
+  "generatedAt": "2026-09-11T17:41:19.444Z",
+  "policy": {
+    "graceHours": 48,
+    "retentionDays": 90
+  },
+  "counts": {
+    "materials": {
+      "RETAINED": 1,
+      "OK": 3
+    },
+    "certificates": {
+      "CERTIFICATE_HISTORICAL": 2,
+      "OK": 2
+    }
+  },
+  "entries": [
+    {
+      "namespace": "materials",
+      "name": "78cf2fef-b4cf-405a-a9f5-bc354e585640.pdf",
+      "id": 1,
+      "status": "RETIDO",
+      "eligible": false,
+      "classification": "RETAINED"
+    },
+    {
+      "namespace": "materials",
+      "name": "29afcb04-1e13-452e-8c6f-b0a3eea0ba32.pdf",
+      "id": 2,
+      "status": "ATIVO",
+      "eligible": false,
+      "classification": "OK"
+    },
+    {
+      "namespace": "materials",
+      "name": "9e5343b0-e56b-423a-96bf-937928c363ec.pdf",
+      "id": 3,
+      "status": "ATIVO",
+      "eligible": false,
+      "classification": "OK"
+    },
+    {
+      "namespace": "materials",
+      "name": "2543d558-86c0-40d6-9075-87343f08de7f.pdf",
+      "id": 4,
+      "status": "ATIVO",
+      "eligible": false,
+      "classification": "OK"
+    },
+    {
+      "namespace": "certificates",
+      "name": "773268d8-4584-454f-b5eb-63adf9fe261f.pdf",
+      "id": 1,
+      "status": "REVOGADO",
+      "eligible": false,
+      "classification": "CERTIFICATE_HISTORICAL"
+    },
+    {
+      "namespace": "certificates",
+      "name": "8d76675b-a4d9-493a-b4a7-257fb3456d03.pdf",
+      "id": 2,
+      "status": "ATIVO",
+      "eligible": false,
+      "classification": "OK"
+    },
+    {
+      "namespace": "certificates",
+      "name": "e679a60d-ef2d-43e7-8b6e-879226f9cd3b.pdf",
+      "id": 5,
+      "status": "REVOGADO",
+      "eligible": false,
+      "classification": "CERTIFICATE_HISTORICAL"
+    },
+    {
+      "namespace": "certificates",
+      "name": "89fb09cd-d384-40c7-b3b4-6db9d820d9dc.pdf",
+      "id": 6,
+      "status": "ATIVO",
+      "eligible": false,
+      "classification": "OK"
+    }
+  ]
+}

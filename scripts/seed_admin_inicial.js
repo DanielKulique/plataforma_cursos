@@ -6,11 +6,14 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const logger = require('../src/utils/logger');
+const { assertDatabaseConnectionEnvironment } = require('../src/config/database-connection');
+const { assertDatabaseIdentity } = require('../src/config/database-identity');
 
 require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
 
 const LOCK_NAME = 'plataforma_cursos_admin_bootstrap';
 const ADDITIONAL_ADMIN_CONFIRMATION = 'I_UNDERSTAND_CREATE_ANOTHER_ADMIN';
+const PRODUCTION_BOOTSTRAP_CONFIRMATION = 'I_UNDERSTAND';
 
 function required(env, key) {
     const value = String(env[key] || '').trim();
@@ -30,13 +33,14 @@ function validatePassword(password) {
 }
 
 function readConfiguration(env = process.env) {
+    const database = assertDatabaseConnectionEnvironment(env);
     const config = {
         db: {
-            host: required(env, 'DB_HOST'),
-            port: Number(env.DB_PORT || 3306),
-            user: required(env, 'DB_USER'),
-            password: required(env, 'DB_PASSWORD'),
-            database: required(env, 'DB_NAME')
+            host: database.host,
+            port: database.port,
+            user: database.user,
+            password: database.password,
+            database: database.database
         },
         admin: {
             nome: required(env, 'INITIAL_ADMIN_NOME'),
@@ -48,9 +52,6 @@ function readConfiguration(env = process.env) {
         allowAdditional: env.INITIAL_ADMIN_ALLOW_ADDITIONAL === ADDITIONAL_ADMIN_CONFIRMATION
     };
 
-    if (!Number.isInteger(config.db.port) || config.db.port < 1 || config.db.port > 65535) {
-        throw new Error('DB_PORT deve ser uma porta TCP válida.');
-    }
     if (config.admin.nome.length < 3) throw new Error('INITIAL_ADMIN_NOME deve ter ao menos 3 caracteres.');
     if (!/^(?!([0-9])\1{10}$)\d{11}$/.test(config.admin.cpf)) {
         throw new Error('INITIAL_ADMIN_CPF deve conter 11 dígitos não repetidos.');
@@ -63,6 +64,22 @@ function readConfiguration(env = process.env) {
     }
     validatePassword(config.admin.senha);
     return config;
+}
+
+function assertAdminBootstrapTarget(env = process.env) {
+    const database = String(env.DB_NAME || '').trim();
+    if (env.NODE_ENV === 'production') {
+        if (!database || database === 'site_cursos') {
+            throw new Error('Banco de produção inválido para bootstrap administrativo.');
+        }
+        if (env.ALLOW_PRODUCTION_ADMIN_BOOTSTRAP !== PRODUCTION_BOOTSTRAP_CONFIRMATION) {
+            throw new Error('Defina ALLOW_PRODUCTION_ADMIN_BOOTSTRAP=I_UNDERSTAND para o bootstrap em produção.');
+        }
+        return database;
+    }
+
+    const { assertDevelopmentDatabase } = require('./test_database_safety');
+    return assertDevelopmentDatabase(env);
 }
 
 async function criarAdminInicial({
@@ -78,6 +95,7 @@ async function criarAdminInicial({
     try {
         config = readConfiguration(env);
         connection = await createConnection(config.db);
+        await assertDatabaseIdentity(connection, assertDatabaseConnectionEnvironment(env));
         const [lockRows] = await connection.query('SELECT GET_LOCK(?, 10) AS adquirido', [LOCK_NAME]);
         lockAcquired = Number(lockRows?.[0]?.adquirido) === 1;
         if (!lockAcquired) throw new Error('Não foi possível obter exclusividade para o bootstrap administrativo.');
@@ -86,10 +104,15 @@ async function criarAdminInicial({
         transactionStarted = true;
 
         const [sameAdmin] = await connection.query(
-            "SELECT id_usuario FROM Usuarios WHERE tipo = 'ADMIN' AND (email = ? OR cpf = ?) LIMIT 1 FOR UPDATE",
+            'SELECT id_usuario, email, cpf, tipo FROM Usuarios WHERE (email = ? OR cpf = ?) FOR UPDATE',
             [config.admin.email, config.admin.cpf]
         );
         if (sameAdmin.length > 0) {
+            if (sameAdmin.length !== 1 || sameAdmin[0].tipo !== 'ADMIN'
+                || sameAdmin[0].email.toLowerCase() !== config.admin.email.toLowerCase()
+                || sameAdmin[0].cpf !== config.admin.cpf) {
+                throw new Error('Identidade inicial em conflito; não será promovida ou substituída.');
+            }
             await connection.rollback();
             transactionStarted = false;
             output.info('admin.bootstrap.idempotente', { userId: sameAdmin[0].id_usuario });
@@ -100,13 +123,10 @@ async function criarAdminInicial({
             "SELECT id_usuario FROM Usuarios WHERE tipo = 'ADMIN' LIMIT 1 FOR UPDATE"
         );
         if (admins.length > 0 && !config.allowAdditional) {
-            await connection.rollback();
-            transactionStarted = false;
-            output.info('admin.bootstrap.ja_existente', { userId: admins[0].id_usuario });
-            return { sucesso: true, criado: false, idAdmin: admins[0].id_usuario };
+            throw new Error('Outro administrador já existe; bootstrap inicial recusado.');
         }
 
-        const passwordHash = await bcrypt.hash(config.admin.senha, 10);
+        const passwordHash = await bcrypt.hash(config.admin.senha, 12);
         const [result] = await connection.query(
             `INSERT INTO Usuarios (nome_completo, cpf, email, senha, telefone, tipo)
              VALUES (?, ?, ?, ?, ?, 'ADMIN')`,
@@ -120,7 +140,7 @@ async function criarAdminInicial({
         return { sucesso: true, criado: true, idAdmin: result.insertId };
     } catch (error) {
         if (connection && transactionStarted) await connection.rollback();
-        output.error('admin.bootstrap.falhou', { error });
+        output.error('admin.bootstrap.falhou', { code: error.code || 'BOOTSTRAP_FAILED' });
         throw error;
     } finally {
         if (connection && lockAcquired) {
@@ -130,20 +150,38 @@ async function criarAdminInicial({
     }
 }
 
-if (require.main === module) {
-    const { assertDevelopmentDatabase } = require('./test_database_safety');
-    assertDevelopmentDatabase(process.env);
-    criarAdminInicial()
-        .then((result) => {
-            process.exitCode = result.sucesso ? 0 : 1;
-        })
-        .catch(() => {
-            process.exitCode = 1;
+async function main() {
+    assertAdminBootstrapTarget(process.env);
+    const env = { ...process.env };
+    if (env.INITIAL_ADMIN_PASSWORD_FILE) {
+        const fs = require('fs');
+        const stat = fs.statSync(env.INITIAL_ADMIN_PASSWORD_FILE);
+        if (!stat.isFile() || (stat.mode & 0o077)) throw new Error('Arquivo de senha deve ser privado (0600).');
+        env.INITIAL_ADMIN_PASSWORD = fs.readFileSync(env.INITIAL_ADMIN_PASSWORD_FILE, 'utf8').replace(/\r?\n$/, '');
+    } else if (!env.INITIAL_ADMIN_PASSWORD && process.stdin.isTTY) {
+        const { Writable } = require('stream');
+        const output = new Writable({ write(_chunk, _encoding, callback) { callback(); } });
+        const input = require('readline').createInterface({ input: process.stdin, output, terminal: true });
+        process.stderr.write('Senha do administrador (entrada oculta): ');
+        env.INITIAL_ADMIN_PASSWORD = await new Promise((resolve, reject) => {
+            input.once('SIGINT', () => { input.close(); reject(new Error('Bootstrap cancelado.')); });
+            input.question('', (password) => { input.close(); resolve(password); });
         });
+        process.stderr.write('\n');
+    }
+    try { await criarAdminInicial({ env }); }
+    finally { delete env.INITIAL_ADMIN_PASSWORD; }
 }
+
+if (require.main === module) main().catch((error) => {
+    console.error(error.sql ? `Bootstrap recusado (${error.code}).` : error.message);
+    process.exitCode = 1;
+});
 
 module.exports = {
     ADDITIONAL_ADMIN_CONFIRMATION,
+    PRODUCTION_BOOTSTRAP_CONFIRMATION,
+    assertAdminBootstrapTarget,
     criarAdminInicial,
     readConfiguration,
     validatePassword

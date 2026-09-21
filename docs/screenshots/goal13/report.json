@@ -1,0 +1,93 @@
+[
+  {
+    "name": "01-sala-virtual-desktop",
+    "route": "/sala-virtual.html",
+    "h1": "Sua trilha de estudos",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "02-curso-hub-desktop",
+    "route": "/sala-aula.html?id_turma=1",
+    "h1": "Fundamentos de Desenvolvimento Web",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "03-aulas-aluno-tablet",
+    "route": "/sala-aulas.html?id_turma=1",
+    "h1": "Aulas",
+    "width": 768,
+    "scrollWidth": 768
+  },
+  {
+    "name": "04-aula-detalhe-desktop",
+    "route": "/sala-aula-detalhe.html?id_turma=1&id_aula=1",
+    "h1": "Introdução",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "05-avaliacoes-aluno-desktop",
+    "route": "/sala-avaliacoes.html?id_turma=1",
+    "h1": "Avaliações",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "06-certificados-aluno-desktop",
+    "route": "/meus-certificados.html?id_turma=1",
+    "h1": "Certificado — Fundamentos de Desenvolvimento Web",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "07-curso-hub-mobile",
+    "route": "/sala-aula.html?id_turma=1",
+    "h1": "Fundamentos de Desenvolvimento Web",
+    "width": 360,
+    "scrollWidth": 360
+  },
+  {
+    "name": "08-painel-professor-desktop",
+    "route": "/professor-turma.html?id_turma=1",
+    "h1": "Web Canônica - Inscrições",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "09-alunos-professor-mobile",
+    "route": "/professor-turma-alunos.html?id_turma=1",
+    "h1": "Web Canônica - Inscrições",
+    "width": 360,
+    "scrollWidth": 360
+  },
+  {
+    "name": "10-aulas-professor-desktop",
+    "route": "/professor-turma-aulas.html?id_turma=1",
+    "h1": "Web Canônica - Inscrições",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "11-avaliacoes-professor-desktop",
+    "route": "/professor-turma-avaliacoes.html?id_turma=1",
+    "h1": "Web Canônica - Inscrições",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "12-avaliacao-detalhe-desktop",
+    "route": "/professor-turma-avaliacao.html?id_turma=1&id_questionario=1",
+    "h1": "Web Canônica - Inscrições",
+    "width": 1440,
+    "scrollWidth": 1440
+  },
+  {
+    "name": "13-avaliacoes-professor-mobile",
+    "route": "/professor-turma-avaliacoes.html?id_turma=1",
+    "h1": "Web Canônica - Inscrições",
+    "width": 360,
+    "scrollWidth": 360
+  }
+]

@@ -83,7 +83,7 @@ async function deletarCurso(id) {
         }
 
         const [turmas] = await connection.query(
-            'SELECT id_turma FROM Turmas WHERE id_curso = ? LIMIT 1 FOR UPDATE',
+            'SELECT id_turma FROM Turmas WHERE id_curso = ? LIMIT 1',
             [id]
         );
         if (turmas.length > 0) {

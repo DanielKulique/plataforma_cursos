@@ -1,3 +1,4 @@
+const { seedProvaFinalAprovada } = require('./academic-fixtures');
 /**
  * Testes de Integração - Matrículas
  * 
@@ -10,7 +11,7 @@
  */
 
 const request = require('supertest');
-const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword } = require('./setup');
+const { initTestPool, clearDatabase, seedBasicData, closeTestPool, getTestPassword, getSessionToken } = require('./setup');
 const { app } = require('../../../index');
 const applicationDb = require('../../config/database');
 
@@ -61,19 +62,19 @@ describe('Testes de Integração - Matrículas', () => {
         const adminLogin = await request(server)
             .post('/api/auth/login')
             .send({ email: 'admin@teste.com', senha: testPassword });
-        adminToken = adminLogin.body.token;
+        adminToken = getSessionToken(adminLogin);
 
         // Login PROFESSOR
         const profLogin = await request(server)
             .post('/api/auth/login')
             .send({ email: 'professor@teste.com', senha: testPassword });
-        professorToken = profLogin.body.token;
+        professorToken = getSessionToken(profLogin);
 
         // Login ALUNO
         const alunoLogin = await request(server)
             .post('/api/auth/login')
             .send({ email: 'aluno@teste.com', senha: testPassword });
-        alunoToken = alunoLogin.body.token;
+        alunoToken = getSessionToken(alunoLogin);
     });
 
     // Antes de CADA teste: limpa o banco descartável, recria IDs estáveis e os dados do cenário.
@@ -219,7 +220,7 @@ describe('Testes de Integração - Matrículas', () => {
             await request(server)
                 .patch(`/api/matriculas/${id}`)
                 .set('Authorization', `Bearer ${professorToken}`)
-                .send({ nota_final: 8.5, progresso_percentual: 70 });
+                .send({ nota_final: 8.5 });
             await request(server)
                 .delete(`/api/matriculas/${id}`)
                 .set('Authorization', `Bearer ${alunoToken}`);
@@ -346,11 +347,75 @@ describe('Testes de Integração - Matrículas', () => {
             matriculaId = matriculaResponse.body.matricula.id_matricula;
         });
 
+        it('D-03: 200/201 bloqueia professor e ADMIN; 201/201 ainda exige prova final', async () => {
+            const pool = await initTestPool();
+            const tipos = ['VIDEO', 'TEXTO', 'PDF', 'LINK', 'ATIVIDADE'];
+            await pool.query('INSERT INTO Conteudos (id_turma, titulo, tipo, ordem) VALUES ?', [
+                Array.from({ length: 201 }, (_, i) => [turmaId, `Conteúdo ${i + 1}`, tipos[i % 5], i + 1])
+            ]);
+            const [conteudos] = await pool.query('SELECT id_conteudo FROM Conteudos WHERE id_turma = ? ORDER BY ordem', [turmaId]);
+            await pool.query('INSERT INTO ConteudosProgresso (id_aluno, id_conteudo, status) VALUES ?', [
+                conteudos.slice(0, 200).map(c => [testUsers.aluno.id_usuario, c.id_conteudo, 'CONCLUIDO'])
+            ]);
+            // Outro aluno concluiu o conteúdo faltante: isso não conclui a matrícula testada.
+            await pool.query("INSERT INTO ConteudosProgresso (id_aluno, id_conteudo, status) VALUES (?, ?, 'CONCLUIDO')",
+                [testUsers.admin.id_usuario, conteudos[200].id_conteudo]);
+            await pool.query('INSERT INTO Questionarios (id_curso, id_turma, titulo, descricao, tipo) VALUES ?', [[
+                [cursoId, turmaId, 'Prova separada', 'Não conta', 'PROVA'],
+                [cursoId, turmaId, 'Exercício separado', 'Não conta', 'EXERCICIO']
+            ]]);
+            const [outraTurma] = await pool.query(
+                "INSERT INTO Turmas (id_curso, id_professor, nome_turma, data_inicio, status) VALUES (?, ?, 'Outra turma', '2026-01-01', 'ABERTA')",
+                [cursoId, testUsers.professor.id_usuario]);
+            const [outroConteudo] = await pool.query(
+                "INSERT INTO Conteudos (id_turma, titulo, tipo, ordem) VALUES (?, 'Outro', 'TEXTO', 1)", [outraTurma.insertId]);
+            await pool.query("INSERT INTO ConteudosProgresso (id_aluno, id_conteudo, status) VALUES (?, ?, 'CONCLUIDO')",
+                [testUsers.aluno.id_usuario, outroConteudo.insertId]);
+            const listar = () => request(server).get(`/api/matriculas/turma/${turmaId}`)
+                .set('Authorization', `Bearer ${professorToken}`);
+            expect((await listar()).body.matriculas[0]).toMatchObject({
+                total_conteudos: 201, conteudos_concluidos: 200,
+                progresso_percentual: 100, conteudo_concluido: false, status_aprovacao: 'CURSANDO'
+            });
+            for (const token of [professorToken, adminToken]) {
+                const response = await request(server).patch(`/api/matriculas/${matriculaId}`)
+                    .set('Authorization', `Bearer ${token}`)
+                    .send({ nota_final: 9, status_aprovacao: 'APROVADO' });
+                expect(response.status).toBe(409);
+                expect(response.body.code).toBe('CONTEUDOS_PENDENTES');
+            }
+            expect((await request(server).put(`/api/conteudos/${conteudos[200].id_conteudo}/progresso`)
+                .set('Authorization', `Bearer ${alunoToken}`).send({ status: 'CONCLUIDO' })).status).toBe(200);
+            expect((await listar()).body.matriculas[0]).toMatchObject({
+                conteudo_concluido: true, status_aprovacao: 'CURSANDO', nota_final: null
+            });
+            const semNota = await request(server).patch(`/api/matriculas/${matriculaId}`)
+                .set('Authorization', `Bearer ${professorToken}`).send({ status_aprovacao: 'APROVADO' });
+            expect(semNota.status).toBe(409);
+            expect(semNota.body.code).toBe('PROVA_FINAL_PENDENTE');
+            await seedProvaFinalAprovada(pool, testUsers.aluno.id_usuario, turmaId);
+            expect((await request(server).patch(`/api/matriculas/${matriculaId}`)
+                .set('Authorization', `Bearer ${professorToken}`)
+                .send({ nota_final: 0, status_aprovacao: 'APROVADO' })).status).toBe(200);
+        });
+
         it('deve atualizar nota do aluno (PROFESSOR)', async () => {
+            const pool = await initTestPool();
+            const [conteudo] = await pool.query(
+                `INSERT INTO Conteudos (id_turma, titulo, tipo, ordem)
+                 VALUES (?, 'Conteúdo obrigatório', 'TEXTO', 1)`,
+                [turmaId]
+            );
+            const progresso = await request(server)
+                .put(`/api/conteudos/${conteudo.insertId}/progresso`)
+                .set('Authorization', `Bearer ${alunoToken}`)
+                .send({ status: 'CONCLUIDO' });
+            expect(progresso.status).toBe(200);
+
+            await seedProvaFinalAprovada(pool, testUsers.aluno.id_usuario, turmaId);
             const updateData = {
                 nota_final: 8.5,
-                status_aprovacao: 'APROVADO',
-                progresso_percentual: 100
+                status_aprovacao: 'APROVADO'
             };
 
             const response = await request(server)
@@ -362,7 +427,7 @@ describe('Testes de Integração - Matrículas', () => {
             expect(response.body).toHaveProperty('message');
         });
 
-        it('deve atualizar apenas progresso (PROFESSOR)', async () => {
+        it('deve rejeitar alteração manual do progresso', async () => {
             const response = await request(server)
                 .patch(`/api/matriculas/${matriculaId}`)
                 .set('Authorization', `Bearer ${professorToken}`)
@@ -370,7 +435,24 @@ describe('Testes de Integração - Matrículas', () => {
                     progresso_percentual: 50
                 });
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(400);
+        });
+
+        it('deve impedir aprovação enquanto houver conteúdo pendente', async () => {
+            const pool = await initTestPool();
+            await pool.query(
+                `INSERT INTO Conteudos (id_turma, titulo, tipo, ordem)
+                 VALUES (?, 'Conteúdo pendente', 'TEXTO', 1)`,
+                [turmaId]
+            );
+
+            const response = await request(server)
+                .patch(`/api/matriculas/${matriculaId}`)
+                .set('Authorization', `Bearer ${professorToken}`)
+                .send({ nota_final: 8.5, status_aprovacao: 'APROVADO' });
+
+            expect(response.status).toBe(409);
+            expect(response.body.code).toBe('CONTEUDOS_PENDENTES');
         });
 
         it('deve retornar 400 para nota inválida', async () => {

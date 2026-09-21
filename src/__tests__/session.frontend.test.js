@@ -3,27 +3,16 @@ const path = require('path');
 
 const publicPath = (...parts) => path.join(__dirname, '..', 'public', ...parts);
 
-function createStorage(initial = {}) {
-    const values = new Map(Object.entries(initial));
-    return {
-        getItem: jest.fn((key) => values.get(key) ?? null),
-        setItem: jest.fn((key, value) => values.set(key, String(value))),
-        removeItem: jest.fn((key) => values.delete(key)),
-        has: (key) => values.has(key)
-    };
-}
-
-function loadAuth({ storage, fetchImpl }) {
+function loadAuth({ fetchImpl }) {
     const source = fs.readFileSync(publicPath('js', 'auth.js'), 'utf8')
         .replace(/\bexport\s+/g, '');
     const window = { location: { href: '' } };
     const factory = new Function(
-        'localStorage',
         'fetch',
         'window',
-        `${source}\nreturn { getCurrentUser, getRedirectByRole, setToken, clearToken, requireRole };`
+        `${source}\nreturn { getCurrentUser, getRedirectByRole, clearToken, requireRole };`
     );
-    return factory(storage, fetchImpl, window);
+    return factory(fetchImpl, window);
 }
 
 class FakeElement {
@@ -78,22 +67,24 @@ function createDocument(ids = []) {
 
 function loadSessionUI({ document, window, auth }) {
     const source = fs.readFileSync(publicPath('js', 'session-ui.js'), 'utf8')
-        .replace(/^import .*;\n/m, '')
+        .replace(/^import[\s\S]*?from '\.\/auth\.js';\n/m, '')
         .replace(/\bexport\s+/g, '');
     const factory = new Function(
         'clearToken',
+        'getCapabilities',
         'getCurrentUser',
         'getRedirectByRole',
-        'getToken',
+        'endSession',
         'document',
         'window',
         `${source}\nreturn { initSessionUI, getRoleArea };`
     );
     return factory(
         auth.clearToken,
+        auth.getCapabilities || jest.fn().mockResolvedValue({ features: { detector: { enabled: false } } }),
         auth.getCurrentUser,
         auth.getRedirectByRole,
-        auth.getToken,
+        auth.endSession || jest.fn().mockResolvedValue(undefined),
         document,
         window
     );
@@ -101,14 +92,13 @@ function loadSessionUI({ document, window, auth }) {
 
 describe('sessão autoritativa do frontend', () => {
     it('compartilha uma única consulta a /api/auth/me por página', async () => {
-        const storage = createStorage({ token: 'jwt-valido' });
         const user = { id_usuario: 7, nome_completo: 'Ana Aluna', tipo: 'ALUNO' };
         const fetchImpl = jest.fn(async () => ({
             ok: true,
             status: 200,
             json: async () => ({ usuario: user })
         }));
-        const auth = loadAuth({ storage, fetchImpl });
+        const auth = loadAuth({ fetchImpl });
 
         const [first, second] = await Promise.all([auth.getCurrentUser(), auth.getCurrentUser()]);
         const third = await auth.getCurrentUser();
@@ -120,30 +110,24 @@ describe('sessão autoritativa do frontend', () => {
         expect(fetchImpl).toHaveBeenCalledWith('/api/auth/me', expect.any(Object));
     });
 
-    it.each([401, 403, 404])('limpa o token quando /me responde %i', async (status) => {
-        const storage = createStorage({ token: 'jwt-invalido' });
+    it.each([401, 403, 404])('trata a sessão por cookie como inválida quando /me responde %i', async (status) => {
         const auth = loadAuth({
-            storage,
             fetchImpl: jest.fn(async () => ({ ok: false, status, json: async () => ({}) }))
         });
 
         await expect(auth.getCurrentUser()).resolves.toBeNull();
-        expect(storage.has('token')).toBe(false);
     });
 
-    it('preserva o token em erro temporário para permitir nova validação', async () => {
-        const storage = createStorage({ token: 'jwt-valido' });
+    it('preserva a possibilidade de nova validação após erro temporário', async () => {
         const auth = loadAuth({
-            storage,
             fetchImpl: jest.fn(async () => ({ ok: false, status: 500, json: async () => ({}) }))
         });
 
         await expect(auth.getCurrentUser()).rejects.toThrow('Erro ao carregar sessão.');
-        expect(storage.has('token')).toBe(true);
     });
 
     it('redireciona ADMIN para o painel administrativo real', () => {
-        const auth = loadAuth({ storage: createStorage(), fetchImpl: jest.fn() });
+        const auth = loadAuth({ fetchImpl: jest.fn() });
         expect(auth.getRedirectByRole('ADMIN')).toBe('/admin.html');
     });
 });
@@ -164,7 +148,7 @@ describe('estados visuais centralizados', () => {
                 clearToken: jest.fn(),
                 getCurrentUser: jest.fn().mockResolvedValue(null),
                 getRedirectByRole: jest.fn(),
-                getToken: jest.fn().mockReturnValue(null)
+                getCapabilities: jest.fn()
             }
         });
 
@@ -194,15 +178,20 @@ describe('estados visuais centralizados', () => {
             window,
             auth: {
                 clearToken,
+                endSession: clearToken,
                 getCurrentUser: jest.fn().mockResolvedValue(user),
                 getRedirectByRole: jest.fn(),
-                getToken: jest.fn().mockReturnValue('jwt')
+                getCapabilities: jest.fn().mockResolvedValue({ features: { detector: { enabled: false } } })
             }
         });
 
         const result = await ui.initSessionUI();
 
-        expect(result).toEqual({ state: 'authenticated', user });
+        expect(result).toEqual({
+            state: 'authenticated',
+            user,
+            capabilities: { features: { detector: { enabled: false } } }
+        });
         expect(document.body.dataset.sessionState).toBe(state);
         expect(document.getElementById('aviso-acesso').hidden).toBe(true);
         expect(document.getElementById('avatar').hidden).toBe(false);
@@ -214,13 +203,13 @@ describe('estados visuais centralizados', () => {
         expect(privateAdmin.hidden).toBe(tipo !== 'ADMIN');
 
         if (tipo === 'ALUNO') {
-            document.getElementById('avatar-menu-logout').listeners.click();
+            await document.getElementById('avatar-menu-logout').listeners.click();
             expect(clearToken).toHaveBeenCalledTimes(1);
             expect(window.location.href).toBe('/index.html');
         }
     });
 
-    it('diferencia sessão inválida de visitante e envia página protegida ao login', async () => {
+    it('envia página protegida sem sessão ao login', async () => {
         const document = createDocument(ids);
         const window = { location: { href: '' } };
         const ui = loadSessionUI({
@@ -230,14 +219,14 @@ describe('estados visuais centralizados', () => {
                 clearToken: jest.fn(),
                 getCurrentUser: jest.fn().mockResolvedValue(null),
                 getRedirectByRole: jest.fn(),
-                getToken: jest.fn().mockReturnValue('jwt-expirado')
+                getCapabilities: jest.fn()
             }
         });
 
         const result = await ui.initSessionUI({ requiredRoles: ['ALUNO'] });
 
-        expect(result.state).toBe('invalid');
-        expect(document.body.dataset.sessionState).toBe('invalid');
+        expect(result.state).toBe('anonymous');
+        expect(document.body.dataset.sessionState).toBe('anonymous');
         expect(document.getElementById('avatar').hidden).toBe(true);
         expect(window.location.href).toBe('/login.html?motivo=auth');
     });
@@ -253,7 +242,7 @@ describe('estados visuais centralizados', () => {
                 clearToken: jest.fn(),
                 getCurrentUser: jest.fn().mockResolvedValue(user),
                 getRedirectByRole: jest.fn(),
-                getToken: jest.fn().mockReturnValue('jwt')
+                getCapabilities: jest.fn()
             }
         });
 

@@ -1,0 +1,11 @@
+[Unit]
+Description=Executa health check operacional da Plataforma Cursos a cada 5 minutos
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+Persistent=true
+Unit=plataforma-health-check.service
+
+[Install]
+WantedBy=timers.target

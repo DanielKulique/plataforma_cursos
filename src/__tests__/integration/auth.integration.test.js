@@ -15,7 +15,8 @@ const {
     clearDatabase,
     seedBasicData,
     closeTestPool,
-    getTestPassword
+    getTestPassword,
+    getSessionToken
 } = require('./setup');
 const { app } = require('../../../index');
 const applicationDb = require('../../config/database');
@@ -50,9 +51,20 @@ describe('Testes de Integração - Autenticação', () => {
 
             expect(response.status).toBe(201);
             expect(response.body.tipo).toBe('ALUNO');
+            expect(response.body.verificacao).toMatchObject({
+                estado: 'PENDENTE',
+                email_enviado: false
+            });
 
             const [rows] = await pool.query('SELECT tipo FROM Usuarios ORDER BY id_usuario');
             expect(rows.map((row) => row.tipo)).toEqual(['ALUNO']);
+            const [verificacoes] = await pool.query(
+                'SELECT verificado, codigo, expira_em FROM EmailVerificacoes WHERE email = ?',
+                ['cadastro.publico@teste.com']
+            );
+            expect(verificacoes).toHaveLength(1);
+            expect(Number(verificacoes[0].verificado)).toBe(0);
+            expect(verificacoes[0].codigo).toMatch(/^\d{6}$/);
         });
 
         it.each(['ADMIN', 'PROFESSOR'])('deve rejeitar tentativa de criar %s', async (tipo) => {
@@ -85,6 +97,28 @@ describe('Testes de Integração - Autenticação', () => {
             const [privileged] = await pool.query("SELECT id_usuario FROM Usuarios WHERE tipo IN ('ADMIN', 'PROFESSOR')");
             expect(privileged).toHaveLength(0);
         });
+
+        it('cadastro duplicado concorrente mantém um único estado de verificação', async () => {
+            const dados = {
+                nome_completo: 'Aluno Duplicado',
+                cpf: '99999999999',
+                email: 'duplicado@teste.com',
+                senha: testPassword
+            };
+            const responses = await Promise.all([
+                request(app).post('/api/usuarios').send(dados),
+                request(app).post('/api/usuarios').send(dados)
+            ]);
+
+            expect(responses.map((response) => response.status).sort()).toEqual([201, 409]);
+            const [[usuarios], [verificacoes]] = await Promise.all([
+                pool.query('SELECT id_usuario FROM Usuarios WHERE email = ?', [dados.email]),
+                pool.query('SELECT id_verificacao, verificado FROM EmailVerificacoes WHERE email = ?', [dados.email])
+            ]);
+            expect(usuarios).toHaveLength(1);
+            expect(verificacoes).toHaveLength(1);
+            expect(Number(verificacoes[0].verificado)).toBe(0);
+        });
     });
 
     describe('POST /api/auth/login', () => {
@@ -102,12 +136,13 @@ describe('Testes de Integração - Autenticação', () => {
                 });
 
             expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('token');
+            expect(response.body).not.toHaveProperty('token');
+            expect(response.body).toHaveProperty('csrf_token');
             expect(response.body).toHaveProperty('usuario');
             expect(response.body.usuario.tipo).toBe('ADMIN');
             expect(response.body.usuario.email).toBe('admin@teste.com');
 
-            authToken = response.body.token;
+            authToken = getSessionToken(response);
         });
 
         it('deve autenticar usuário PROFESSOR com sucesso', async () => {
@@ -119,7 +154,7 @@ describe('Testes de Integração - Autenticação', () => {
                 });
 
             expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('token');
+            expect(response.body).not.toHaveProperty('token');
             expect(response.body.usuario.tipo).toBe('PROFESSOR');
         });
 
@@ -132,7 +167,7 @@ describe('Testes de Integração - Autenticação', () => {
                 });
 
             expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('token');
+            expect(response.body).not.toHaveProperty('token');
             expect(response.body.usuario.tipo).toBe('ALUNO');
         });
 
@@ -158,6 +193,25 @@ describe('Testes de Integração - Autenticação', () => {
 
             expect(response.status).toBe(401);
         });
+
+        it('bloqueia login quando a verificação está pendente ou ausente', async () => {
+            await pool.query(
+                'UPDATE EmailVerificacoes SET verificado = 0 WHERE email = ?',
+                ['aluno@teste.com']
+            );
+            const pendente = await request(app)
+                .post('/api/auth/login')
+                .send({ email: ' ALUNO@TESTE.COM ', senha: testPassword });
+            expect(pendente.status).toBe(403);
+            expect(pendente.body.code).toBe('EMAIL_NAO_VERIFICADO');
+
+            await pool.query('DELETE FROM EmailVerificacoes WHERE email = ?', ['aluno@teste.com']);
+            const ausente = await request(app)
+                .post('/api/auth/login')
+                .send({ email: 'aluno@teste.com', senha: testPassword });
+            expect(ausente.status).toBe(403);
+            expect(ausente.body.code).toBe('EMAIL_NAO_VERIFICADO');
+        });
     });
 
     describe('GET /api/auth/me', () => {
@@ -170,7 +224,7 @@ describe('Testes de Integração - Autenticação', () => {
                     email: 'admin@teste.com',
                     senha: testPassword
                 });
-            authToken = loginResponse.body.token;
+            authToken = getSessionToken(loginResponse);
         });
 
         it('deve retornar dados do usuário autenticado', async () => {
@@ -242,17 +296,73 @@ describe('Testes de Integração - Autenticação', () => {
             await seedBasicData();
         });
 
-        it('deve gerar código de verificação de e-mail', async () => {
+        it('mantém resposta genérica e não desconfirma conta verificada', async () => {
+            const [[antes]] = await pool.query(
+                'SELECT codigo, verificado FROM EmailVerificacoes WHERE email = ?',
+                ['aluno@teste.com']
+            );
             const response = await request(app)
                 .post('/api/auth/enviar-codigo-verificacao')
                 .send({
                     email: 'aluno@teste.com'
                 });
 
-            expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('email');
+            expect(response.status).toBe(202);
+            expect(response.body).not.toHaveProperty('email');
             expect(response.body).not.toHaveProperty('codigo');
             expect(response.body).not.toHaveProperty('codigo_debug');
+            const [[depois]] = await pool.query(
+                'SELECT codigo, verificado FROM EmailVerificacoes WHERE email = ?',
+                ['aluno@teste.com']
+            );
+            expect(Number(depois.verificado)).toBe(1);
+            expect(depois.codigo).toBe(antes.codigo);
+        });
+
+        it('confirma código concorrentemente e o reenvio posterior não regride o estado', async () => {
+            const cadastro = await request(app)
+                .post('/api/usuarios')
+                .send({
+                    nome_completo: 'Fluxo Concorrente',
+                    cpf: '12121212121',
+                    email: 'fluxo.concorrente@teste.com',
+                    senha: testPassword
+                });
+            expect(cadastro.status).toBe(201);
+
+            const [[pendente]] = await pool.query(
+                'SELECT codigo, verificado FROM EmailVerificacoes WHERE email = ?',
+                ['fluxo.concorrente@teste.com']
+            );
+            expect(Number(pendente.verificado)).toBe(0);
+
+            const confirmacoes = await Promise.all([
+                request(app).post('/api/auth/verificar-codigo-email').send({
+                    email: 'fluxo.concorrente@teste.com', codigo: pendente.codigo
+                }),
+                request(app).post('/api/auth/verificar-codigo-email').send({
+                    email: 'fluxo.concorrente@teste.com', codigo: pendente.codigo
+                })
+            ]);
+            expect(confirmacoes.map((item) => item.status)).toEqual([200, 200]);
+
+            const reenvios = await Promise.all([
+                request(app).post('/api/auth/enviar-codigo-verificacao').send({ email: 'fluxo.concorrente@teste.com' }),
+                request(app).post('/api/auth/enviar-codigo-verificacao').send({ email: 'fluxo.concorrente@teste.com' })
+            ]);
+            expect(reenvios.map((item) => item.status)).toEqual([202, 202]);
+
+            const [[confirmado]] = await pool.query(
+                'SELECT codigo, verificado FROM EmailVerificacoes WHERE email = ?',
+                ['fluxo.concorrente@teste.com']
+            );
+            expect(Number(confirmado.verificado)).toBe(1);
+            expect(confirmado.codigo).toBe(pendente.codigo);
+
+            const login = await request(app)
+                .post('/api/auth/login')
+                .send({ email: 'fluxo.concorrente@teste.com', senha: testPassword });
+            expect(login.status).toBe(200);
         });
     });
 });

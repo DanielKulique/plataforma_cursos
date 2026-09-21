@@ -1,12 +1,13 @@
+import { authenticatedFetch } from './auth.js';
+
 export async function buscarQuestionarioDisponivel({
     idTurma,
     tipo,
-    token,
-    request = fetch
+    request = authenticatedFetch
 }) {
     const response = await request(
         `/api/turmas/${idTurma}/questionarios/disponivel?tipo=${encodeURIComponent(tipo)}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { credentials: 'same-origin' }
     );
     const body = await response.json().catch(() => ({}));
 

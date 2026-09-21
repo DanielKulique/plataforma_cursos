@@ -27,15 +27,17 @@
   font-size: var(--font-size-16);
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-body);
+  font-optical-sizing: auto;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
 
 :where(h1, h2, h3, h4, h5, h6) {
   color: var(--color-text);
-  font-family: var(--font-family-sans);
+  font-family: var(--font-family-display);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-heading);
+  font-optical-sizing: auto;
   text-wrap: balance;
 }
 
@@ -67,6 +69,11 @@
   text-decoration: none;
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.18em;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  color: var(--color-text);
 }
 
 :where(button, input, select, textarea) {
@@ -103,7 +110,7 @@ body[data-session-protected]:is(
 
 ::-webkit-scrollbar-thumb {
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-action) 40%, transparent);
+  background: color-mix(in srgb, var(--color-action) 58%, var(--color-background));
 }
 
 :where(button, input[type="button"], input[type="reset"], input[type="submit"]) {

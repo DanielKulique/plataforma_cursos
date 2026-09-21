@@ -26,8 +26,8 @@ criação da VM. Região/tamanho devem refletir disponibilidade da assinatura Az
 Após provisionar, usar `scripts/bootstrap_azure_vm.sh` apenas na VM nova.
 
 Criar `.env.production` somente na VM/secret storage, modo 0600. Gerar credenciais
-DB/JWT novas e preencher domínio, e-mail/Resend e dados reais. App/Caddy só devem
-iniciar após completar a configuração. Sem domínio definitivo não existe aceite HTTPS.
+DB/JWT novas. Enquanto domínio próprio e e-mail permanecem pendentes, usar o FQDN
+Azure real com HTTPS e `EMAIL_DELIVERY_ENABLED=false`.
 
 Todos os comandos usam os dois arquivos (Compose >= 2.24.4, suporte a `!override`):
 
@@ -57,17 +57,30 @@ Exigir segunda migração NO-OP e schema OK. O runner usa checksums, GET_LOCK e
 identidade. Não usar baseline em banco vazio nem alterar migrations históricas.
 
 ```bash
-dc run --rm --no-deps -e ALLOW_PRODUCTION_ADMIN_BOOTSTRAP=I_UNDERSTAND app npm run admin:bootstrap
+dc run --rm --no-deps -it \
+  -e ALLOW_PRODUCTION_USER_BOOTSTRAP=I_UNDERSTAND \
+  -e BOOTSTRAP_USER_NAME -e BOOTSTRAP_USER_EMAIL -e BOOTSTRAP_USER_ROLE \
+  app npm run user:bootstrap
 ```
 
-E-mail inicial: `danielricardokulique@gmail.com`. Nome, CPF e telefone são fornecidos
-pelo titular no ambiente seguro. O prompt de senha é oculto. Alternativa: montar
-arquivo 0600 e indicar `INITIAL_ADMIN_PASSWORD_FILE`. Nunca passar senha em argumento.
-O bootstrap recusa conflito de CPF/e-mail/papel, sem promoção silenciosa. O login
-mantém a confirmação normal de e-mail pelo produto.
+O prompt solicita e confirma a senha sem eco. A CLI não aceita senha em argumento,
+variável ou arquivo, gera somente o hash bcrypt e marca o e-mail da conta privilegiada
+como verificado para permitir acesso quando o serviço de e-mail está desligado. CPF e
+telefone são opcionais; o bootstrap recusa conflito de CPF/e-mail/papel e não promove
+contas silenciosamente.
 
-Cadastrar professor real pelo fluxo oficial e preencher carga horária/data confirmadas.
-Exportar as variáveis BOOTSTRAP no shell seguro e montar as fontes somente na importação:
+Para a primeira execução completa, a CLI coordenada solicita as duas senhas, cria
+ADMIN e PROFESSOR, importa conteúdo e valida login/cookie/CSRF e escopo do professor:
+
+```bash
+dc run --rm --no-deps -it \
+  -v /opt/plataforma-cursos/imports/turmaInicial:/imports:ro \
+  -e ALLOW_PRODUCTION_USER_BOOTSTRAP=I_UNDERSTAND \
+  -e ALLOW_PRODUCTION_CONTENT_BOOTSTRAP=I_UNDERSTAND \
+  app npm run production:initial-access -- --materials=/imports
+```
+
+Para repetir apenas o import idempotente, montar as fontes e executar:
 
 ```bash
 dc run --rm --no-deps \
@@ -83,7 +96,7 @@ tentativas fictícias na turma real. O importador deixa avaliações indisponív
 
 ## Aceite, backup e rollback
 
-Após configurar domínio/HTTPS e e-mail, iniciar `dc up -d app caddy`; validar landing,
+Após configurar o FQDN/HTTPS temporário, iniciar `dc up -d app caddy`; validar landing,
 healthz, readyz, login/CSRF, nove aulas, PDF privado autorizado e negação sem sessão,
 links/vídeos e avaliações. Resolver pendências e revisar manualmente antes da abertura.
 
@@ -101,5 +114,6 @@ Registrar release anterior antes de atualizar. Rollback de código exige compati
 com schema; migrations são FORWARD-ONLY. Se necessário, restaurar conjunto coordenado
 em manutenção, nunca usar migration down.
 
-Status `PRODUCTION_RELEASE_PARTIAL` até concluir domínio/HTTPS, e-mail, bootstrap real,
-smoke, backup GOOD/offsite e revisão pedagógica.
+Status `PRODUCTION_INITIAL_ACCESS_READY` após bootstrap, smoke e backup GOOD/offsite.
+Manter `PUBLIC_COURSE_LAUNCH_PENDING` enquanto a turma estiver FECHADA e houver
+materiais, domínio próprio, e-mail ou Teste Final pendentes.

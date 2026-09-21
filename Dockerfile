@@ -25,7 +25,7 @@ COPY --chown=node:node scripts/migrate_database.js scripts/schema_contract.js \
   scripts/smoke_academic_completion_staging.js scripts/certificate_migration_preflight.js \
   scripts/smoke_certificate_versioning_staging.js scripts/smoke_enrollment_lifecycle_staging.js ./scripts/
 COPY --chown=node:node scripts/lib ./scripts/lib
-COPY --chown=node:node scripts/production_bootstrap.js ./scripts/
+COPY --chown=node:node scripts/production_bootstrap.js scripts/production_initial_access.js ./scripts/
 COPY --chown=node:node production-content/manifest.json ./production-content/manifest.json
 COPY --chown=node:node mysql ./mysql
 RUN install -d -o node -g node -m 0700 /app/storage/materials /app/storage/certificates

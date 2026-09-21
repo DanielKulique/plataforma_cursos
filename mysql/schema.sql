@@ -17,7 +17,7 @@ CREATE TABLE `environment_identity` (
 CREATE TABLE `Usuarios` (
   `id_usuario` INT NOT NULL AUTO_INCREMENT,
   `nome_completo` VARCHAR(255) NOT NULL,
-  `cpf` VARCHAR(11) NOT NULL,
+  `cpf` VARCHAR(11) NULL,
   `email` VARCHAR(255) NOT NULL,
   `senha` VARCHAR(255) NOT NULL COMMENT 'Hash da senha; nunca armazenar texto puro.',
   `telefone` VARCHAR(20) NULL,

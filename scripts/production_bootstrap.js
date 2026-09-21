@@ -15,7 +15,13 @@ function ensure(condition, message) {
 
 function validateManifest(manifest) {
     ensure(manifest.version === 1, 'Versão de manifesto desconhecida.');
+    ensure(manifest.course.name === 'Plágio: não copie essa ideia 4.0', 'Manifesto deve usar o nome oficial do curso 4.0.');
+    ensure(manifest.course.hours === 6, 'Manifesto deve registrar carga horária oficial de 6 horas.');
     ensure(manifest.class.status === 'FECHADA', 'Bootstrap exige turma FECHADA.');
+    ensure(manifest.class.teacherEmail === 'joao@utfpr.edu.br', 'Professor responsável divergente.');
+    ensure(manifest.class.startDate === '2026-09-30' && manifest.class.endDate === null, 'Datas oficiais da turma divergentes.');
+    ensure(manifest.users?.admin?.email === manifest.adminEmail && manifest.users.admin.role === 'ADMIN', 'Administrador oficial divergente.');
+    ensure(manifest.users?.teacher?.email === manifest.class.teacherEmail && manifest.users.teacher.role === 'PROFESSOR', 'Professor oficial divergente.');
     ensure(manifest.lessons.length === 9, 'Manifesto exige exatamente 9 aulas.');
     const orders = new Set();
     manifest.lessons.forEach((lesson, index) => {
@@ -113,12 +119,12 @@ async function inspectMaterials(manifest, materialsDir) {
 
 function report(manifest, config, materials) {
     return {
-        status: 'PRODUCTION_RELEASE_PARTIAL',
+        status: 'PRODUCTION_CONTENT_PLAN',
         configurationPending: [!config.hours && 'CARGA_HORARIA', !config.teacherEmail && 'PROFESSOR', !config.startDate && 'DATA_INICIO'].filter(Boolean),
         lessons: manifest.lessons.map((lesson) => ({
             order: lesson.order, title: lesson.title,
             contents: lesson.contents.map((item) => ({ type: item.type, title: item.title,
-                status: materials.get(item.order)?.status || 'URL_CONFIGURED',
+                status: item.publicationStatus || materials.get(item.order)?.status || 'URL_CONFIGURED',
                 ...(materials.get(item.order)?.code ? { code: materials.get(item.order).code } : {}),
                 ...(materials.get(item.order)?.sha256 ? { sha256: materials.get(item.order).sha256 } : {}) }))
         })),
@@ -172,9 +178,14 @@ async function applyBootstrap({ manifest, config, materials, env = process.env, 
         locked = true;
         await connection.beginTransaction();
         const [[admin]] = await connection.query('SELECT * FROM Usuarios WHERE email = ? FOR UPDATE', [manifest.adminEmail]);
-        ensure(admin?.tipo === 'ADMIN', 'Administrador inicial ausente ou com papel incompatível. Execute admin:bootstrap.');
+        ensure(admin?.tipo === 'ADMIN', 'Administrador inicial ausente ou com papel incompatível. Execute user:bootstrap.');
         const [[teacher]] = await connection.query('SELECT * FROM Usuarios WHERE email = ? FOR UPDATE', [config.teacherEmail]);
         ensure(teacher?.tipo === 'PROFESSOR', 'Professor responsável deve existir com papel PROFESSOR.');
+        const [[legacyCourse]] = await connection.query(
+            'SELECT COUNT(*) AS total FROM Cursos WHERE nome_curso = ? FOR UPDATE',
+            ['Plágio não copie essa ideia 3.0']
+        );
+        ensure(Number(legacyCourse.total) === 0, 'Curso legado 3.0 encontrado; bootstrap 4.0 recusado.');
         let [[course]] = await connection.query('SELECT * FROM Cursos WHERE nome_curso = ? FOR UPDATE', [manifest.course.name]);
         if (!course) {
             ensure(config.hours, 'Confirme a carga horária antes de criar o curso.');

@@ -1,5 +1,5 @@
 {
-  "expectedVersion": 13,
+  "expectedVersion": 14,
   "generatedFrom": "mysql/schema.sql + migrations on disposable MySQL 8.4",
   "tables": {
     "AnalisesContextuais": {
@@ -3489,7 +3489,7 @@
           "name": "cpf",
           "ordinal": 3,
           "type": "varchar(11)",
-          "nullable": false,
+          "nullable": true,
           "default": null,
           "extra": "",
           "generationExpression": "",

@@ -14,7 +14,6 @@ services:
       APP_RELEASE_SHA: ${APP_RELEASE_SHA:?Defina o SHA confirmado no GitHub}
       APP_ENV: production
       DETECTOR_ENABLED: 'false'
-      INITIAL_ADMIN_PASSWORD: ''
 volumes:
   mysql_data:
     name: plataforma_cursos_production_mysql84

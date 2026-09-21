@@ -1,0 +1,2 @@
+ALTER TABLE `Usuarios`
+  MODIFY COLUMN `cpf` VARCHAR(11) NULL;

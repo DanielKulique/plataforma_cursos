@@ -31,8 +31,8 @@ describe('manifesto de produção', () => {
         altered.assessments[1].active = true;
         expect(() => validateManifest(altered)).toThrow('indisponíveis');
     });
-    test('não inventa carga horária, datas ou professor e recusa datas impossíveis', () => {
-        expect(configuration(manifest, {})).toEqual({ hours: null, teacherEmail: null, startDate: null, endDate: null });
+    test('usa carga horária, datas e professor oficiais e recusa datas impossíveis', () => {
+        expect(configuration(manifest, {})).toEqual({ hours: 6, teacherEmail: 'joao@utfpr.edu.br', startDate: '2026-09-30', endDate: null });
         expect(() => configuration(manifest, { BOOTSTRAP_START_DATE: '2026-02-30' })).toThrow('Data inválida');
     });
     test('recusa staging e MySQL nativo', () => {

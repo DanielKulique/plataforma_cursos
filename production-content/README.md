@@ -22,19 +22,20 @@ SHA-256 no manifesto. Não são os 11 PDFs didáticos e não devem ser publicado
 alunos: um contém respostas. Nomes com `(1)` no texto de referência correspondem
 aos arquivos entregues sem esse sufixo.
 
-## Pendências de publicação
+## Configuração oficial e pendências de publicação
 
-- Carga horária: 6 horas é uma indicação do Simulado, pendente de confirmação oficial.
-- Professor e data inicial: obrigatórios no schema; não usar administrador ou data
-  fictícia. Data final pode ser nula conforme o modelo existente.
-- Administrador: nome completo, CPF, telefone e senha privada ainda necessários.
+- Curso: `Plágio: não copie essa ideia 4.0`, com 6 horas.
+- Turma: `Turma 2026/2`, FECHADA, início em 30/09/2026 e data final nula.
+- Administrador: Daniel Kulique (`danielricardokulique@gmail.com`).
+- Professor: João Paulo Aires (`joao@utfpr.edu.br`).
+- CPF e telefone não foram fornecidos e permanecem nulos nas contas privilegiadas;
+  nenhum dado pessoal é inventado. As senhas são definidas somente em prompt oculto.
 - Os 11 PDFs e as duas planilhas foram recuperados pelo conector autenticado Drive
   em 21/09/2026, sem conversão; veja o [inventário com hashes](material-inventory.json).
   Dez PDFs passaram no pipeline oficial. O checklist UKRIO foi recusado com
   `PDF_CRIPTOGRAFADO`; permanece original e pendente, sem remoção da proteção.
-- XLSX privado não é suportado. Os itens permanecem no manifesto, sem conversão.
-  Solução mínima proposta: após aprovação e validação de acesso, usar links aos
-  arquivos originais do Drive. Suporte privado requer implementação própria.
+- Os dois XLSX serão links externos, mas as URLs públicas reais ainda não foram
+  fornecidas (`XLSX_EXTERNAL_URL_PENDING`). Nenhum link falso é publicado.
 - YouTube respondeu ao oEmbed dos oito vídeos. Os títulos das aulas 1 e 2 parecem
   invertidos em relação aos links fornecidos. Mantida a associação recebida até
   confirmação. Veja a [validação datada](link-validation.json).
@@ -74,10 +75,9 @@ O diretório deve conter os três PDFs-fonte originais e os materiais disponíve
 os nomes do manifesto. A prévia confere fontes por SHA-256 e executa a validação
 estrutural oficial, listando arquivos ausentes, incompatíveis ou recusados.
 
-Configure `BOOTSTRAP_COURSE_HOURS`, `BOOTSTRAP_TEACHER_EMAIL`, `BOOTSTRAP_START_DATE`
-e, se fornecida, `BOOTSTRAP_END_DATE` no ambiente seguro. O professor deve existir
-como PROFESSOR e o administrador como ADMIN. Curso existente preserva carga horária;
-valor explicitamente divergente é recusado.
+Os dados oficiais de curso, turma e usuários estão no manifesto. O professor deve
+existir como PROFESSOR e o administrador como ADMIN. Curso existente preserva carga
+horária; valor explicitamente divergente é recusado.
 
 ```bash
 ALLOW_PRODUCTION_CONTENT_BOOTSTRAP=I_UNDERSTAND \

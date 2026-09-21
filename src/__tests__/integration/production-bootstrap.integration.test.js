@@ -10,14 +10,13 @@ const materials = new Map();
 let storageDir;
 let oldStorageDir;
 let pool;
-const config = { hours: 6, teacherEmail: 'professor@teste.com', startDate: '2026-09-19', endDate: null };
+const config = { hours: 6, teacherEmail: 'joao@utfpr.edu.br', startDate: '2026-09-30', endDate: null };
 
 beforeAll(async () => {
     pool = await initTestPool();
     oldStorageDir = process.env.MATERIAL_STORAGE_DIR;
     storageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'production-bootstrap-test-'));
     process.env.MATERIAL_STORAGE_DIR = storageDir;
-    manifest.adminEmail = 'admin@teste.com';
     const buffer = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'valid-material.pdf'));
     const sha256 = require('crypto').createHash('sha256').update(buffer).digest('hex');
     for (const item of manifest.lessons.flatMap((l) => l.contents)) {
@@ -25,7 +24,12 @@ beforeAll(async () => {
         if (item.type === 'XLSX') materials.set(item.order, { status: 'UNSUPPORTED_PRIVATE_XLSX' });
     }
 });
-beforeEach(async () => { await clearDatabase(); await seedBasicData(); });
+beforeEach(async () => {
+    await clearDatabase();
+    await seedBasicData();
+    await pool.query("UPDATE Usuarios SET email = ? WHERE tipo = 'ADMIN'", [manifest.adminEmail]);
+    await pool.query("UPDATE Usuarios SET email = ? WHERE tipo = 'PROFESSOR'", [manifest.class.teacherEmail]);
+});
 afterAll(async () => {
     if (oldStorageDir === undefined) delete process.env.MATERIAL_STORAGE_DIR;
     else process.env.MATERIAL_STORAGE_DIR = oldStorageDir;

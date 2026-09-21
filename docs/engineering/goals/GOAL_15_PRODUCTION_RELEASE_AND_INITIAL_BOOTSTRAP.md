@@ -24,6 +24,11 @@ e `git diff --check`. Ambas as auditorias apontaram zero vulnerabilidades.
 Integração usou exclusivamente MySQL 8.4 Docker em `127.0.0.1:33307`; as credenciais
 foram obtidas do container local, sem impressão e sem reutilização em produção.
 
+O primeiro CI remoto revelou dois testes de arquivos `.env` que herdavam variáveis
+do runner. O isolamento dessas fixtures foi corrigido sem mudar a precedência de
+configuração do runtime. O serviço MySQL do CI passou a publicar 33307, alinhado ao
+ambiente local e ao bootstrap, mantendo 3306 somente dentro do container.
+
 O teste de bootstrap demonstra: nove aulas, 23 conteúdos suportados quando os PDFs
 estão presentes, 11 PDFs no pipeline privado, 11 questões confirmadas, avaliações
 inativas, turma fechada, repetição sem duplicar arquivos/registros, recusa de conflito

@@ -7,7 +7,7 @@ const {
     CI_CONFIRMATION,
     assertDatabaseConnectionEnvironment
 } = require('../config/database-connection');
-const { loadEnvironment, DATABASE_CONNECTION_KEYS } = require('../config/loadEnvironment');
+const { DATABASE_CONNECTION_KEYS } = require('../config/loadEnvironment');
 const { assertDatabaseIdentity } = require('../config/database-identity');
 const { migrate } = require('../../scripts/migrate_database');
 const { setupDatabase } = require('../../scripts/setup_database');
@@ -64,8 +64,17 @@ describe('configuração fail-closed do banco', () => {
 
 describe('.env.test autocontido', () => {
     const original = {};
+    let loadEnvironment;
     beforeEach(() => {
-        for (const key of DATABASE_CONNECTION_KEYS) original[key] = process.env[key];
+        for (const key of DATABASE_CONNECTION_KEYS) {
+            original[key] = process.env[key];
+            delete process.env[key];
+        }
+        // The loader intentionally snapshots startup variables. File-only tests must
+        // import it after clearing the runner's explicit DB configuration.
+        jest.isolateModules(() => {
+            ({ loadEnvironment } = require('../config/loadEnvironment'));
+        });
     });
     afterEach(() => {
         for (const [key, value] of Object.entries(original)) {

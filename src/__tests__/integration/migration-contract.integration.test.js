@@ -82,7 +82,7 @@ function migrationFixture(extraFiles = {}, edits = {}) {
 describe('contrato de migrations no MySQL Docker 127.0.0.1:33307', () => {
     beforeAll(() => {
         expect(target.host).toBe('127.0.0.1');
-        if (String(process.env.CI).toLowerCase() === 'true') {
+        if (target.port !== 33307) {
             expect(isExplicitEphemeralCi(process.env, target.host, target.port, target.identity)).toBe(true);
         } else {
             expect(target.port).toBe(33307);

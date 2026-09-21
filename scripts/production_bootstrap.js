@@ -34,6 +34,7 @@ function validateManifest(manifest) {
     });
     ensure(manifest.assessments.length === 2, 'Esperados Simulado e Teste Final.');
     manifest.assessments.forEach((assessment, index) => {
+        ensure(assessment.description === undefined || (typeof assessment.description === 'string' && assessment.description.length <= 255), 'Descrição de avaliação inválida.');
         ensure(assessment.type === (index === 0 ? 'EXERCICIO' : 'PROVA') && assessment.final === (index === 1), 'Tipo de avaliação inválido.');
         ensure(assessment.active === false && assessment.lessonOrder === 9, 'Avaliações iniciais devem permanecer indisponíveis na aula 9.');
         const questionOrders = new Set();
@@ -212,9 +213,9 @@ async function applyBootstrap({ manifest, config, materials, env = process.env, 
         for (const assessment of manifest.assessments) {
             const expected = { tipo: assessment.type, ativo: 0, prova_final: assessment.final ? 1 : null, id_modulo: modules.get(9), ordem: assessment.order };
             let [[quiz]] = await connection.query('SELECT * FROM Questionarios WHERE id_turma = ? AND titulo = ? FOR UPDATE', [group.id_turma, assessment.title]);
-            if (quiz) same(quiz, expected, assessment.title);
+            if (quiz) same(quiz, { ...expected, descricao: assessment.description || '' }, assessment.title);
             else {
-                const [result] = await connection.query('INSERT INTO Questionarios (id_curso, id_turma, titulo, descricao, tipo, ativo, prova_final, id_modulo, ordem) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [course.id_curso, group.id_turma, assessment.title, '', ...Object.values(expected)]);
+                const [result] = await connection.query('INSERT INTO Questionarios (id_curso, id_turma, titulo, descricao, tipo, ativo, prova_final, id_modulo, ordem) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [course.id_curso, group.id_turma, assessment.title, assessment.description || '', ...Object.values(expected)]);
                 quiz = { id_questionario: result.insertId };
             }
             const [[history]] = await connection.query('SELECT COUNT(*) AS total FROM Q_Tentativas WHERE id_questionario = ?', [quiz.id_questionario]);

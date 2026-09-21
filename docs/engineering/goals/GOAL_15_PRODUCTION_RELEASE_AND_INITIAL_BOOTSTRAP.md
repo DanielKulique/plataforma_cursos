@@ -28,6 +28,9 @@ O primeiro CI remoto revelou dois testes de arquivos `.env` que herdavam variáv
 do runner. O isolamento dessas fixtures foi corrigido sem mudar a precedência de
 configuração do runtime. O serviço MySQL do CI passou a publicar 33307, alinhado ao
 ambiente local e ao bootstrap, mantendo 3306 somente dentro do container.
+Os testes de concorrência também exigem SELECT em `performance_schema.data_lock_waits`:
+a permissão foi adicionada somente ao usuário descartável do CI, sem ampliar a conta
+de produção. A descrição introdutória original do Simulado foi preservada no manifesto.
 
 O teste de bootstrap demonstra: nove aulas, 23 conteúdos suportados quando os PDFs
 estão presentes, 11 PDFs no pipeline privado, 11 questões confirmadas, avaliações

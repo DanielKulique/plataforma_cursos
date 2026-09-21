@@ -234,6 +234,7 @@
   "assessments": [
     {
       "title": "Simulado",
+      "description": "Após assistir a todos os encontros, vamos verificar o seu aprendizado antes do Teste Final.",
       "type": "EXERCICIO",
       "final": false,
       "lessonOrder": 9,

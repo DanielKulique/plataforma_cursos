@@ -81,6 +81,8 @@ jobs:
             });
             try {
               await connection.query('SET GLOBAL log_bin_trust_function_creators = 1');
+              // Only this disposable CI account observes lock waits in concurrency tests.
+              await connection.query("GRANT SELECT ON performance_schema.data_lock_waits TO 'appuser'@'%'");
             } finally {
               await connection.end();
             }

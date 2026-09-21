@@ -71,7 +71,7 @@ function configuration(manifest, env) {
     return config;
 }
 
-function inspectMaterials(manifest, materialsDir) {
+async function inspectMaterials(manifest, materialsDir) {
     const root = fs.realpathSync(materialsDir);
     const materials = new Map();
     for (const item of manifest.lessons.flatMap((l) => l.contents).filter((c) => c.file)) {
@@ -86,7 +86,19 @@ function inspectMaterials(manifest, materialsDir) {
         const buffer = fs.readFileSync(real);
         const sha256 = hash(buffer);
         if (item.sha256) ensure(sha256 === item.sha256, 'Checksum do material diverge do manifesto.');
-        materials.set(item.order, { status: item.type === 'XLSX' ? 'UNSUPPORTED_PRIVATE_XLSX' : 'AVAILABLE', buffer, sha256 });
+        const material = { status: item.type === 'XLSX' ? 'UNSUPPORTED_PRIVATE_XLSX' : 'AVAILABLE', buffer, sha256 };
+        if (item.type === 'PDF') {
+            try {
+                await require('../src/api/services/material-upload.service').prepararArquivoPdf({
+                    originalname: item.file, size: buffer.length, buffer
+                });
+            } catch (error) {
+                if (error.status !== 422) throw error;
+                material.status = 'PDF_REJECTED';
+                material.code = error.code;
+            }
+        }
+        materials.set(item.order, material);
     }
     // Source forms and answer keys are evidence only, never learner materials.
     for (const source of manifest.sources) {
@@ -107,6 +119,7 @@ function report(manifest, config, materials) {
             order: lesson.order, title: lesson.title,
             contents: lesson.contents.map((item) => ({ type: item.type, title: item.title,
                 status: materials.get(item.order)?.status || 'URL_CONFIGURED',
+                ...(materials.get(item.order)?.code ? { code: materials.get(item.order).code } : {}),
                 ...(materials.get(item.order)?.sha256 ? { sha256: materials.get(item.order).sha256 } : {}) }))
         })),
         assessments: manifest.assessments.map((assessment) => ({
@@ -265,7 +278,7 @@ async function main() {
     ensure(materialsDir, 'Informe --materials=/diretorio/privado.');
     const manifest = validateManifest(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
     const config = configuration(manifest, process.env);
-    const materials = inspectMaterials(manifest, materialsDir);
+    const materials = await inspectMaterials(manifest, materialsDir);
     const result = args.includes('--apply') ? await applyBootstrap({ manifest, config, materials }) : { ...report(manifest, config, materials), applied: false };
     console.log(JSON.stringify(result, null, 2));
 }

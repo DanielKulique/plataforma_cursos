@@ -28,16 +28,19 @@ aos arquivos entregues sem esse sufixo.
 - Professor e data inicial: obrigatórios no schema; não usar administrador ou data
   fictícia. Data final pode ser nula conforme o modelo existente.
 - Administrador: nome completo, CPF, telefone e senha privada ainda necessários.
-- Os 11 PDFs didáticos e as duas planilhas não foram entregues localmente. O acesso
-  automatizado ao Drive não recuperou arquivos; o download da cartilha levou ao login.
+- Os 11 PDFs e as duas planilhas foram recuperados pelo conector autenticado Drive
+  em 21/09/2026, sem conversão; veja o [inventário com hashes](material-inventory.json).
+  Dez PDFs passaram no pipeline oficial. O checklist UKRIO foi recusado com
+  `PDF_CRIPTOGRAFADO`; permanece original e pendente, sem remoção da proteção.
 - XLSX privado não é suportado. Os itens permanecem no manifesto, sem conversão.
   Solução mínima proposta: após aprovação e validação de acesso, usar links aos
   arquivos originais do Drive. Suporte privado requer implementação própria.
 - YouTube respondeu ao oEmbed dos oito vídeos. Os títulos das aulas 1 e 2 parecem
   invertidos em relação aos links fornecidos. Mantida a associação recebida até
   confirmação. Veja a [validação datada](link-validation.json).
-- UTFPR, Plagiarism Detector, DupliChecker e Drive não puderam ser validados por
-  acesso automatizado; isso não prova que as URLs estejam quebradas.
+- UTFPR, Plagiarism Detector e DupliChecker não puderam ser validados por acesso
+  automatizado; isso não prova que as URLs estejam quebradas. O acesso autenticado
+  aos arquivos do Drive foi confirmado posteriormente.
 
 ## Avaliações e fontes
 
@@ -68,8 +71,8 @@ npm run production:bootstrap -- --materials=/diretorio/privado/turmaInicial
 ```
 
 O diretório deve conter os três PDFs-fonte originais e os materiais disponíveis com
-os nomes do manifesto. A prévia confere fontes por SHA-256 e lista faltas. A validação
-estrutural oficial dos PDFs didáticos ocorre antes da aplicação.
+os nomes do manifesto. A prévia confere fontes por SHA-256 e executa a validação
+estrutural oficial, listando arquivos ausentes, incompatíveis ou recusados.
 
 Configure `BOOTSTRAP_COURSE_HOURS`, `BOOTSTRAP_TEACHER_EMAIL`, `BOOTSTRAP_START_DATE`
 e, se fornecida, `BOOTSTRAP_END_DATE` no ambiente seguro. O professor deve existir
@@ -86,6 +89,6 @@ Valida ambiente, nome do DB, identidade persistente e MySQL 8.4. Recusa staging 
 MySQL do host em 3306. Usa GET_LOCK e transação; recusa matrículas/histórico existente.
 Reexecução compara dados/gabaritos/hashes sem sobrescrever divergências.
 PDFs presentes usam `prepararArquivoPdf`, staging, SHA-256, publicação privada,
-metadata e compensação oficial. Arquivos ausentes/XLSX ficam pendentes.
+metadata e compensação oficial. Arquivos ausentes/XLSX e PDFs recusados ficam pendentes.
 
 Veja o [runbook de produção](../docs/operations/production-release.md).

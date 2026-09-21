@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-09-21T17:44:54.769Z",
+  "results": [
+    {
+      "file": "Cartilha Antiplágio.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "2017 - Passos para verificar se há plágio no texto.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "Como reconhecer o plágio - baseado no material da Indiana University.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "2010 - Recomendações OAB-CE.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "2013 - Rigor e integridade na condução em Ciências - Academia Brasileira de Ciências.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "UKRIO-Recommended-Checklist-for-Researchers.pdf",
+      "status": "REJECTED",
+      "code": "PDF_CRIPTOGRAFADO",
+      "message": "PDF protegido por senha não é suportado."
+    },
+    {
+      "file": "2010 - Declaração de Singapura.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "2011 - CNPq - Relatorio-Comissao- Integridade-do-CNPq.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "2012 - Declaração conjunta II BRISPE.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "2014 - FAPESP-Codigo de Boas Praticas Cientificas.pdf",
+      "status": "VALIDATED"
+    },
+    {
+      "file": "2007 - ORI Introduction to the Responsible Conduct of Research.pdf",
+      "status": "VALIDATED"
+    }
+  ]
+}

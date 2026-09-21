@@ -1,0 +1,97 @@
+{
+  "retrievedAt": "2026-09-21T17:44:43.774660+00:00",
+  "method": "Authenticated Google Drive connector; original bytes; no conversion",
+  "files": [
+    {
+      "file": "Cartilha Antiplágio.pdf",
+      "type": "PDF",
+      "sizeBytes": 685555,
+      "sha256": "b1512d516a22b7ff90889712de9013206327e58bbafa4a78e8ed0a3b886ff40c",
+      "sourceUrl": "https://drive.google.com/file/d/17vnYTANCUxYnkYfO3Q0bNgVPHlgVk9Ec/view"
+    },
+    {
+      "file": "2017 - Passos para verificar se há plágio no texto.pdf",
+      "type": "PDF",
+      "sizeBytes": 66125,
+      "sha256": "20d4d111004fea430af3d14ae238c7e35b95e931fd48ef8a0b95658fda1fe4da",
+      "sourceUrl": "https://drive.google.com/file/d/1abkbsyhpeivK-NJDT24-yvJXQIESBN6q/view"
+    },
+    {
+      "file": "Como reconhecer o plágio - baseado no material da Indiana University.pdf",
+      "type": "PDF",
+      "sizeBytes": 152499,
+      "sha256": "bb4719f8d1565c2cdd703e53492e70ade56b794cad6f6308d9fa70ddaa8d6163",
+      "sourceUrl": "https://drive.google.com/file/d/1oLFg7Jyuexgb_VIusivL2iFTAIshPYvH/view"
+    },
+    {
+      "file": "2010 - Recomendações OAB-CE.pdf",
+      "type": "PDF",
+      "sizeBytes": 642857,
+      "sha256": "2e23824623f01d2c24db17777cb6b14a6399d7630eb70e34824a9384022f201a",
+      "sourceUrl": "https://drive.google.com/file/d/1rutTJPcyPzXXBPgZnMPE4YMzzF39gvV7/view"
+    },
+    {
+      "file": "2013 - Rigor e integridade na condução em Ciências - Academia Brasileira de Ciências.pdf",
+      "type": "PDF",
+      "sizeBytes": 552262,
+      "sha256": "03a476a836e92c0e942c5378c516af6010fbb8765d495a1c361a9d24a313927a",
+      "sourceUrl": "https://drive.google.com/file/d/1WdD7g4CvvIqMQ1Strg5jlxCGqfEsQWN7/view"
+    },
+    {
+      "file": "Check-list para pesquisadores - baseado no material do UKRIO.xlsx",
+      "type": "XLSX",
+      "sizeBytes": 70466,
+      "sha256": "ec8db4287855c1473e463885c523e1774f888977f26586264ed4c17dfbaf1144",
+      "sourceUrl": "https://drive.google.com/file/d/10owrij1ckyzqCKwt9IGdQGtcAM2Dp4FP/view"
+    },
+    {
+      "file": "Modelo de Fichamento de Trabalhos.xlsx",
+      "type": "XLSX",
+      "sizeBytes": 94135,
+      "sha256": "7585ef1543e6905a2ea59f4cbd0373327967ca31be6ad4103653513e46f6896f",
+      "sourceUrl": "https://drive.google.com/file/d/13MhbteIyV96Dfr3tmHHdOYLOEaIEm9Vd/view"
+    },
+    {
+      "file": "UKRIO-Recommended-Checklist-for-Researchers.pdf",
+      "type": "PDF",
+      "sizeBytes": 25722,
+      "sha256": "1c4069a6a813f33ffcda0f86b5db2fce3a8ed1bf7e53b9789d5e13b7e50f2d26",
+      "sourceUrl": "https://drive.google.com/file/d/1MIaRbl3Md9-ngDlCNT63M3W0zKA7YHQA/view"
+    },
+    {
+      "file": "2010 - Declaração de Singapura.pdf",
+      "type": "PDF",
+      "sizeBytes": 67143,
+      "sha256": "30746d985fa4a1583ac22f137bb21e4c8bb939b61d40ca17c4386b2621c022e6",
+      "sourceUrl": "https://drive.google.com/file/d/1VlvNpX7Gp-s6AAzoBV4ALo6C4mkqqVHN/view"
+    },
+    {
+      "file": "2011 - CNPq - Relatorio-Comissao- Integridade-do-CNPq.pdf",
+      "type": "PDF",
+      "sizeBytes": 97155,
+      "sha256": "287ccca4febd188757dde80adb423187767b4dd131c208554400adcf1cb89788",
+      "sourceUrl": "https://drive.google.com/file/d/19OPeWiMWAsWUifvDrx3oksJ05vtWPTdU/view"
+    },
+    {
+      "file": "2012 - Declaração conjunta II BRISPE.pdf",
+      "type": "PDF",
+      "sizeBytes": 347392,
+      "sha256": "e3356b2a6ac3364c64f0881a5a04ab43bbaf77de6971261c989de3b3c19f8ad8",
+      "sourceUrl": "https://drive.google.com/file/d/1iyKoVEViHixBLoV-2Uy_qnjEA9a5Rxhx/view"
+    },
+    {
+      "file": "2014 - FAPESP-Codigo de Boas Praticas Cientificas.pdf",
+      "type": "PDF",
+      "sizeBytes": 397375,
+      "sha256": "1da67d6e4666137dc22353fa585469f1a1c0935acb68ea66926b27e9e847f248",
+      "sourceUrl": "https://drive.google.com/file/d/1iW7sls32SsarTPf70nHWToThJCoj9lGJ/view"
+    },
+    {
+      "file": "2007 - ORI Introduction to the Responsible Conduct of Research.pdf",
+      "type": "PDF",
+      "sizeBytes": 5773340,
+      "sha256": "5b6b4b05a23c557d2a0f76069469587adefe182267a9cc119f842f5a28224af0",
+      "sourceUrl": "https://drive.google.com/file/d/1nR8gzGGmMPIIJCRyW0cHtkmKl3-AdlYz/view"
+    }
+  ]
+}

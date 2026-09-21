@@ -1,9 +1,22 @@
 'use strict';
 
 const manifest = require('../../production-content/manifest.json');
-const { validateManifest, importableQuestion, configuration, assertTarget } = require('../../scripts/production_bootstrap');
+const { validateManifest, importableQuestion, configuration, assertTarget, inspectMaterials } = require('../../scripts/production_bootstrap');
 
 describe('manifesto de produção', () => {
+    test('prévia mantém PDF criptografado pendente sem alterar o original', async () => {
+        const fs = require('fs');
+        const path = require('path');
+        const root = fs.mkdtempSync(path.join(require('os').tmpdir(), 'bootstrap-rejected-'));
+        try {
+            const bytes = fs.readFileSync(path.join(__dirname, 'fixtures', 'encrypted-material.pdf'));
+            fs.writeFileSync(path.join(root, 'protected.pdf'), bytes);
+            const input = { sources: [], lessons: [{ contents: [{ file: 'protected.pdf', type: 'PDF', order: 1 }] }] };
+            const result = await inspectMaterials(input, root);
+            expect(result.get(1)).toMatchObject({ status: 'PDF_REJECTED', code: 'PDF_CRIPTOGRAFADO' });
+            expect(fs.readFileSync(path.join(root, 'protected.pdf'))).toEqual(bytes);
+        } finally { fs.rmSync(root, { recursive: true, force: true }); }
+    });
     test('preserva as nove aulas e só permite questões confirmadas com pontos conhecidos', () => {
         expect(validateManifest(manifest)).toBe(manifest);
         expect(manifest.assessments[0].questions.filter(importableQuestion)).toHaveLength(11);

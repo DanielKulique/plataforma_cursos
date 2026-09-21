@@ -35,7 +35,8 @@
           "title": "Cartilha Antiplágio",
           "file": "Cartilha Antiplágio.pdf",
           "sourceUrl": "https://drive.google.com/file/d/17vnYTANCUxYnkYfO3Q0bNgVPHlgVk9Ec/view",
-          "order": 3
+          "order": 3,
+          "sha256": "b1512d516a22b7ff90889712de9013206327e58bbafa4a78e8ed0a3b886ff40c"
         }
       ]
     },
@@ -54,7 +55,8 @@
           "title": "Como verificar se há plágio no texto?",
           "file": "2017 - Passos para verificar se há plágio no texto.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1abkbsyhpeivK-NJDT24-yvJXQIESBN6q/view",
-          "order": 5
+          "order": 5,
+          "sha256": "20d4d111004fea430af3d14ae238c7e35b95e931fd48ef8a0b95658fda1fe4da"
         }
       ]
     },
@@ -73,14 +75,16 @@
           "title": "Como reconhecer o plágio?",
           "file": "Como reconhecer o plágio - baseado no material da Indiana University.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1oLFg7Jyuexgb_VIusivL2iFTAIshPYvH/view",
-          "order": 7
+          "order": 7,
+          "sha256": "bb4719f8d1565c2cdd703e53492e70ade56b794cad6f6308d9fa70ddaa8d6163"
         },
         {
           "type": "PDF",
           "title": "Recomendações OAB — Combate ao plágio",
           "file": "2010 - Recomendações OAB-CE.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1rutTJPcyPzXXBPgZnMPE4YMzzF39gvV7/view",
-          "order": 8
+          "order": 8,
+          "sha256": "2e23824623f01d2c24db17777cb6b14a6399d7630eb70e34824a9384022f201a"
         }
       ]
     },
@@ -99,7 +103,8 @@
           "title": "Rigor e Integridade na Condução da Pesquisa Científica",
           "file": "2013 - Rigor e integridade na condução em Ciências - Academia Brasileira de Ciências.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1WdD7g4CvvIqMQ1Strg5jlxCGqfEsQWN7/view",
-          "order": 10
+          "order": 10,
+          "sha256": "03a476a836e92c0e942c5378c516af6010fbb8765d495a1c361a9d24a313927a"
         }
       ]
     },
@@ -124,21 +129,24 @@
           "title": "Check-list para pesquisadores",
           "file": "Check-list para pesquisadores - baseado no material do UKRIO.xlsx",
           "sourceUrl": "https://drive.google.com/file/d/10owrij1ckyzqCKwt9IGdQGtcAM2Dp4FP/view",
-          "order": 13
+          "order": 13,
+          "sha256": "ec8db4287855c1473e463885c523e1774f888977f26586264ed4c17dfbaf1144"
         },
         {
           "type": "XLSX",
           "title": "Modelo de Fichamento de Trabalhos",
           "file": "Modelo de Fichamento de Trabalhos.xlsx",
           "sourceUrl": "https://drive.google.com/file/d/13MhbteIyV96Dfr3tmHHdOYLOEaIEm9Vd/view",
-          "order": 14
+          "order": 14,
+          "sha256": "7585ef1543e6905a2ea59f4cbd0373327967ca31be6ad4103653513e46f6896f"
         },
         {
           "type": "PDF",
           "title": "UKRIO — Recommended Checklist for Researchers",
           "file": "UKRIO-Recommended-Checklist-for-Researchers.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1MIaRbl3Md9-ngDlCNT63M3W0zKA7YHQA/view",
-          "order": 15
+          "order": 15,
+          "sha256": "1c4069a6a813f33ffcda0f86b5db2fce3a8ed1bf7e53b9789d5e13b7e50f2d26"
         }
       ]
     },
@@ -193,35 +201,40 @@
           "title": "Declaração de Singapura sobre Integridade em Pesquisa",
           "file": "2010 - Declaração de Singapura.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1VlvNpX7Gp-s6AAzoBV4ALo6C4mkqqVHN/view",
-          "order": 21
+          "order": 21,
+          "sha256": "30746d985fa4a1583ac22f137bb21e4c8bb939b61d40ca17c4386b2621c022e6"
         },
         {
           "type": "PDF",
           "title": "Relatório da Comissão de Integridade de Pesquisa do CNPq",
           "file": "2011 - CNPq - Relatorio-Comissao- Integridade-do-CNPq.pdf",
           "sourceUrl": "https://drive.google.com/file/d/19OPeWiMWAsWUifvDrx3oksJ05vtWPTdU/view",
-          "order": 22
+          "order": 22,
+          "sha256": "287ccca4febd188757dde80adb423187767b4dd131c208554400adcf1cb89788"
         },
         {
           "type": "PDF",
           "title": "Declaração Conjunta sobre Integridade em Pesquisa — II BRISPE",
           "file": "2012 - Declaração conjunta II BRISPE.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1iyKoVEViHixBLoV-2Uy_qnjEA9a5Rxhx/view",
-          "order": 23
+          "order": 23,
+          "sha256": "e3356b2a6ac3364c64f0881a5a04ab43bbaf77de6971261c989de3b3c19f8ad8"
         },
         {
           "type": "PDF",
           "title": "FAPESP — Código de Boas Práticas Científicas",
           "file": "2014 - FAPESP-Codigo de Boas Praticas Cientificas.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1iW7sls32SsarTPf70nHWToThJCoj9lGJ/view",
-          "order": 24
+          "order": 24,
+          "sha256": "1da67d6e4666137dc22353fa585469f1a1c0935acb68ea66926b27e9e847f248"
         },
         {
           "type": "PDF",
           "title": "ORI — Introduction to the Responsible Conduct of Research",
           "file": "2007 - ORI Introduction to the Responsible Conduct of Research.pdf",
           "sourceUrl": "https://drive.google.com/file/d/1nR8gzGGmMPIIJCRyW0cHtkmKl3-AdlYz/view",
-          "order": 25
+          "order": 25,
+          "sha256": "5b6b4b05a23c557d2a0f76069469587adefe182267a9cc119f842f5a28224af0"
         }
       ]
     },

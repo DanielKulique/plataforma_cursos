@@ -59,8 +59,10 @@ documenta migrations em banco vazio, senha oculta, importação, smoke e backup.
 
 Continuam necessários: domínio/DNS definitivo, configuração de e-mail de produção,
 nome/CPF/telefone e senha privada do administrador, professor real, data inicial e
-carga horária confirmada. Também faltam os 11 PDFs didáticos e duas planilhas locais,
-decisão sobre XLSX privado, confirmação dos vídeos 1/2, revisão dos gabaritos propostos
+carga horária confirmada. Os 13 materiais originais foram recuperados pelo conector
+Drive em 21/09/2026, preservados fora do Git e identificados por SHA-256. Dez PDFs
+passaram na validação oficial; o PDF UKRIO está criptografado e permanece pendente.
+Faltam decisão sobre XLSX privado, confirmação dos vídeos 1/2, revisão dos gabaritos propostos
 e da questão 2 do Simulado, formulário final completo com pontuações/gabaritos.
 
 Sem esses dados não se deve afirmar que ADMIN/curso/turma reais foram cadastrados,

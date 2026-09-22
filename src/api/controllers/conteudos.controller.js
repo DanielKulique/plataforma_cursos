@@ -7,7 +7,7 @@ const {
     exigirGestaoEstrutural,
     exigirTurmaEditavel
 } = require('../services/academic-access.service');
-const { toSafeUrl } = require('../../public/js/security-utils');
+const { normalizeYouTubeEmbedUrl, toSafeUrl } = require('../../public/js/security-utils');
 
 function invalidos(req, res) {
     const erros = validationResult(req);
@@ -67,6 +67,10 @@ function protegerUrls(conteudos) {
             };
         }
         if (!conteudo.url) return conteudo;
+        if (conteudo.tipo === 'VIDEO') {
+            const embed = normalizeYouTubeEmbedUrl(conteudo.url);
+            return { ...conteudo, url: embed, url_bloqueada: !embed };
+        }
         const permitida = toSafeUrl(conteudo.url, { baseUrl: 'http://localhost' });
         return {
             ...conteudo,

@@ -110,7 +110,7 @@ async function main() {
                 const viewer = page.locator(tipo === 'VIDEO' ? '#player-video-container' : '#conteudo-texto-container');
                 await viewer.waitFor({ state: 'visible' });
                 assert.equal(await page.locator(`#aula-painel-${item.id_modulo} #visualizador-integrado`).count(), 1);
-                if (tipo === 'VIDEO') assert.match(await page.locator('#video-player').getAttribute('src'), /^https:\/\/www\.youtube\.com\/embed\//);
+                if (tipo === 'VIDEO') assert.match(await page.locator('#video-player').getAttribute('src'), /^https:\/\/www\.youtube-nocookie\.com\/embed\//);
                 if (tipo === 'PDF') assert.equal(await page.locator('#conteudo-corpo a').getAttribute('href'), `${baseURL}/api/conteudos/${item.id_conteudo}/material`);
                 if (tipo === 'ATIVIDADE') assert.match(await page.locator('#conteudo-corpo').innerText(), /Escolha uma fonte/);
                 await page.locator(tipo === 'VIDEO' ? '#btn-fechar-video' : '#btn-fechar-texto').click();

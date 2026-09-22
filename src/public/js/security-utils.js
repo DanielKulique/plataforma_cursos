@@ -6,8 +6,41 @@
     'use strict';
 
     const ALLOWED_EXTERNAL_ORIGINS = Object.freeze([
-        'https://www.youtube.com'
+        'https://www.youtube.com',
+        'https://www.youtube-nocookie.com'
     ]);
+
+    const YOUTUBE_VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+
+    function youtubeVideoId(value) {
+        try {
+            const parsed = new URL(String(value || '').trim());
+            if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return null;
+            const hostname = parsed.hostname.toLowerCase();
+            const parts = parsed.pathname.split('/').filter(Boolean);
+            let id = null;
+            if (hostname === 'youtu.be') id = parts.length === 1 ? parts[0] : null;
+            else if (['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(hostname)) {
+                if (parsed.pathname === '/watch') id = parsed.searchParams.get('v');
+                else if (parts.length === 2 && ['shorts', 'embed'].includes(parts[0])) id = parts[1];
+            } else if (['youtube-nocookie.com', 'www.youtube-nocookie.com'].includes(hostname)) {
+                if (parts.length === 2 && parts[0] === 'embed') id = parts[1];
+            }
+            return YOUTUBE_VIDEO_ID.test(String(id || '')) ? id : null;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function normalizeYouTubeEmbedUrl(value) {
+        const id = youtubeVideoId(value);
+        return id ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+    }
+
+    function youtubeWatchUrl(value) {
+        const id = youtubeVideoId(value);
+        return id ? `https://www.youtube.com/watch?v=${id}` : null;
+    }
 
     function toSafeUrl(value, {
         baseUrl = 'http://localhost',
@@ -106,7 +139,9 @@
     return {
         ALLOWED_EXTERNAL_ORIGINS,
         buildHighlightSegments,
+        normalizeYouTubeEmbedUrl,
         renderHighlightedText,
-        toSafeUrl
+        toSafeUrl,
+        youtubeWatchUrl
     };
 }));

@@ -17,7 +17,6 @@ const httpObservability = require('./src/middlewares/httpObservability.middlewar
 const logger = require('./src/utils/logger');
 const { buildRuntimeConfig, sanitizedRuntimeSummary } = require('./src/config/runtime-config');
 const { sendHttpError } = require('./src/utils/http-response');
-const { ALLOWED_EXTERNAL_ORIGINS } = require('./src/public/js/security-utils');
 
 const cursosRoutes = require('./src/api/routes/cursos.routes');
 const turmasRoutes = require('./src/api/routes/turmas.routes');
@@ -58,7 +57,7 @@ function createApp(config = runtimeConfig) {
                 'font-src': ["'self'", 'https://fonts.gstatic.com'],
                 'img-src': ["'self'", 'data:'],
                 'connect-src': ["'self'"],
-                'frame-src': ["'self'", ...ALLOWED_EXTERNAL_ORIGINS],
+                'frame-src': ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
                 'object-src': ["'none'"],
                 'base-uri': ["'self'"],
                 'frame-ancestors': ["'self'"],

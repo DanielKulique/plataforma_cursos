@@ -14,7 +14,10 @@
   <section id="visualizador" class="academic-panel academic-viewer" aria-labelledby="titulo-conteudo" hidden>
     <header class="academic-panel__header academic-panel__header--actions"><div><h2 id="titulo-conteudo">Conteúdo</h2><p id="meta-conteudo"></p></div><button id="fechar-conteudo" class="btn btn-ghost" type="button">Fechar</button></header>
     <div id="corpo-conteudo" class="content-reader"></div>
-    <div id="video-container" class="video-wrapper" hidden><iframe id="video-player" title="Conteúdo em vídeo" sandbox="allow-scripts allow-same-origin allow-presentation" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+    <div id="video-container" class="video-wrapper" hidden>
+      <iframe id="video-player" title="Conteúdo em vídeo" sandbox="allow-scripts allow-same-origin allow-presentation" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+      <div id="video-fallback" class="video-fallback" role="status" hidden><p>Não foi possível reproduzir este vídeo aqui.</p><a id="video-fallback-link" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">Abrir no YouTube</a></div>
+    </div>
     <div class="academic-action-row"><button id="concluir-conteudo" type="button" class="btn btn-primary">Marcar como concluído</button><span id="status-conteudo" class="badge badge--warning">Em andamento</span></div>
   </section>
   <nav class="academic-action-row" aria-label="Navegação entre aulas"><a id="aula-anterior" class="action-button action-button--ghost" hidden>Aula anterior</a><a id="proxima-aula" class="action-button action-button--ghost" hidden>Próxima aula</a></nav>

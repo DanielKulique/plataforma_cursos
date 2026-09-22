@@ -461,18 +461,39 @@
 
 /* Goal 13 — navegação contextual e hubs especializados */
 .academic-page .section-navigation {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  block-size: auto;
+  min-block-size: 44px;
   display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
   gap: var(--space-2);
   overflow-x: auto;
+  overflow-y: hidden;
   padding: var(--space-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-padding-inline: var(--space-2);
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
 
 .academic-page .section-navigation a {
   flex: 0 0 auto;
+  min-block-size: 44px;
+  display: inline-flex;
+  align-items: center;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
@@ -480,6 +501,7 @@
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
   text-underline-offset: 0.2em;
+  white-space: nowrap;
 }
 
 .academic-page .section-navigation a:hover {
@@ -492,7 +514,26 @@
   background: var(--color-action);
 }
 
+.academic-page .academic-breadcrumbs {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  block-size: auto;
+  min-block-size: 0;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
 .academic-page .academic-breadcrumbs ol {
+  inline-size: 100%;
+  min-inline-size: 0;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -501,6 +542,11 @@
   list-style: none;
   color: var(--color-text-tertiary);
   font-size: var(--font-size-14);
+}
+
+.academic-page .academic-breadcrumbs li {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 
 .academic-page .academic-breadcrumbs li:not(:last-child)::after {
@@ -567,6 +613,16 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-6);
   align-items: end;
+}
+
+.academic-page .course-masthead > *,
+.academic-page .academic-panel__header > *,
+.academic-page .summary-row > * {
+  min-inline-size: 0;
+}
+
+.academic-page :where(h1, h2, h3, h4, p, a, span, dd) {
+  overflow-wrap: anywhere;
 }
 
 .academic-page .course-masthead h1 {

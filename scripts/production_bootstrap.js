@@ -6,6 +6,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { assertDatabaseConnectionEnvironment } = require('../src/config/database-connection');
 const { assertDatabaseIdentity } = require('../src/config/database-identity');
+const { normalizeYouTubeEmbedUrl } = require('../src/public/js/security-utils');
 
 const manifestPath = path.join(__dirname, '..', 'production-content', 'manifest.json');
 const hash = (buffer) => crypto.createHash('sha256').update(buffer).digest('hex');
@@ -35,7 +36,11 @@ function validateManifest(manifest) {
             if (['PDF', 'XLSX'].includes(item.type)) ensure(item.file?.toLowerCase().endsWith(`.${item.type.toLowerCase()}`), 'Extensão de material inválida.');
             const url = new URL(item.url || item.sourceUrl);
             ensure(url.protocol === 'https:' && !url.username && !url.password, 'URL deve ser HTTPS sem credenciais.');
-            if (item.type === 'VIDEO') ensure(url.hostname === 'www.youtube.com' && /^[\w-]{11}$/.test(url.searchParams.get('v')), 'Vídeo YouTube inválido.');
+            if (item.type === 'VIDEO') {
+                const embed = normalizeYouTubeEmbedUrl(item.url);
+                ensure(embed, 'Vídeo YouTube inválido.');
+                item.url = embed;
+            }
         }
     });
     ensure(manifest.assessments.length === 2, 'Esperados Simulado e Teste Final.');

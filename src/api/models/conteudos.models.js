@@ -3,6 +3,7 @@ const { reterSeSemReferencias } = require('../services/material-lifecycle.servic
 const db = require('../../config/database');
 const { buscarProgresso, normalizarProgresso, avaliarAprovacao } = require('../services/academic-progress.service');
 const { lockTurmaParaMutacao, iniciarMutacaoRecurso, localizarRecurso, bloquearTurma, bloquearRecurso } = require('../services/academic-access.service');
+const { normalizeYouTubeEmbedUrl } = require('../../public/js/security-utils');
 
 function flowError(code, status, message) {
     const error = new Error(message);
@@ -23,7 +24,7 @@ function validarReferenciaConteudo(dados) {
             'Conteúdos PDF devem referenciar um arquivo local em /assets/materiais/.'
         );
     }
-    if (tipo === 'VIDEO' && !/^https:\/\/www\.youtube\.com\/embed\/[A-Za-z0-9_-]+(?:\?.*)?$/.test(url)) {
+    if (tipo === 'VIDEO' && normalizeYouTubeEmbedUrl(url) !== url) {
         throw flowError(
             'VIDEO_INVALIDO',
             422,

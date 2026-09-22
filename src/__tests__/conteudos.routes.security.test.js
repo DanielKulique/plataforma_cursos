@@ -50,4 +50,19 @@ describe('allowlist de URLs de conteúdo', () => {
         expect(response.status).toBe(201);
         expect(model.criar).toHaveBeenCalled();
     });
+
+    it.each([
+        ['https://www.youtube.com/watch?v=JeaZc8_hqAk', 'JeaZc8_hqAk'],
+        ['https://youtu.be/-U6o1uTg0Hk', '-U6o1uTg0Hk'],
+        ['https://www.youtube.com/shorts/TRq7-e8SEJ0', 'TRq7-e8SEJ0']
+    ])('normaliza vídeo permitido antes de persistir: %s', async (url, id) => {
+        const response = await request(app)
+            .post('/api/turmas/1/conteudos')
+            .send({ titulo: 'Vídeo', tipo: 'VIDEO', ordem: 1, url });
+
+        expect(response.status).toBe(201);
+        expect(model.criar).toHaveBeenCalledWith('1', expect.objectContaining({
+            url: `https://www.youtube-nocookie.com/embed/${id}`
+        }), expect.any(Object));
+    });
 });

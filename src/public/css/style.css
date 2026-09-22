@@ -779,6 +779,19 @@ tr:hover td {
   height: 100%;
 }
 
+.video-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-surface-inset);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
 .video-actions {
   display: flex;
   gap: 10px;

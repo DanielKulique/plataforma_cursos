@@ -35,17 +35,34 @@ function safeContentUrl(content) {
     return content.url ? window.SecurityUtils?.toSafeUrl(content.url, { baseUrl: location.origin }) : null;
 }
 
+function resetVideo() {
+    byId('video-player').hidden = false;
+    byId('video-player').src = '';
+    byId('video-fallback').hidden = true;
+    byId('video-fallback-link').removeAttribute('href');
+}
+
+function showVideoFallback() {
+    if (!selected || selected.tipo !== 'VIDEO') return;
+    const watchUrl = window.SecurityUtils?.youtubeWatchUrl(selected.url);
+    byId('video-player').hidden = true;
+    byId('video-fallback').hidden = false;
+    if (watchUrl) byId('video-fallback-link').href = watchUrl;
+}
+
 async function openContent(content) {
     selected = content;
     byId('visualizador').hidden = false;
     byId('video-container').hidden = true;
-    byId('video-player').src = '';
+    resetVideo();
     byId('corpo-conteudo').replaceChildren();
     byId('titulo-conteudo').textContent = content.titulo || 'Conteúdo';
     byId('meta-conteudo').textContent = [tipoMaterial[content.tipo] || content.tipo, content.duracao_minutos ? `${content.duracao_minutos} min` : null].filter(Boolean).join(' · ');
     try {
         if (!content.concluido && !closed) await saveProgress(content, 'INICIADO');
-        const url = safeContentUrl(content);
+        const url = content.tipo === 'VIDEO'
+            ? window.SecurityUtils?.normalizeYouTubeEmbedUrl(content.url)
+            : safeContentUrl(content);
         if (content.url && !url) throw new Error('A URL deste conteúdo não pertence a uma origem permitida.');
         if (content.tipo === 'VIDEO' && url) {
             byId('video-container').hidden = false;
@@ -95,7 +112,11 @@ function setLessonNavigation(modules) {
     });
 }
 
-byId('fechar-conteudo').addEventListener('click', () => { byId('visualizador').hidden = true; byId('video-player').src = ''; selected = null; });
+byId('video-player').addEventListener('error', showVideoFallback);
+document.addEventListener('securitypolicyviolation', (event) => {
+    if (event.violatedDirective === 'frame-src' && event.blockedURI.includes('youtube')) showVideoFallback();
+});
+byId('fechar-conteudo').addEventListener('click', () => { byId('visualizador').hidden = true; resetVideo(); selected = null; });
 byId('concluir-conteudo').addEventListener('click', async () => {
     if (!selected || saving) return; saving = true; updateCompletionAction();
     try { await saveProgress(selected, 'CONCLUIDO'); renderContents(); setAcademicMessage(byId('mensagem-aula'), 'Conteúdo concluído.', 'success'); }

@@ -182,7 +182,7 @@ function classroomStates(classId) {
             prepare: async (page) => page.getByRole('button', { name: /Abrir conteúdo: Vídeo introdutório/i }).click(),
             verify: async (page) => {
                 await page.locator('#player-video-container:not([hidden])').waitFor();
-                assert((await page.locator('#video-player').getAttribute('src'))?.includes('youtube.com/embed'));
+                assert((await page.locator('#video-player').getAttribute('src'))?.includes('youtube-nocookie.com/embed'));
             }
         },
         {

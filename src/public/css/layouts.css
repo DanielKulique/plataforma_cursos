@@ -217,6 +217,8 @@
  */
 
 .academic-page {
+  inline-size: 100%;
+  max-inline-size: 100%;
   display: block;
   min-block-size: 100vh;
   background:
@@ -226,6 +228,8 @@
 }
 
 .academic-page .academic-header {
+  inline-size: 100%;
+  max-inline-size: 100%;
   position: sticky;
   inset-block-start: 0;
   z-index: 200;
@@ -236,7 +240,9 @@
 
 .academic-page .academic-nav {
   position: relative;
-  inline-size: min(100%, var(--content-width));
+  inline-size: 100%;
+  max-inline-size: var(--content-width);
+  min-inline-size: 0;
   min-block-size: 68px;
   display: flex;
   align-items: center;
@@ -285,11 +291,19 @@
 }
 
 .academic-page .academic-main {
-  inline-size: min(100%, var(--content-width));
+  inline-size: 100%;
+  max-inline-size: var(--content-width);
+  min-inline-size: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   margin-inline: auto;
   padding: var(--space-8);
+}
+
+.academic-page .academic-main > * {
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 .academic-page .academic-hero {
@@ -433,6 +447,8 @@
 }
 
 .academic-page .academic-panel {
+  inline-size: 100%;
+  max-inline-size: 100%;
   min-inline-size: 0;
   padding: var(--space-6);
   border: 1px solid var(--color-border);
@@ -788,7 +804,9 @@
 
 .academic-page .academic-breadcrumbs,
 .academic-page .course-navigation-host {
-  width: 100%;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
 }
 
 .academic-page .course-navigation-host {

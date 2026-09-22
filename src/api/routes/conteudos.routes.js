@@ -4,7 +4,7 @@ const checkAuth = require('../../middlewares/checkAuth.middleware');
 const checkRole = require('../../middlewares/checkRole.middleware');
 const controller = require('../controllers/conteudos.controller');
 const { receberPdf } = require('../services/material-upload.service');
-const { toSafeUrl } = require('../../public/js/security-utils');
+const { normalizeYouTubeEmbedUrl, toSafeUrl } = require('../../public/js/security-utils');
 const idTurma = param('id_turma').isInt({ min: 1 });
 const idConteudo = param('id_conteudo').isInt({ min: 1 });
 const idModulo = param('id_modulo').isInt({ min: 1 });
@@ -14,7 +14,8 @@ const apenasCamposPermitidos = body().custom((payload) => {
     if (desconhecidos.length) throw new Error(`Campos não permitidos: ${desconhecidos.join(', ')}.`);
     return true;
 });
-const urlSegura = body('url').optional({ nullable: true, checkFalsy: true }).custom((value) => {
+const urlSegura = body('url').optional({ nullable: true, checkFalsy: true })
+    .customSanitizer((value) => normalizeYouTubeEmbedUrl(value) || value).custom((value) => {
     if (!toSafeUrl(value, { baseUrl: 'http://localhost' })) {
         throw new Error('URL de conteúdo não pertence a uma origem permitida.');
     }

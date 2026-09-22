@@ -12,6 +12,8 @@
 }
 
 :where(html) {
+  inline-size: 100%;
+  max-inline-size: 100%;
   font-size: 100%;
   text-size-adjust: 100%;
   background: var(--color-background);
@@ -19,6 +21,8 @@
 }
 
 :where(body) {
+  inline-size: 100%;
+  max-inline-size: 100%;
   min-block-size: 100vh;
   margin: 0;
   background: var(--color-background);

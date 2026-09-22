@@ -168,10 +168,15 @@ describe('Goal 13 — UX transversal', () => {
         expect(common).not.toContain('history.back');
     });
 
-    it('tem fallback mobile sem overflow estrutural para navegação e alunos', () => {
+    it('contém o overflow nas navegações locais sem ampliar o shell acadêmico', () => {
         const components = read('css', 'components.css');
+        const layouts = read('css', 'layouts.css');
         const responsive = read('css', 'responsive.css');
-        expect(components).toContain('overflow-x: auto');
+        expect(layouts).toMatch(/\.academic-page \.academic-main\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)/);
+        expect(layouts).toMatch(/\.academic-page \.academic-main > \*\s*\{[\s\S]*?min-inline-size:\s*0/);
+        expect(layouts).toMatch(/\.academic-page \.course-navigation-host\s*\{[\s\S]*?max-inline-size:\s*100%;[\s\S]*?min-inline-size:\s*0/);
+        expect(components).toMatch(/\.academic-page \.section-navigation\s*\{[\s\S]*?position:\s*static;[\s\S]*?overflow-x:\s*auto;[\s\S]*?overscroll-behavior-inline:\s*contain/);
+        expect(components).toMatch(/\.academic-page \.academic-breadcrumbs\s*\{[\s\S]*?position:\s*static;[\s\S]*?max-inline-size:\s*100%/);
         expect(responsive).toContain('.academic-page .student-desktop-table');
         expect(responsive).toContain('.academic-page .student-mobile-list');
         expect(responsive).toContain('.academic-page .hub-grid');

@@ -109,6 +109,20 @@ describe('rotas do Goal 3', () => {
         expect(response.body.conteudos[0]).toMatchObject({ url: null, url_bloqueada: true });
     });
 
+    it('normaliza vídeo legado para o host incorporável permitido', async () => {
+        conteudosModel.listar.mockResolvedValue([
+            { id_conteudo: 1, id_modulo: 1, titulo: 'Aula', tipo: 'VIDEO', url: 'https://www.youtube.com/watch?v=JeaZc8_hqAk' }
+        ]);
+
+        const response = await request(app).get('/api/turmas/10/conteudos');
+
+        expect(response.status).toBe(200);
+        expect(response.body.conteudos[0]).toMatchObject({
+            url: 'https://www.youtube-nocookie.com/embed/JeaZc8_hqAk',
+            url_bloqueada: false
+        });
+    });
+
     it('lista questionário ativo sem expor gabarito', async () => {
         questoesModel.listarAluno.mockResolvedValue({
             id_questionario: 5,

@@ -75,6 +75,26 @@ describe('proteções XSS do frontend', () => {
         expect(SecurityUtils.toSafeUrl('https://evil.example/payload', { baseUrl: 'https://curso.example' })).toBeNull();
     });
 
+    it.each([
+        ['https://www.youtube.com/watch?v=JeaZc8_hqAk', 'JeaZc8_hqAk'],
+        ['https://youtu.be/-U6o1uTg0Hk', '-U6o1uTg0Hk'],
+        ['https://youtube.com/shorts/TRq7-e8SEJ0', 'TRq7-e8SEJ0'],
+        ['https://www.youtube.com/embed/JeaZc8_hqAk', 'JeaZc8_hqAk']
+    ])('normaliza URL do YouTube para embed sem cookies: %s', (url, id) => {
+        expect(SecurityUtils.normalizeYouTubeEmbedUrl(url))
+            .toBe(`https://www.youtube-nocookie.com/embed/${id}`);
+        expect(SecurityUtils.youtubeWatchUrl(url)).toBe(`https://www.youtube.com/watch?v=${id}`);
+    });
+
+    it.each([
+        'https://evil.example/watch?v=JeaZc8_hqAk',
+        'https://www.youtube.com.evil.example/watch?v=JeaZc8_hqAk',
+        'https://www.youtube.com/watch?v=invalid',
+        'javascript:alert(1)'
+    ])('rejeita URL arbitrária como vídeo incorporável: %s', (url) => {
+        expect(SecurityUtils.normalizeYouTubeEmbedUrl(url)).toBeNull();
+    });
+
     it('não mantém sinks dinâmicos ou handlers inline nos arquivos corrigidos', () => {
         const files = [
             'public/js/verificador.js',
@@ -95,6 +115,20 @@ describe('proteções XSS do frontend', () => {
             expect(source).not.toMatch(/\.innerHTML\s*=/);
             expect(source).not.toMatch(/\bonclick\s*=/i);
         });
+    });
+
+    it('monta o player com atributos restritos e fallback seguro', () => {
+        const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'sala-aula-detalhe.html'), 'utf8');
+        const script = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'sala-aula-detalhe.js'), 'utf8');
+        expect(html).toContain('loading="lazy"');
+        expect(html).toContain('clipboard-write');
+        expect(html).toContain('web-share');
+        expect(html).toContain('allowfullscreen');
+        expect(html).toContain('Não foi possível reproduzir este vídeo aqui.');
+        expect(html).toContain('rel="noopener noreferrer"');
+        expect(script).toContain('normalizeYouTubeEmbedUrl(content.url)');
+        expect(script).toContain("addEventListener('error', showVideoFallback)");
+        expect(script).not.toMatch(/video-player['"]\)\.src\s*=\s*content\.url/);
     });
 
     it('não interpola dados de cursos ou turmas em innerHTML na página inicial', () => {
@@ -125,6 +159,8 @@ describe('proteções XSS do frontend', () => {
             expect(csp).toContain("object-src 'none'");
             expect(csp).toContain("base-uri 'self'");
             expect(csp).toContain("frame-ancestors 'self'");
+            expect(csp).toContain("frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com");
+            expect(csp).not.toContain('frame-src *');
 
             expect(response.text).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>/i);
             expect(response.text).not.toMatch(/\son[a-z]+\s*=/i);

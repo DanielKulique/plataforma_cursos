@@ -178,7 +178,7 @@ describe('Goal — gerenciamento de conteúdos pelo professor', () => {
         const response = await criarConteudo({
             titulo: 'Vídeo válido',
             tipo: 'VIDEO',
-            url: 'https://www.youtube.com/embed/M7lc1UVf-VE'
+            url: 'https://www.youtube.com/watch?v=M7lc1UVf-VE'
         });
         expect(response.status).toBe(201);
         const [rows] = await pool.query(
@@ -187,24 +187,23 @@ describe('Goal — gerenciamento de conteúdos pelo professor', () => {
         );
         expect(rows[0]).toEqual({
             tipo: 'VIDEO',
-            url: 'https://www.youtube.com/embed/M7lc1UVf-VE'
+            url: 'https://www.youtube-nocookie.com/embed/M7lc1UVf-VE'
         });
     });
 
-    it('rejeita vídeo não incorporável e HTML arbitrário', async () => {
+    it('normaliza vídeo curto e rejeita HTML arbitrário', async () => {
         const watch = await criarConteudo({
-            titulo: 'Watch inválido',
+            titulo: 'Short válido',
             tipo: 'VIDEO',
-            url: 'https://www.youtube.com/watch?v=M7lc1UVf-VE'
+            url: 'https://youtu.be/M7lc1UVf-VE'
         });
         const html = await criarConteudo({
             titulo: 'HTML inválido',
             tipo: 'VIDEO',
             url: '<iframe src="https://www.youtube.com/embed/M7lc1UVf-VE"></iframe>'
         });
-        expect(watch.status).toBe(422);
-        expect(watch.body.code).toBe('VIDEO_INVALIDO');
-        expect(watch.body.mensagem).toMatch(/URL incorporável do YouTube/i);
+        expect(watch.status).toBe(201);
+        expect(watch.body.conteudo.url).toBe('https://www.youtube-nocookie.com/embed/M7lc1UVf-VE');
         expect(html.status).toBe(422);
         expect(html.body.code).toBe('VIDEO_INVALIDO');
     });

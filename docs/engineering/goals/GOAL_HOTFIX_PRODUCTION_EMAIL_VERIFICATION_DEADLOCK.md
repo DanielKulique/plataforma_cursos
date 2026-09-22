@@ -15,3 +15,8 @@ leitura. Ambos validam a identidade canônica do banco.
 
 O login continua recusando contas públicas pendentes. A flag de produção permanece
 desligada até a configuração futura do provedor. Nenhum fluxo do hotfix envia e-mail.
+
+Atualização operacional posterior: a produção pode liberar cadastro público sem
+entrega de e-mail por decisão explícita do operador usando
+`PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED=false`. Nesse modo, novas contas
+ALUNO nascem verificadas e nenhum código é criado; o padrão do código continua `true`.

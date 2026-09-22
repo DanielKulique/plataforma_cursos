@@ -38,6 +38,10 @@ function validarAmbiente(env = process.env) {
         && !['true', 'false'].includes(String(env.EMAIL_DELIVERY_ENABLED).toLowerCase())) {
         throw Object.assign(new Error('EMAIL_DELIVERY_ENABLED deve ser true ou false.'), { code: 'CONFIGURACAO_INVALIDA' });
     }
+    if (env.PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED !== undefined
+        && !['true', 'false'].includes(String(env.PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED).toLowerCase())) {
+        throw Object.assign(new Error('PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED deve ser true ou false.'), { code: 'CONFIGURACAO_INVALIDA' });
+    }
     obterLimitePdfMb(env);
     obterDiretorioMateriais(env);
     obterLimiteUploadCertificadoMb(env);

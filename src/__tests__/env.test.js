@@ -47,6 +47,17 @@ describe('validação do ambiente de produção', () => {
             .toThrow('EMAIL_DELIVERY_ENABLED deve ser true ou false');
     });
 
+    it('valida a flag explícita de verificação no cadastro público', () => {
+        expect(() => validarAmbiente({
+            ...productionEnv,
+            PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED: 'false'
+        })).not.toThrow();
+        expect(() => validarAmbiente({
+            ...productionEnv,
+            PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED: 'talvez'
+        })).toThrow('PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED deve ser true ou false');
+    });
+
     it('exige HTTPS e JWT forte', () => {
         expect(() => validarAmbiente({ ...productionEnv, APP_BASE_URL: 'http://example.test' }))
             .toThrow('APP_BASE_URL deve usar HTTPS');

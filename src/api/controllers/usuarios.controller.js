@@ -2,7 +2,11 @@ const usuariosModel = require('../models/usuarios.models');
 const { validationResult } = require('express-validator');
 const logger = require('../../utils/logger');
 const { clearSessionCookie } = require('../../config/session');
-const { emailDeliveryEnabled, enviarCodigoVerificacaoEmail } = require('../../services/email.service');
+const {
+    emailDeliveryEnabled,
+    publicRegistrationRequiresEmailVerification,
+    enviarCodigoVerificacaoEmail
+} = require('../../services/email.service');
 const { sendHttpError } = require('../../utils/http-response');
 const { paginated, parsePagination } = require('../../utils/pagination');
 
@@ -24,7 +28,8 @@ function responderErro(res, error, mensagemPadrao) {
 async function criarUsuario(req, res) {
     if (responderValidacao(req, res)) return;
 
-    if (!emailDeliveryEnabled()) {
+    const exigeVerificacaoEmail = publicRegistrationRequiresEmailVerification();
+    if (exigeVerificacaoEmail && !emailDeliveryEnabled()) {
         logger.warn('usuario.publico.indisponivel', {
             requestId: req.id,
             reason: 'EMAIL_DELIVERY_DISABLED'
@@ -36,8 +41,27 @@ async function criarUsuario(req, res) {
     }
 
     try {
-        const cadastro = await usuariosModel.criarAlunoComVerificacao(req.body);
+        const cadastro = exigeVerificacaoEmail
+            ? await usuariosModel.criarAlunoComVerificacao(req.body)
+            : await usuariosModel.criarAlunoComVerificacao(req.body, true);
         const novoUsuario = cadastro.usuario;
+
+        if (!exigeVerificacaoEmail) {
+            logger.info('usuario.publico.criado_sem_verificacao_email', {
+                requestId: req.id,
+                userId: novoUsuario.id_usuario
+            });
+            return res.status(201).json({
+                ...novoUsuario,
+                mensagem: 'Cadastro realizado. Sua conta já está pronta para entrar.',
+                verificacao: {
+                    estado: 'VERIFICADO',
+                    email_enviado: false,
+                    expira_em: null
+                }
+            });
+        }
+
         let emailEnviado = false;
 
         try {
@@ -78,7 +102,8 @@ async function criarUsuario(req, res) {
 }
 
 function statusCadastro(_req, res) {
-    const disponivel = emailDeliveryEnabled();
+    const exigeVerificacaoEmail = publicRegistrationRequiresEmailVerification();
+    const disponivel = !exigeVerificacaoEmail || emailDeliveryEnabled();
     return res.status(200).json({
         disponivel,
         ...(disponivel ? {} : { mensagem: 'Novos cadastros estão temporariamente indisponíveis.' })

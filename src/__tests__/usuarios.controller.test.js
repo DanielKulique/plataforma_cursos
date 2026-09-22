@@ -20,6 +20,7 @@ describe('Usuarios Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         emailService.emailDeliveryEnabled.mockReturnValue(true);
+        emailService.publicRegistrationRequiresEmailVerification.mockReturnValue(true);
         emailService.enviarCodigoVerificacaoEmail.mockResolvedValue({ enviado: true, modo: 'resend' });
     });
 
@@ -59,6 +60,27 @@ describe('Usuarios Controller', () => {
             expect(emailService.enviarCodigoVerificacaoEmail).not.toHaveBeenCalled();
         });
 
+        it('cria ALUNO verificado sem código quando a verificação pública está desabilitada', async () => {
+            emailService.emailDeliveryEnabled.mockReturnValue(false);
+            emailService.publicRegistrationRequiresEmailVerification.mockReturnValue(false);
+            usuariosModel.criarAlunoComVerificacao.mockImplementation(async (dados) => ({
+                usuario: { id_usuario: 8, ...dados, tipo: 'ALUNO', senha: undefined },
+                verificacao: { codigo: null, expira_em: null, verificado: true }
+            }));
+
+            const response = await request(app).post('/api/usuarios').send(cadastroValido('8'));
+
+            expect(response.status).toBe(201);
+            expect(response.body.verificacao).toEqual({
+                estado: 'VERIFICADO', email_enviado: false, expira_em: null
+            });
+            expect(usuariosModel.criarAlunoComVerificacao).toHaveBeenCalledWith(
+                expect.objectContaining({ email: 'aluno8@example.com' }),
+                true
+            );
+            expect(emailService.enviarCodigoVerificacaoEmail).not.toHaveBeenCalled();
+        });
+
         it('expõe somente a disponibilidade pública do cadastro', async () => {
             emailService.emailDeliveryEnabled.mockReturnValue(false);
             const response = await request(app).get('/api/usuarios/cadastro-status');
@@ -67,6 +89,14 @@ describe('Usuarios Controller', () => {
                 disponivel: false,
                 mensagem: 'Novos cadastros estão temporariamente indisponíveis.'
             });
+        });
+
+        it('mantém cadastro disponível sem entrega quando verificação não é exigida', async () => {
+            emailService.emailDeliveryEnabled.mockReturnValue(false);
+            emailService.publicRegistrationRequiresEmailVerification.mockReturnValue(false);
+            const response = await request(app).get('/api/usuarios/cadastro-status');
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual({ disponivel: true });
         });
 
         it.each([['ADMIN', '4'], ['PROFESSOR', '5']])('deve rejeitar papel %s no cadastro público', async (tipo, sufixo) => {

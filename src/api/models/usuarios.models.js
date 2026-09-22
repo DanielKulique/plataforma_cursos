@@ -90,8 +90,8 @@ async function criarUsuarioComVerificacao(usuario, verificado) {
     }
 }
 
-function criarAlunoComVerificacao(usuario) {
-    return criarUsuarioComVerificacao({ ...usuario, tipo: 'ALUNO' }, false);
+function criarAlunoComVerificacao(usuario, verificado = false) {
+    return criarUsuarioComVerificacao({ ...usuario, tipo: 'ALUNO' }, verificado);
 }
 
 function criarUsuarioAdministrativo(usuario) {

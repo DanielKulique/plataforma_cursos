@@ -5,6 +5,10 @@ function emailDeliveryEnabled(env = process.env) {
     return String(env.EMAIL_DELIVERY_ENABLED || 'true').toLowerCase() !== 'false';
 }
 
+function publicRegistrationRequiresEmailVerification(env = process.env) {
+    return String(env.PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED || 'true').toLowerCase() !== 'false';
+}
+
 function criarErroEntrega(code = 'EMAIL_PROVIDER_ERROR') {
     const error = new Error('Serviço de e-mail temporariamente indisponível.');
     error.status = 503;
@@ -145,6 +149,7 @@ async function enviarRecuperacaoSenhaEmail({ to, token, expiraEm }) {
 
 module.exports = {
     emailDeliveryEnabled,
+    publicRegistrationRequiresEmailVerification,
     enviarPeloResend,
     enviarCodigoVerificacaoEmail,
     enviarRecuperacaoSenhaEmail

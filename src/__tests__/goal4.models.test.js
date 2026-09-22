@@ -98,6 +98,24 @@ describe('Goal 4 - modelo de usuários', () => {
         expect(cadastro.verificacao).toEqual({ codigo: null, expira_em: null, verificado: true });
     });
 
+    it('permite criar ALUNO público já verificado sem gerar código', async () => {
+        const conn = connectionMock();
+        conn.query
+            .mockResolvedValueOnce([{ affectedRows: 1, insertId: 21 }])
+            .mockResolvedValueOnce([{ affectedRows: 1 }]);
+        db.getConnection.mockResolvedValue(conn);
+
+        const cadastro = await usuarios.criarAlunoComVerificacao({
+            nome_completo: 'Aluno sem verificação',
+            cpf: '12345678909',
+            email: 'publico@example.test',
+            senha: 'Senha@123'
+        }, true);
+
+        expect(conn.query.mock.calls[1][1]).toEqual(['publico@example.test', null, 1, null]);
+        expect(cadastro.verificacao).toEqual({ codigo: null, expira_em: null, verificado: true });
+    });
+
     it('reverte também o usuário se a criação da verificação falhar', async () => {
         const conn = connectionMock();
         conn.query

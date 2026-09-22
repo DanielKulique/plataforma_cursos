@@ -71,6 +71,9 @@ contas silenciosamente.
 
 Enquanto `EMAIL_DELIVERY_ENABLED=false`, o cadastro público responde 503 antes de
 criar usuário ou código, e a recuperação mantém a resposta genérica sem criar token.
+Quando `PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED=false`, o cadastro público
+permanece disponível e cria ALUNO já verificado, sem código ou envio. O padrão é
+`true`; a exceção deve ser explícita no ambiente em que for adotada.
 Liste contas pendentes sem exibir senha/código e verifique somente o e-mail escolhido:
 
 ```bash

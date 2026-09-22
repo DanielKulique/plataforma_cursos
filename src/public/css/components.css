@@ -709,6 +709,15 @@
   list-style: none;
 }
 
+.academic-page .academic-table-wrap {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 .material-upload {
   gap: var(--space-2);
   padding: var(--space-4);

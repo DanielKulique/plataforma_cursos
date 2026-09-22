@@ -8,6 +8,7 @@ jest.mock('../api/models/auth.models', () => ({
     )
 }));
 jest.mock('../services/email.service', () => ({
+    emailDeliveryEnabled: jest.fn(() => true),
     enviarCodigoVerificacaoEmail: jest.fn(),
     enviarRecuperacaoSenhaEmail: jest.fn()
 }));

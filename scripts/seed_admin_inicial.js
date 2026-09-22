@@ -10,7 +10,6 @@
 const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
 const logger = require('../src/utils/logger');
 const { assertDatabaseConnectionEnvironment } = require('../src/config/database-connection');
 const { assertDatabaseIdentity } = require('../src/config/database-identity');
@@ -118,9 +117,9 @@ async function criarUsuarioPrivilegiado({
             }
             await connection.query(
                 `INSERT INTO EmailVerificacoes (email, codigo, verificado, expira_em)
-                 VALUES (?, ?, 1, NOW())
-                 ON DUPLICATE KEY UPDATE verificado = 1`,
-                [config.user.email, crypto.randomInt(100000, 1000000).toString()]
+                 VALUES (?, NULL, 1, NULL)
+                 ON DUPLICATE KEY UPDATE verificado = 1, codigo = NULL, expira_em = NULL`,
+                [config.user.email]
             );
             await connection.commit();
             transactionStarted = false;
@@ -137,8 +136,8 @@ async function criarUsuarioPrivilegiado({
         if (result.affectedRows !== 1) throw new Error('O banco não confirmou a criação do usuário.');
         await connection.query(
             `INSERT INTO EmailVerificacoes (email, codigo, verificado, expira_em)
-             VALUES (?, ?, 1, NOW())`,
-            [config.user.email, crypto.randomInt(100000, 1000000).toString()]
+             VALUES (?, NULL, 1, NULL)`,
+            [config.user.email]
         );
         await connection.commit();
         transactionStarted = false;

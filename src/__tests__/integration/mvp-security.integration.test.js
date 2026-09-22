@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const request = require('supertest');
 
 jest.mock('../../services/email.service', () => ({
+    emailDeliveryEnabled: jest.fn(() => true),
     enviarCodigoVerificacaoEmail: jest.fn().mockResolvedValue({ enviado: true, modo: 'test' }),
     enviarRecuperacaoSenhaEmail: jest.fn().mockResolvedValue({ enviado: true, modo: 'test' })
 }));

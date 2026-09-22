@@ -77,6 +77,27 @@ describe('Goal 4 - modelo de usuários', () => {
         expect(cadastro.verificacao).toMatchObject({ verificado: false });
     });
 
+    it.each(['ADMIN', 'PROFESSOR'])('cria %s administrativamente já verificado e sem código', async (tipo) => {
+        const conn = connectionMock();
+        conn.query
+            .mockResolvedValueOnce([{ affectedRows: 1, insertId: 20 }])
+            .mockResolvedValueOnce([{ affectedRows: 1 }]);
+        db.getConnection.mockResolvedValue(conn);
+
+        const cadastro = await usuarios.criarUsuarioAdministrativo({
+            nome_completo: 'Usuário Administrativo',
+            cpf: null,
+            email: `${tipo.toLowerCase()}@example.test`,
+            senha: 'Senha@123',
+            tipo
+        });
+
+        expect(conn.query.mock.calls[1][1]).toEqual([
+            `${tipo.toLowerCase()}@example.test`, null, 1, null
+        ]);
+        expect(cadastro.verificacao).toEqual({ codigo: null, expira_em: null, verificado: true });
+    });
+
     it('reverte também o usuário se a criação da verificação falhar', async () => {
         const conn = connectionMock();
         conn.query

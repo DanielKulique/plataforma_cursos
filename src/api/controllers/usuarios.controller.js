@@ -2,7 +2,7 @@ const usuariosModel = require('../models/usuarios.models');
 const { validationResult } = require('express-validator');
 const logger = require('../../utils/logger');
 const { clearSessionCookie } = require('../../config/session');
-const { enviarCodigoVerificacaoEmail } = require('../../services/email.service');
+const { emailDeliveryEnabled, enviarCodigoVerificacaoEmail } = require('../../services/email.service');
 const { sendHttpError } = require('../../utils/http-response');
 const { paginated, parsePagination } = require('../../utils/pagination');
 
@@ -23,6 +23,17 @@ function responderErro(res, error, mensagemPadrao) {
 
 async function criarUsuario(req, res) {
     if (responderValidacao(req, res)) return;
+
+    if (!emailDeliveryEnabled()) {
+        logger.warn('usuario.publico.indisponivel', {
+            requestId: req.id,
+            reason: 'EMAIL_DELIVERY_DISABLED'
+        });
+        return res.status(503).json({
+            error: 'Cadastro temporariamente indisponível.',
+            message: 'Cadastro temporariamente indisponível.'
+        });
+    }
 
     try {
         const cadastro = await usuariosModel.criarAlunoComVerificacao(req.body);
@@ -64,6 +75,14 @@ async function criarUsuario(req, res) {
         logger.error('usuario.publico.falhou', { requestId: req.id, error });
         return responderErro(res, error, 'Ocorreu um erro no servidor ao criar o usuário.');
     }
+}
+
+function statusCadastro(_req, res) {
+    const disponivel = emailDeliveryEnabled();
+    return res.status(200).json({
+        disponivel,
+        ...(disponivel ? {} : { mensagem: 'Novos cadastros estão temporariamente indisponíveis.' })
+    });
 }
 
 async function atualizarUsuario(req, res) {
@@ -218,6 +237,7 @@ async function criarUsuarioAdmin(req, res) {
 }
 
 module.exports = {
+    statusCadastro,
     criarUsuario,
     criarUsuarioAdmin,
     atualizarUsuario,

@@ -29,6 +29,7 @@
     "db:test:setup": "node scripts/setup_database.js test",
     "db:test:seed": "node scripts/seed_database.js test",
     "user:bootstrap": "node scripts/seed_admin_inicial.js",
+    "user:verify": "node scripts/user_verify.js",
     "admin:bootstrap": "node scripts/seed_admin_inicial.js",
     "production:bootstrap": "node scripts/production_bootstrap.js",
     "production:initial-access": "node scripts/production_initial_access.js",

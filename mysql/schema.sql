@@ -46,9 +46,9 @@ CREATE TABLE `PasswordResetTokens` (
 CREATE TABLE `EmailVerificacoes` (
   `id_verificacao` INT NOT NULL AUTO_INCREMENT,
   `email` VARCHAR(255) NOT NULL,
-  `codigo` VARCHAR(6) NOT NULL,
+  `codigo` VARCHAR(6) NULL,
   `verificado` TINYINT(1) NOT NULL DEFAULT 0,
-  `expira_em` DATETIME NOT NULL,
+  `expira_em` DATETIME NULL,
   `criado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_verificacao`),
   UNIQUE KEY `uk_email_verificacao` (`email`)

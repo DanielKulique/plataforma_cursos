@@ -6,6 +6,7 @@ const authModel = require('../api/models/auth.models');
 const jwt = require('jsonwebtoken');
 const checkAuth = require('../middlewares/checkAuth.middleware');
 const {
+    emailDeliveryEnabled,
     enviarCodigoVerificacaoEmail,
     enviarRecuperacaoSenhaEmail
 } = require('../services/email.service');
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 describe('Auth Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        emailDeliveryEnabled.mockReturnValue(true);
     });
 
     describe('POST /api/auth/login', () => {
@@ -154,6 +156,18 @@ describe('Auth Controller', () => {
     });
 
     describe('POST /api/auth/enviar-codigo-verificacao', () => {
+        it('não cria código quando a entrega de e-mail está desabilitada', async () => {
+            emailDeliveryEnabled.mockReturnValue(false);
+
+            const response = await request(app)
+                .post('/api/auth/enviar-codigo-verificacao')
+                .send({ email: 'test@example.com' });
+
+            expect(response.status).toBe(202);
+            expect(authModel.enviarCodigoVerificacaoPorEmail).not.toHaveBeenCalled();
+            expect(enviarCodigoVerificacaoEmail).not.toHaveBeenCalled();
+        });
+
         it('não expõe o código quando o envio está em modo debug', async () => {
             authModel.enviarCodigoVerificacaoPorEmail.mockResolvedValue({
                 enviar: true,
@@ -175,6 +189,18 @@ describe('Auth Controller', () => {
     });
 
     describe('POST /api/auth/recuperar-senha', () => {
+        it('não cria token quando a entrega de e-mail está desabilitada', async () => {
+            emailDeliveryEnabled.mockReturnValue(false);
+
+            const response = await request(app)
+                .post('/api/auth/recuperar-senha')
+                .send({ email: 'existente@example.test' });
+
+            expect(response.status).toBe(202);
+            expect(authModel.criarTokenRecuperacao).not.toHaveBeenCalled();
+            expect(enviarRecuperacaoSenhaEmail).not.toHaveBeenCalled();
+        });
+
         it('mantém a resposta indistinguível entre conta ausente e falha do provedor', async () => {
             authModel.criarTokenRecuperacao.mockResolvedValueOnce(null);
             const contaAusente = await request(app)

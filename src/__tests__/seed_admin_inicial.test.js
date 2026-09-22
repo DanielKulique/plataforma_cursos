@@ -82,6 +82,9 @@ describe('bootstrap de usuário privilegiado', () => {
         expect(result).toEqual({ sucesso: true, criado: true, idUsuario: 10, tipo: 'ADMIN' });
         expect(connection.commit).toHaveBeenCalledTimes(1);
         expect(connection.query.mock.calls.some(([sql]) => sql.includes('EmailVerificacoes'))).toBe(true);
+        const verificationCall = connection.query.mock.calls.find(([sql]) => sql.includes('INSERT INTO EmailVerificacoes'));
+        expect(verificationCall[0]).toContain('VALUES (?, NULL, 1, NULL)');
+        expect(verificationCall[1]).toEqual([validEnv.BOOTSTRAP_USER_EMAIL]);
         const logs = JSON.stringify([...output.info.mock.calls, ...output.error.mock.calls]);
         [validEnv.DB_PASSWORD, validEnv.BOOTSTRAP_USER_PASSWORD, validEnv.BOOTSTRAP_USER_EMAIL]
             .forEach((sensitive) => expect(logs).not.toContain(sensitive));

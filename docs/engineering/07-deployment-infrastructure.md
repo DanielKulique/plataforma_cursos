@@ -96,7 +96,7 @@ O rollout inicial do Goal 11A foi executado no staging em 17/09/2026: backup off
 | --- | --- | --- | --- |
 | MySQL | Fonte de verdade obrigatória | Crítica para sessão/dados | Healthz 503/startup falha; sem banco alternativo |
 | Filesystem/volume local | PDFs obrigatórios após emissão/upload | Crítica para bytes; registros podem existir sem arquivo | 503 controlado em bytes privados ausentes; reconciliação e restore operacional |
-| Resend | Envio por SDK integrado; staging pode desabilitar | Crítica para entrega de verificação/reset | Modo debug/disabled não envia; reset mantém 202. Não é recuperação funcional sem e-mail. |
+| Resend | Envio por SDK integrado; staging/produção podem desabilitar explicitamente | Crítica para entrega de verificação/reset | Com entrega desabilitada, cadastro falha antes de gravar e reset mantém resposta genérica sem criar token. |
 | Motor IA | APIs externas de comparação/contexto/indexação | Crítica só para detector | Flag desabilita e informa indisponibilidade; sem inferência local no Node |
 | YouTube | Player embed no browser | Conteúdos de vídeo | Mensagem/links da UI; sem cópia offline automática |
 | Google Fonts | Tipografia do browser | Baixa | Famílias locais/system-ui/serif no CSS |

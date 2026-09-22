@@ -52,8 +52,8 @@ async function criarUsuarioComVerificacao(usuario, verificado) {
     const { nome_completo, cpf, senha, telefone, tipo } = usuario;
     const email = normalizarEmail(usuario.email);
     const hash = await bcrypt.hash(senha, FATOR_CUSTO);
-    const codigo = gerarCodigoVerificacao();
-    const expiraEm = calcularExpiracaoCodigo();
+    const codigo = verificado ? null : gerarCodigoVerificacao();
+    const expiraEm = verificado ? null : calcularExpiracaoCodigo();
     const connection = await db.getConnection();
 
     try {

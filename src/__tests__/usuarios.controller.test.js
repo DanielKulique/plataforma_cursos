@@ -19,6 +19,7 @@ app.use('/api/usuarios', usuariosRoutes);
 describe('Usuarios Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        emailService.emailDeliveryEnabled.mockReturnValue(true);
         emailService.enviarCodigoVerificacaoEmail.mockResolvedValue({ enviado: true, modo: 'resend' });
     });
 
@@ -43,6 +44,29 @@ describe('Usuarios Controller', () => {
             expect(usuariosModel.criarAlunoComVerificacao).toHaveBeenCalledWith(expect.objectContaining({ email: 'aluno1@example.com' }));
             expect(response.body.verificacao).toMatchObject({ estado: 'PENDENTE', email_enviado: true });
             expect(usuariosModel.count).toBeUndefined();
+        });
+
+        it('falha antes de criar usuário quando a entrega de e-mail está desabilitada', async () => {
+            emailService.emailDeliveryEnabled.mockReturnValue(false);
+
+            const response = await request(app).post('/api/usuarios').send(cadastroValido('8'));
+
+            expect(response.status).toBe(503);
+            expect(response.body).toEqual(expect.objectContaining({
+                error: 'Cadastro temporariamente indisponível.'
+            }));
+            expect(usuariosModel.criarAlunoComVerificacao).not.toHaveBeenCalled();
+            expect(emailService.enviarCodigoVerificacaoEmail).not.toHaveBeenCalled();
+        });
+
+        it('expõe somente a disponibilidade pública do cadastro', async () => {
+            emailService.emailDeliveryEnabled.mockReturnValue(false);
+            const response = await request(app).get('/api/usuarios/cadastro-status');
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual({
+                disponivel: false,
+                mensagem: 'Novos cadastros estão temporariamente indisponíveis.'
+            });
         });
 
         it.each([['ADMIN', '4'], ['PROFESSOR', '5']])('deve rejeitar papel %s no cadastro público', async (tipo, sufixo) => {

@@ -17,6 +17,8 @@ function apenasCamposPermitidos(campos) {
 	});
 }
 
+router.get('/cadastro-status', UsuariosController.statusCadastro);
+
 router.post('/',
 		body('email').customSanitizer(normalizarEmail).isEmail().withMessage('O e-mail fornecido não é valido.'),
 	body('senha')

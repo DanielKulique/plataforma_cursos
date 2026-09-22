@@ -333,8 +333,10 @@ describe('Goal Visual 2 - formulários acessíveis', () => {
             'bloco-pos-cadastro': new FakeElement('bloco-pos-cadastro'),
             'link-confirmar-email': new FakeElement('link-confirmar-email')
         });
-        const fetch = jest.fn();
+        const fetch = jest.fn().mockResolvedValue(response({ payload: { disponivel: true } }));
         loadCadastro({ document, fetch });
+        await new Promise((resolve) => setImmediate(resolve));
+        fetch.mockClear();
 
         await form.dispatch('submit', { preventDefault: jest.fn() });
 
@@ -347,6 +349,7 @@ describe('Goal Visual 2 - formulários acessíveis', () => {
     it('bloqueia duplicidade e conclui cadastro sem incluir papel no payload', async () => {
         const pendingAvailability = deferred();
         const fetch = jest.fn()
+            .mockResolvedValueOnce(response({ payload: { disponivel: true } }))
             .mockImplementationOnce(() => pendingAvailability.promise)
             .mockResolvedValueOnce(response({ payload: {
                 id_usuario: 10,
@@ -371,6 +374,8 @@ describe('Goal Visual 2 - formulários acessíveis', () => {
             'link-confirmar-email': verificationLink
         });
         loadCadastro({ document, fetch });
+        await new Promise((resolve) => setImmediate(resolve));
+        fetch.mockClear();
 
         const firstSubmit = form.dispatch('submit', { preventDefault: jest.fn() });
         await form.dispatch('submit', { preventDefault: jest.fn() });

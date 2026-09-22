@@ -1,0 +1,3 @@
+ALTER TABLE `EmailVerificacoes`
+  MODIFY COLUMN `codigo` VARCHAR(6) NULL,
+  MODIFY COLUMN `expira_em` DATETIME NULL;

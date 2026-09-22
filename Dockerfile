@@ -15,6 +15,7 @@ COPY --chown=node:node src ./src
 COPY --chown=node:node scripts/migrate_database.js scripts/schema_contract.js \
   scripts/schema-contract.json \
   scripts/seed_admin_inicial.js scripts/test_database_safety.js \
+  scripts/user_verify.js \
   scripts/register_database_identity.js scripts/verify_database_identity.js \
   scripts/seed_staging_demo.js scripts/seed_learning_path_demo.js scripts/verify_schema.js \
   scripts/verify_certificate_storage.js scripts/reconcile_storage.js scripts/smoke_storage_integrity_staging.js \

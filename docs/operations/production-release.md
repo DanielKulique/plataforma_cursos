@@ -65,9 +65,23 @@ dc run --rm --no-deps -it \
 
 O prompt solicita e confirma a senha sem eco. A CLI não aceita senha em argumento,
 variável ou arquivo, gera somente o hash bcrypt e marca o e-mail da conta privilegiada
-como verificado para permitir acesso quando o serviço de e-mail está desligado. CPF e
+como verificado, sem gerar código, para permitir acesso quando o serviço de e-mail está desligado. CPF e
 telefone são opcionais; o bootstrap recusa conflito de CPF/e-mail/papel e não promove
 contas silenciosamente.
+
+Enquanto `EMAIL_DELIVERY_ENABLED=false`, o cadastro público responde 503 antes de
+criar usuário ou código, e a recuperação mantém a resposta genérica sem criar token.
+Liste contas pendentes sem exibir senha/código e verifique somente o e-mail escolhido:
+
+```bash
+dc run --rm --no-deps -T app npm run user:verify -- --list
+dc run --rm --no-deps -T \
+  -e ALLOW_PRODUCTION_USER_VERIFY=I_UNDERSTAND \
+  app npm run user:verify -- email@exemplo.com
+```
+
+O segundo comando é idempotente, limpa código/expiração pendentes, preserva senha e
+papel e não envia e-mail.
 
 Para a primeira execução completa, a CLI coordenada solicita as duas senhas, cria
 ADMIN e PROFESSOR, importa conteúdo e valida login/cookie/CSRF e escopo do professor:

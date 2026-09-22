@@ -2,6 +2,7 @@ const authModel = require('../models/auth.models');
 const logger = require('../../utils/logger');
 const { validationResult } = require('express-validator');
 const {
+    emailDeliveryEnabled,
     enviarCodigoVerificacaoEmail,
     enviarRecuperacaoSenhaEmail
 } = require('../../services/email.service');
@@ -68,6 +69,14 @@ async function recuperarSenha(req, res) {
         mensagem: 'Se existir uma conta para este e-mail, enviaremos as instruções de recuperação.'
     };
 
+    if (!emailDeliveryEnabled()) {
+        logger.warn('auth.recuperacao.indisponivel', {
+            requestId: req.id,
+            reason: 'EMAIL_DELIVERY_DISABLED'
+        });
+        return res.status(202).json(resposta);
+    }
+
     try {
         const recuperacao = await authModel.criarTokenRecuperacao(req.body.email);
         if (recuperacao) {
@@ -118,6 +127,12 @@ async function enviarCodigoVerificacao(req, res) {
         const validation = validationResult(req);
         if (!email || !validation.isEmpty()) {
             return res.status(400).json({ mensagem: 'E-mail é obrigatório.' });
+        }
+
+        if (!emailDeliveryEnabled()) {
+            return res.status(202).json({
+                mensagem: 'Se houver uma conta pendente para este e-mail, enviaremos um novo código.'
+            });
         }
 
         const resultado = await authModel.enviarCodigoVerificacaoPorEmail(email);

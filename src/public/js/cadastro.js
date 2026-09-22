@@ -51,6 +51,14 @@ function setFormCompleted() {
     submitButton.textContent = 'Cadastro concluído';
 }
 
+function setRegistrationAvailable(isAvailable, message) {
+    if (!formCadastro || isAvailable) return;
+    completed = true;
+    for (const control of formCadastro.elements) control.disabled = true;
+    formCadastro.setAttribute('aria-disabled', 'true');
+    exibirMensagem(message || 'Novos cadastros estão temporariamente indisponíveis.', 'info');
+}
+
 function clearFieldErrors() {
     ['nome_completo', 'cpf', 'email', 'senha', 'confirmar_senha'].forEach((fieldName) => {
         formCadastro?.[fieldName]?.removeAttribute('aria-invalid');
@@ -320,7 +328,7 @@ async function onReenviarCodigo() {
     }
 }
 
-function inicializarCadastro() {
+async function inicializarCadastro() {
     if (!formCadastro) return;
 
     // Melhoria de UX: enquanto digita CPF, mantém apenas números
@@ -330,6 +338,16 @@ function inicializarCadastro() {
 
     formCadastro.addEventListener('submit', onSubmitCadastro);
     botaoReenviarCodigo?.addEventListener('click', onReenviarCodigo);
+
+    try {
+        const response = await fetch('/api/usuarios/cadastro-status');
+        const payload = await response.json().catch(() => ({}));
+        if (response.ok && payload.disponivel === false) {
+            setRegistrationAvailable(false, payload.mensagem);
+        }
+    } catch {
+        // O POST continua sendo a decisão autoritativa e falha fechado no servidor.
+    }
 }
 
 inicializarCadastro();

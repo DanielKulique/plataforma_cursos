@@ -60,6 +60,30 @@ test.each([[0,false],[7,false],[8,true],[9,true],[10,true]])('%i/10: gate HTTP d
     const r=await abrir(); expect(r.status).toBe(liberada?200:409);
     if(!liberada) { expect(JSON.stringify(r.body)).not.toContain('Pergunta'); expect((await enviar(final,3)).status).toBe(409); }
 });
+test('progresso >=80% já existente libera a prova sem novo evento de progresso',async()=>{
+    await concluir(8);
+    const [[matriculaAntes]] = await pool.query(
+        'SELECT progresso_percentual FROM Matriculas WHERE id_matricula = ?', [matricula]
+    );
+    expect(Number(matriculaAntes.progresso_percentual)).toBe(0);
+    expect(await requisitos()).toMatchObject({
+        total_trilha: 10, trilha_realizada: 8, progresso_para_prova: 80, prova_liberada: true
+    });
+
+    const lista = await request(app)
+        .get(`/api/turmas/${turma}/questionarios`)
+        .set(auth('aluno'));
+    expect(lista.status).toBe(200);
+    expect(lista.body.questionarios.find(item => Number(item.id_questionario) === final.id))
+        .toMatchObject({
+            tipo: 'PROVA', prova_final: 1, bloqueada: false,
+            requisitos: { progresso_para_prova: 80, prova_liberada: true }
+        });
+
+    const disponivel = await abrir();
+    expect(disponivel.status).toBe(200);
+    expect(disponivel.body.questionario.id_questionario).toBe(final.id);
+});
 test('exercícios contam uma vez, sem mínimo, apenas ativos/finalizados e do aluno/turma',async()=>{
     await tentativa(exercicio,0); await tentativa(exercicio,30); await tentativa(outro,100,users.admin.id_usuario);
     await tentativa(outro,100,users.aluno.id_usuario,false);

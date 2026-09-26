@@ -385,7 +385,7 @@ async function listarMetadadosTurma(idTurma) {
 
 async function listarTrilhaAluno(idTurma, idAluno) {
     const [rows] = await db.query(
-        `SELECT q.id_questionario, q.id_turma, q.id_modulo, q.ordem, q.titulo, q.descricao, q.tipo, q.prova_final,
+        `SELECT q.id_questionario, q.id_turma, q.id_modulo, q.ordem, q.titulo, q.descricao, q.tipo, q.prova_final, q.ativo,
                 EXISTS(SELECT 1 FROM Q_Tentativas t WHERE t.id_questionario = q.id_questionario
                        AND t.id_usuario = m.id_aluno AND t.ciclo_matricula = m.ciclo_atual
                        AND t.finalizada_em IS NOT NULL) AS concluido,

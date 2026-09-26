@@ -76,9 +76,11 @@ test('progresso >=80% já existente libera a prova sem novo evento de progresso'
     expect(lista.status).toBe(200);
     expect(lista.body.questionarios.find(item => Number(item.id_questionario) === final.id))
         .toMatchObject({
-            tipo: 'PROVA', prova_final: 1, bloqueada: false,
+            tipo: 'PROVA', prova_final: 1, ativo: 1, bloqueada: false,
             requisitos: { progresso_para_prova: 80, prova_liberada: true }
         });
+    expect(lista.body.questionarios.find(item => Number(item.id_questionario) === exercicio.id))
+        .toMatchObject({ tipo: 'EXERCICIO', ativo: 1, bloqueada: false });
 
     const disponivel = await abrir();
     expect(disponivel.status).toBe(200);

@@ -48,7 +48,9 @@ describe('Goal 13 — arquitetura de informação do aluno', () => {
         const certificates = read('js', 'meus-certificados.js');
         expect(assessments).toContain("item.tipo === 'EXERCICIO'");
         expect(assessments).toContain("item.tipo === 'PROVA'");
-        expect(assessments).toContain('O backend valida a liberação.');
+        expect(assessments).toContain('item.bloqueada');
+        expect(assessments).toContain('requisito_percentual_prova');
+        expect(assessments).toContain('progresso_para_prova');
         expect(progress).toContain('course.progresso_percentual');
         expect(progress).toContain("item.tipo === 'EXERCICIO'");
         expect(certificates).toContain('getMeusCertificados({ retries: 1 })');

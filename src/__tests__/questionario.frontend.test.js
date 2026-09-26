@@ -107,7 +107,8 @@ describe('questionário real no frontend do aluno', () => {
             'utf8'
         );
 
-        expect(sala).toContain('A prova final fica disponível após atingir 80% da trilha.');
+        expect(sala).toContain('Complete pelo menos ${requisito}% da trilha para liberar esta avaliação.');
+        expect(sala).toContain('Seu progresso: ${progresso}%.');
         expect(fluxo).toContain('Você pode tentar novamente.');
         expect(fluxo).not.toMatch(/reprovad[oa]/i);
         expect(fluxo).toContain("questionario.prova_final ? 'PROVA FINAL · mínimo 75%'");

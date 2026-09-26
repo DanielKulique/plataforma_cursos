@@ -18,7 +18,12 @@ function renderList(target, items, emptyMessage, closed) {
     items.forEach((item) => {
         const row = createElement('li', 'summary-row'); const copy = createElement('div');
         copy.append(createElement('h3', '', item.titulo), createElement('p', '', `${item.total_perguntas || 0} pergunta(s) · ${assessmentState(item, closed)}`));
-        if (item.prova_final && item.bloqueada) copy.append(createElement('p', '', 'A prova final fica disponível após atingir 80% da trilha. O backend valida a liberação.'));
+        if (item.prova_final && item.bloqueada) {
+            const requisito = item.requisitos?.requisito_percentual_prova;
+            const progresso = item.requisitos?.progresso_para_prova ?? 0;
+            copy.append(createElement('p', '', `Complete pelo menos ${requisito}% da trilha para liberar esta avaliação.`));
+            copy.append(createElement('p', '', `Seu progresso: ${progresso}%.`));
+        }
         const link = createElement('a', 'action-button', item.concluido ? 'Revisar / tentar novamente' : 'Iniciar');
         link.href = `/questionario.html?tipo=${String(item.tipo).toLowerCase()}&id_turma=${encodeURIComponent(idTurma)}&id_questionario=${encodeURIComponent(item.id_questionario)}`;
         if (closed || item.bloqueada || !item.ativo || !Number(item.total_perguntas)) { link.removeAttribute('href'); link.setAttribute('aria-disabled', 'true'); link.classList.add('is-disabled'); }

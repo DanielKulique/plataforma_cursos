@@ -1,5 +1,7 @@
 'use strict';
 
+const PERCENTUAL_LIBERACAO_PROVA = 80;
+
 // Todos os registros de Conteudos contam, independentemente do tipo ou módulo.
 // Questionarios (exercícios/provas) não participam deste progresso.
 const COLUNAS_PROGRESSO_DERIVADO = `
@@ -56,7 +58,8 @@ function resumirRequisitos(progresso, totalExercicios, exerciciosRealizados, pro
         exercicios_realizados: Number(exerciciosRealizados || 0),
         total_trilha: total, trilha_realizada: realizados,
         progresso_para_prova: total ? Math.round(realizados / total * 100) : 0,
-        prova_liberada: total > 0 && realizados * 100 >= total * 80,
+        requisito_percentual_prova: PERCENTUAL_LIBERACAO_PROVA,
+        prova_liberada: total > 0 && realizados * 100 >= total * PERCENTUAL_LIBERACAO_PROVA,
         prova_final_aprovada: Boolean(Number(provaFinalAprovada)),
         elegivel_aprovacao: progresso.conteudo_concluido && Boolean(Number(provaFinalAprovada))
     };
@@ -112,4 +115,4 @@ async function avaliarAprovacao(connection, idAluno, idTurma) {
     return requisitos;
 }
 
-module.exports = { buscarRequisitos, resumirRequisitos, exigirProvaLiberada, avaliarAprovacao, COLUNAS_PROGRESSO_DERIVADO, resumirProgresso, normalizarProgresso, buscarProgresso };
+module.exports = { buscarRequisitos, resumirRequisitos, exigirProvaLiberada, avaliarAprovacao, COLUNAS_PROGRESSO_DERIVADO, resumirProgresso, normalizarProgresso, buscarProgresso, PERCENTUAL_LIBERACAO_PROVA };

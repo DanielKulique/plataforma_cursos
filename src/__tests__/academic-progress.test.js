@@ -37,11 +37,16 @@ test('consultas de estado acadêmico vinculam tentativas ao ciclo atual', () => 
 
 const { resumirRequisitos } = require('../api/services/academic-progress.service');
 test.each([[0,10,false],[7,10,false],[8,10,true],[9,10,true],[10,10,true],
-    [3,4,false],[4,5,true],[80,101,false],[81,101,true],[0,0,false]])(
+    [3,4,false],[79,100,false],[4,5,true],[8,10,true],[9,10,true],[80,101,false],[81,101,true],[0,0,false]])(
     'trilha exata %i/%i', (feitos,total,liberada) => {
         expect(resumirRequisitos(resumirProgresso(total,feitos),0,0,0).prova_liberada).toBe(liberada);
     }
 );
+test('exibe o limite da prova e conserva a comparação inteira exata', () => {
+    const requisitos = resumirRequisitos(resumirProgresso(101, 80), 0, 0, 0);
+    expect(requisitos).toMatchObject({ requisito_percentual_prova: 80, progresso_para_prova: 79, prova_liberada: false });
+    expect(resumirRequisitos(resumirProgresso(5, 4), 0, 0, 0).prova_liberada).toBe(true);
+});
 test('conclusão exata, liberação e prova são requisitos distintos',()=>{
     const r=resumirRequisitos(resumirProgresso(201,200),2,2,1);
     expect(r).toMatchObject({prova_liberada:true,conteudo_concluido:false,elegivel_aprovacao:false});

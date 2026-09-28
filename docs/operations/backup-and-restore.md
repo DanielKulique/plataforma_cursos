@@ -72,8 +72,9 @@ docker compose --env-file .env.production -f compose.yaml run --rm --no-deps -T 
 ```
 
 Execute `scripts/backup_status.sh` com as mesmas variáveis operacionais para conferir RPO
-local/remoto. Falha, `RPO_AT_RISK`, espaço insuficiente ou marcador incompleto exigem diagnóstico;
-não altere checksums para fazer um conjunto inválido passar.
+local/remoto e marcador remoto. Esse status não substitui a validação do pacote baixado. Falha,
+`RPO_AT_RISK`, espaço insuficiente ou marcador incompleto exigem diagnóstico; não altere checksums
+para fazer um conjunto inválido passar.
 
 ## Offsite e ensaio
 
@@ -83,13 +84,21 @@ Com a configuração do provedor presente no ambiente, baixe para um diretório 
 ./scripts/backup_offsite.sh download latest /caminho/novo/drill-download
 ```
 
-O download verifica ponteiro latest-good, complete, pacote, caminhos de extração e hashes internos.
-Upload parcial não pode ser selecionado como COMPLETE.
+O download verifica ponteiro latest-good, complete, SHA-256 esperado do pacote, caminhos de extração,
+manifesto e hashes internos. A extração usa `--no-same-owner`; como o downloader operacional pode
+ser root, o script transfere somente a árvore temporária extraída ao UID/GID do serviço verificador
+e normaliza diretórios para `0700` e arquivos para `0600`. O mount de verificação contém apenas o
+backup baixado. O pacote e o marcador offsite originais não são alterados. Upload parcial não pode
+ser selecionado como COMPLETE.
 
 `./scripts/restore_drill.sh` usa `BACKUP_DRILL_DIR`, `RPO_HOURS`, `RTO_HOURS` e configuração
-Compose/offsite. Cria projeto, rede, MySQL e volumes exclusivos, restaura, valida e os remove
-no final. `RESTORE_SMOKE_CREDENTIALS_FILE` externo permite smoke autenticado sem senha em argv.
-O relatório fica em `reports/` dentro da área do drill. Não usa staging como alvo destrutivo.
+offsite. Por padrão, seleciona `compose.restore-drill.yaml`, que desativa email e detector, mesmo se
+o ambiente de backup indicar outro override. `RESTORE_DRILL_ENV_FILE` escolhe o arquivo de ambiente;
+`RESTORE_DRILL_OVERRIDE_FILE` pode escolher outro override, desde que todos os volumes renderizados
+continuem exclusivos ao projeto temporário. O drill baixa e verifica o pacote, restaura banco/storage no projeto isolado,
+executa health check e remove containers, volumes, imagem temporária, cópia baixada e relatórios,
+inclusive em falha. `RESTORE_SMOKE_CREDENTIALS_FILE` externo permite smoke autenticado sem senha em
+argv. Não usa volumes de produção como alvo destrutivo.
 
 ## Restore: primeiro diagnóstico, depois aplicação explícita
 

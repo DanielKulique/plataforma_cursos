@@ -38,10 +38,10 @@ if [[ "$mode" == in-place ]]; then
     }
 fi
 backup_dir=$(realpath "$backup_dir")
+backup_id=$(basename "$backup_dir")
+[[ "$backup_id" =~ ^backup-[0-9]{8}T[0-9]{6}Z-[0-9a-f-]{36}$ ]] || { echo 'backup_id inválido.' >&2; exit 64; }
 backup_cli() {
-    local mount
-    mount=$(dirname "$backup_dir")
-    "${COMPOSE[@]}" run --rm --no-deps -T -v "$mount:$mount:ro" app node scripts/backup_manifest.js "$@"
+    "${COMPOSE[@]}" run --rm --no-deps -T -v "$backup_dir:/backup/$backup_id:ro" app node scripts/backup_manifest.js "$1" --dir "/backup/$backup_id"
 }
 
 echo "Target: $target"
@@ -59,7 +59,9 @@ gzip -t "$backup_dir/database.sql.gz"
 for required in DB_PASSWORD MYSQL_ROOT_PASSWORD JWT_SECRET; do
     grep -Eq "^${required}=.+" "$COMPOSE_ENV_FILE" || { echo "Secret externo ausente: $required" >&2; exit 1; }
 done
-"${COMPOSE[@]}" run --rm --no-deps -T app npm run db:identity:verify
+if [[ "$mode" == in-place ]]; then
+    "${COMPOSE[@]}" run --rm --no-deps -T app npm run db:identity:verify
+fi
 required_kb=$(du -sk "$backup_dir" | awk '{print $1 * 3}')
 available_kb=$(df -Pk "$ROOT" | awk 'NR==2 {print $4}')
 (( available_kb > required_kb )) || { echo 'Espaço livre insuficiente para restore.' >&2; exit 1; }

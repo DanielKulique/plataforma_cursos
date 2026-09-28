@@ -3,6 +3,8 @@ set -Eeuo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT"
+umask 077
+source "$ROOT/scripts/lib/backup-offsite-permissions.sh"
 BACKUP_REMOTE_PROVIDER=${BACKUP_REMOTE_PROVIDER:-azure}
 AZURE_STORAGE_CONTAINER=${AZURE_STORAGE_CONTAINER:-plataforma-backups}
 BACKUP_REMOTE_PREFIX=${BACKUP_REMOTE_PREFIX:-plataforma-cursos/backups}
@@ -14,9 +16,16 @@ if [[ -n "${COMPOSE_OVERRIDE_FILE:-}" ]]; then COMPOSE+=(-f "$COMPOSE_OVERRIDE_F
 fail() { echo "BACKUP_OFFSITE_FAILED: $*" >&2; exit 1; }
 az_storage() { az storage "$@" --account-name "$AZURE_STORAGE_ACCOUNT" --auth-mode login; }
 backup_verify() {
-    local directory=$1 mount
-    mount=$(dirname "$directory")
-    "${COMPOSE[@]}" run --rm --no-deps -T -v "$mount:$mount:ro" app node scripts/backup_manifest.js verify --dir "$directory" >/dev/null
+    local directory=$1 backup_id
+    backup_id=$(basename "$directory")
+    "${COMPOSE[@]}" run --rm --no-deps -T -v "$directory:/backup/$backup_id:ro" app node scripts/backup_manifest.js verify --dir "/backup/$backup_id" >/dev/null
+    printf 'OFFSITE_MANIFEST_GOOD backup_id=%s\n' "$backup_id"
+}
+backup_verifier_identity() {
+    local identity
+    identity=$("${COMPOSE[@]}" run --rm --no-deps -T app sh -c 'printf "%s:%s\n" "$(id -u)" "$(id -g)"') || fail 'não foi possível identificar o usuário verificador.'
+    [[ "$identity" =~ ^[0-9]+:[0-9]+$ ]] || fail 'identidade do verificador inválida.'
+    printf '%s\n' "$identity"
 }
 
 [[ "$BACKUP_REMOTE_PROVIDER" == azure ]] || fail 'provider não suportado.'
@@ -32,19 +41,19 @@ if ! az account show --output none 2>/dev/null; then az login --identity --allow
 public_access=$(az_storage container show --name "$AZURE_STORAGE_CONTAINER" --query properties.publicAccess -o tsv)
 [[ -z "$public_access" || "$public_access" == None || "$public_access" == null ]] || fail 'container remoto é público.'
 
-upload() {
+upload() (
     local backup_dir=$1 backup_id package downloaded completion sidecar latest sha remote_root created cutoff newest marker rest id stamp epoch
     backup_dir=$(realpath "$backup_dir")
     backup_id=$(basename "$backup_dir")
-    backup_verify "$backup_dir"
     [[ "$backup_id" =~ ^backup-[0-9]{8}T[0-9]{6}Z-[0-9a-f-]{36}$ ]] || fail 'backup_id inválido.'
+    backup_verify "$backup_dir"
     remote_root="$BACKUP_REMOTE_PREFIX/$backup_id"
     package=$(mktemp "${TMPDIR:-/tmp}/$backup_id.XXXXXX.tar.gz")
     downloaded=$(mktemp "${TMPDIR:-/tmp}/$backup_id.download.XXXXXX.tar.gz")
     completion=$(mktemp "${TMPDIR:-/tmp}/$backup_id.complete.XXXXXX.json")
     sidecar=$(mktemp "${TMPDIR:-/tmp}/$backup_id.sha256.XXXXXX")
     latest=$(mktemp "${TMPDIR:-/tmp}/$backup_id.latest.XXXXXX.json")
-    trap 'rm -f "$package" "$downloaded" "$completion" "$sidecar" "$latest"' RETURN
+    trap 'rm -f -- "$package" "$downloaded" "$completion" "$sidecar" "$latest"' EXIT
     created=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["created_at"], end="")' "$backup_dir/manifest.json")
     tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="$created" -C "$(dirname "$backup_dir")" -czf "$package" "$backup_id"
     sha=$(sha256sum "$package" | awk '{print $1}')
@@ -78,14 +87,14 @@ upload() {
         fi
     done < <(az_storage blob list --container-name "$AZURE_STORAGE_CONTAINER" --prefix "$BACKUP_REMOTE_PREFIX/" --query "[?ends_with(name, '/complete.json')].name" -o tsv)
     printf 'OFFSITE_GOOD backup_id=%s target=azure://%s/%s/%s package_sha256=%s\n' "$backup_id" "$AZURE_STORAGE_ACCOUNT" "$AZURE_STORAGE_CONTAINER" "$remote_root" "$sha"
-}
+)
 
-download() {
-    local requested=$1 destination=$2 pointer backup_id remote_root package completion expected actual listing
+download() (
+    local requested=$1 destination=$2 pointer backup_id remote_root package completion expected actual listing extract_root verifier_identity
     mkdir -p "$destination"
     destination=$(realpath "$destination")
     pointer=$(mktemp "$destination/.partial-latest.XXXXXX.json")
-    trap 'rm -f "$pointer"' RETURN
+    trap 'rm -f -- "$pointer" "${package:-}" "${completion:-}" "${listing:-}"; [[ -z "${extract_root:-}" ]] || rm -rf -- "$extract_root"' EXIT
     if [[ "$requested" == latest ]]; then
         az_storage blob download --container-name "$AZURE_STORAGE_CONTAINER" \
             --name "$BACKUP_REMOTE_PREFIX/latest-good.json" --file "$pointer" \
@@ -97,24 +106,29 @@ download() {
     package=$(mktemp "$destination/.partial-$backup_id.XXXXXX.tar.gz")
     completion=$(mktemp "$destination/.partial-$backup_id.XXXXXX.json")
     listing=$(mktemp "$destination/.partial-$backup_id.XXXXXX.list")
-    trap 'rm -f "$pointer" "$package" "$completion" "$listing"; rm -rf "$destination/.extract-$backup_id"' RETURN
+    extract_root="$destination/.extract-$backup_id"
     az_storage blob download --container-name "$AZURE_STORAGE_CONTAINER" --name "$remote_root/complete.json" --file "$completion" --overwrite true --only-show-errors >/dev/null
     expected=$(python3 -c 'import json,re,sys; x=json.load(open(sys.argv[1], encoding="utf-8")); ok=x.get("status")=="COMPLETE" and x.get("backup_id")==sys.argv[2] and re.fullmatch(r"[0-9a-f]{64}",x.get("package_sha256", "")); print(x["package_sha256"], end="") if ok else sys.exit(2)' "$completion" "$backup_id")
     az_storage blob download --container-name "$AZURE_STORAGE_CONTAINER" --name "$remote_root/package.tar.gz" --file "$package" --overwrite true --only-show-errors >/dev/null
     actual=$(sha256sum "$package" | awk '{print $1}')
     [[ "$actual" == "$expected" ]] || fail 'SHA-256 do pacote remoto divergiu.'
+    printf 'OFFSITE_PACKAGE_SHA256_GOOD backup_id=%s sha256=%s\n' "$backup_id" "$actual"
     tar -tzf "$package" >"$listing"
     python3 -c 'import sys; names=[x for x in open(sys.argv[1], encoding="utf-8").read().splitlines() if x]; bid=sys.argv[2]; sys.exit(0 if all((n in (bid,bid+"/") or n.startswith(bid+"/")) and ".." not in n.split("/") and not n.startswith("/") for n in names) else 2)' "$listing" "$backup_id" || fail 'pacote contém caminho inseguro.'
     if tar -tvzf "$package" | awk 'substr($1,1,1) ~ /[lhbcp]/ { bad=1 } END { exit bad ? 0 : 1 }'; then fail 'pacote contém entrada não regular.'; fi
-    rm -rf "$destination/.extract-$backup_id"
-    mkdir "$destination/.extract-$backup_id"
-    tar -xzf "$package" -C "$destination/.extract-$backup_id" --no-same-owner --no-same-permissions
-    backup_verify "$destination/.extract-$backup_id/$backup_id"
+    rm -rf -- "$extract_root"
+    mkdir -m 700 -- "$extract_root"
+    # --no-same-owner evita confiar no owner do tar, mas root ainda cria arquivos root:root.
+    # Normalize somente a árvore temporária para o UID/GID real do serviço verificador.
+    tar -xzf "$package" -C "$extract_root" --no-same-owner --no-same-permissions
+    verifier_identity=$(backup_verifier_identity)
+    backup_prepare_verifier_tree "$extract_root" "$verifier_identity" || fail 'não foi possível preparar a árvore privada do verificador.'
+    backup_verify "$extract_root/$backup_id"
     [[ ! -e "$destination/$backup_id" ]] || fail 'destino do download já existe.'
-    mv "$destination/.extract-$backup_id/$backup_id" "$destination/$backup_id"
-    rmdir "$destination/.extract-$backup_id"
+    mv -- "$extract_root/$backup_id" "$destination/$backup_id"
+    rmdir -- "$extract_root"
     printf '%s\n' "$destination/$backup_id"
-}
+)
 
 case "${1:-}" in
     upload) [[ $# == 2 ]] || fail 'uso: backup_offsite.sh upload <backup-dir>'; upload "$2" ;;

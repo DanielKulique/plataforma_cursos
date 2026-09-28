@@ -1,0 +1,5 @@
+services:
+  app:
+    environment:
+      EMAIL_DELIVERY_ENABLED: 'false'
+      DETECTOR_ENABLED: 'false'

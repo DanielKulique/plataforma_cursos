@@ -1,7 +1,9 @@
 'use strict';
 
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const root = path.join(__dirname, '..', '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
@@ -25,6 +27,7 @@ describe('infraestrutura de backup e restore', () => {
         const restore = read('scripts/restore_database.sh');
         expect(restore.indexOf('backup_cli verify')).toBeLessThan(restore.indexOf('if [[ "$apply" != true ]]'));
         expect(restore.indexOf('if [[ "$apply" != true ]]')).toBeLessThan(restore.indexOf('DROP DATABASE IF EXISTS'));
+        expect(restore).toContain('if [[ "$mode" == in-place ]]; then\n    "${COMPOSE[@]}" run --rm --no-deps -T app npm run db:identity:verify\nfi');
         expect(restore).toContain('"preflight":int(preflight)');
         expect(restore).toContain('Target não corresponde ao ambiente configurado');
         expect(restore).toContain('"$target" == "$configured_target"');
@@ -62,5 +65,110 @@ describe('infraestrutura de backup e restore', () => {
         expect(status).toContain('x.get("backup_id")==sys.argv[2]');
         expect(offsite).not.toContain("sort -r | head -n 1");
         expect(status).not.toContain("sort -r | head -n 1");
+    });
+
+    it('corrige ownership somente depois do SHA do pacote e preserva modos privados', () => {
+        const offsite = read('scripts/backup_offsite.sh');
+        const permissions = read('scripts/lib/backup-offsite-permissions.sh');
+        const checksum = offsite.indexOf('[[ "$actual" == "$expected" ]]');
+        const extraction = offsite.indexOf('tar -xzf "$package" -C "$extract_root"');
+        expect(checksum).toBeGreaterThanOrEqual(0);
+        expect(checksum).toBeLessThan(extraction);
+        expect(offsite).toContain('--no-same-owner --no-same-permissions');
+        expect(offsite).toContain('backup_prepare_verifier_tree "$extract_root" "$verifier_identity"');
+        expect(offsite.indexOf('source "$ROOT/scripts/lib/backup-offsite-permissions.sh"')).toBeLessThan(offsite.indexOf('trap '));
+        expect(permissions).toContain('chown -R -- "$verifier_identity" "$root"');
+        expect(permissions).toContain('find "$root" -type d -exec chmod 700 -- {} +');
+        expect(permissions).toContain('find "$root" -type f -exec chmod 600 -- {} +');
+    });
+
+    it('restore drill usa volumes próprios e limpa cópia temporária mesmo em falha', () => {
+        const drill = read('scripts/restore_drill.sh');
+        const restore = read('scripts/restore_database.sh');
+        expect(drill).toContain('RESTORE_DRILL_OVERRIDE_FILE:-compose.restore-drill.yaml');
+        expect(drill).toContain('name.startswith(project+"_")');
+        expect(drill).toContain('if [[ "$compose_isolated" == true ]]');
+        expect(drill.indexOf('compose_isolated=true')).toBeGreaterThan(drill.indexOf('config --format json'));
+        expect(drill).toContain('down -v --remove-orphans');
+        expect(drill).toContain('rm -rf -- "$download_dir" "$report_dir"');
+        expect(restore).toContain('"$backup_dir:/backup/$backup_id:ro"');
+    });
+
+    it('restore drill nunca executa down -v se o guard encontrar volume permanente', () => {
+        const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-drill-guard-'));
+        try {
+            const fakeBin = path.join(temporary, 'bin');
+            const drillRoot = path.join(temporary, 'drills');
+            const commandLog = path.join(temporary, 'docker.log');
+            fs.mkdirSync(fakeBin, { mode: 0o700 });
+            const fakeDocker = path.join(fakeBin, 'docker');
+            fs.writeFileSync(fakeDocker, [
+                '#!/bin/bash',
+                'set -e',
+                'case "$1" in',
+                "  compose) if [[ \"$*\" == *\"config --format json\"* ]]; then echo '{\"volumes\":{\"mysql_data\":{\"name\":\"production_mysql84\"}}}'; else echo \"$*\" >> \"$FAKE_DOCKER_LOG\"; fi ;;",
+                '  ps|volume|network) : ;;',
+                '  image) echo "$*" >> "$FAKE_DOCKER_LOG" ;;',
+                'esac'
+            ].join('\n'), { mode: 0o700 });
+            const result = spawnSync('bash', [path.join(root, 'scripts/restore_drill.sh')], {
+                encoding: 'utf8',
+                env: {
+                    ...process.env,
+                    PATH: `${fakeBin}:${process.env.PATH}`,
+                    BACKUP_DRILL_DIR: drillRoot,
+                    FAKE_DOCKER_LOG: commandLog,
+                    RESTORE_DRILL_ENV_FILE: '/unused/env',
+                    RESTORE_DRILL_OVERRIDE_FILE: '/unused/production.yaml'
+                }
+            });
+            expect(result.status).toBe(1);
+            expect(result.stderr).toContain('não possui volumes exclusivos');
+            expect(result.stdout).toContain('RESTORE_DRILL_TEMP_CLEANUP PASS');
+            const dockerCalls = fs.existsSync(commandLog) ? fs.readFileSync(commandLog, 'utf8') : '';
+            expect(dockerCalls).not.toMatch(/down|image rm/);
+        } finally {
+            fs.rmSync(temporary, { recursive: true, force: true });
+        }
+    });
+
+    it('remove arquivos temporários se o SHA do pacote offsite falhar', () => {
+        const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-offsite-cleanup-'));
+        try {
+            const fakeBin = path.join(temporary, 'bin');
+            const destination = path.join(temporary, 'download');
+            fs.mkdirSync(fakeBin, { mode: 0o700 });
+            fs.writeFileSync(path.join(fakeBin, 'az'), [
+                '#!/bin/bash',
+                'set -e',
+                'if [[ "$1 $2" == "account show" ]]; then exit 0; fi',
+                'if [[ "$1 $2 $3" == "storage container show" ]]; then echo None; exit 0; fi',
+                'if [[ "$1 $2 $3" == "storage blob download" ]]; then',
+                '  while (($#)); do',
+                '    case "$1" in --name) name=$2; shift 2 ;; --file) file=$2; shift 2 ;; *) shift ;; esac',
+                '  done',
+                '  case "$name" in',
+                '    */latest-good.json) printf \'{"format_version":1,"backup_id":"backup-20260928T061501Z-82b8376c-c008-498e-930a-bc449da1f477"}\\n\' > "$file" ;;',
+                '    */complete.json) printf \'{"status":"COMPLETE","backup_id":"backup-20260928T061501Z-82b8376c-c008-498e-930a-bc449da1f477","package_sha256":"%064d"}\\n\' 0 > "$file" ;;',
+                '    */package.tar.gz) printf invalid > "$file" ;;',
+                '  esac',
+                '  exit 0',
+                'fi',
+                'exit 1'
+            ].join('\n'), { mode: 0o700 });
+            const result = spawnSync('bash', [path.join(root, 'scripts/backup_offsite.sh'), 'download', 'latest', destination], {
+                encoding: 'utf8',
+                env: {
+                    ...process.env,
+                    PATH: `${fakeBin}:${process.env.PATH}`,
+                    AZURE_STORAGE_ACCOUNT: 'backupacct'
+                }
+            });
+            expect(result.status).toBe(1);
+            expect(result.stderr).toContain('SHA-256 do pacote remoto divergiu');
+            expect(fs.readdirSync(destination)).toEqual([]);
+        } finally {
+            fs.rmSync(temporary, { recursive: true, force: true });
+        }
     });
 });

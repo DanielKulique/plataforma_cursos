@@ -9,9 +9,9 @@ materiais, avaliações, matrículas e resultados.
 1. O administrador cadastra professores, cursos e turmas.
 2. O aluno cria sua conta, confirma o e-mail e se matricula em turma aberta.
 3. Na Sala Virtual, acessa aulas, marca conteúdos concluídos e realiza exercícios.
-4. A prova final fica disponível quando cumpre 80% da trilha definida pelo backend.
-5. Com todos os conteúdos concluídos e prova final com pelo menos 75%, passa a APROVADO.
-6. Professor responsável ou administrador emite o certificado; aluno acessa o PDF privado.
+4. O Teste Final fica disponível ao concluir pelo menos 80% dos conteúdos; o Simulado é opcional.
+5. Uma única tentativa finalizada com pelo menos 75% aprova o aluno, mesmo com conteúdos restantes.
+6. O sistema emite o certificado automaticamente; o aluno acessa o PDF privado na sua área.
 7. Qualquer pessoa pode consultar um código ou enviar o PDF para comparação de autenticidade.
 
 ## Escopo e limites

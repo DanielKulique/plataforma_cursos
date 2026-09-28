@@ -79,7 +79,7 @@ Inspeção apoiada pela skill impeccable, fonte HTML/JS/CSS e capturas históric
 | Sala virtual | Turmas e certificados carregados em paralelo com `Promise.allSettled` | Cada seção mantém loading/success/empty/error; falha de certificados preserva turmas e oferece “Tentar novamente”. |
 | Sala de aula | Módulos apresentados como aulas, filtros/pesquisa e materiais complementares | Boa continuidade por contexto; resumo da aula inclui avaliações, percentual global não. Explicar denominações (P2). |
 | Materiais | Texto seguro, vídeo incorporado, PDF privado com tratamento 404/503, link em nova aba e atividade textual | Atividade não tem entrega; abertura registra INICIADO antes de confirmar sucesso do recurso externo. Não equivale a comprovar leitura. |
-| Avaliações | Página própria com contexto de aula, ID específico e envio por UUID | Prova final libera a partir de 80% da trilha; tentativa >=75 somada aos conteúdos completos aprova automaticamente. Exercícios/intermediárias não aprovam. |
+| Avaliações | Página própria com contexto de aula, ID específico e envio por UUID | Teste Final libera a partir de 80% dos conteúdos e tem uma tentativa finalizada; nota >=75 aprova e emite certificado automaticamente, mesmo com conteúdo incompleto. Exercícios mantêm tentativas livres. |
 | Professor | Alunos, nota, conteúdo e avaliações na mesma página | Adição de pergunta com duas opções existe, mas edição de perguntas/opções existentes não tem UX completa (P1 para autoria continuada). |
 | Administração | UI gerada por admin.js para CRUD e replicação | Confirmações e erros ajudam; muitas responsabilidades em módulo de 1145 linhas dificultam manutenção. |
 | Certificados | Área do aluno, ações de emissão/revogação na gestão e validador público | Distingue ativo/revogado e versões; ADMIN pode reemitir com confirmação, e PDFs históricos permanecem baixáveis. Texto deve explicar validação de registro versus bytes. |
@@ -119,7 +119,7 @@ As regras anteriores de aprovação manual e ausência de pré-requisito da prov
 
 ### Goal 04 — integridade do ciclo de matrícula
 
-`matricula.model.test.js` cobre incremento transacional e bloqueio de CANCELADO para CURSANDO/APROVADO/REPROVADO. `academic-progress.test.js` verifica o contrato de filtro pelo ciclo. `integration/enrollment-lifecycle.integration.test.js`, em MySQL 8, cobre ciclos 1→2→3, duas rematrículas concorrentes (200/409), reset de conteúdo/nota, preservação de tentativas/respostas, idempotência por ciclo, exercícios/80%/prova >=75/aprovação apenas atuais, turma FECHADA/ENCERRADA e migration 010 reaplicável com preflight/backfill/constraints. As suítes direcionadas de matrícula, Goal 02, questionários e certificados protegem a regressão. O smoke `smoke_enrollment_lifecycle_staging.js` reproduz ciclo 1, bypass recusado e ciclo 2 isolado em cenário descartável.
+`matricula.model.test.js` cobre incremento transacional e bloqueio de CANCELADO para CURSANDO/APROVADO/REPROVADO. `academic-progress.test.js` verifica o filtro por ciclo para conteúdos e exercícios. `integration/enrollment-lifecycle.integration.test.js`, em MySQL 8, cobre ciclos 1→2→3, rematrículas concorrentes (200/409), reset de conteúdo/nota, preservação de tentativas/respostas, idempotência por ciclo, turma FECHADA/ENCERRADA e migration 010 reaplicável. A regressão vigente também verifica que o Teste Final, sua tentativa única e a aprovação >=75 persistem por aluno+turma entre ciclos.
 
 
 ## Atualização — Goal 06

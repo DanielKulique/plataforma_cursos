@@ -176,8 +176,34 @@ async function carregar() {
     $('contexto-questionario').textContent = questionario.id_modulo ? `Aula ${questionario.numero_aula} — ${questionario.titulo_aula} · ${questionario.titulo}` : questionario.prova_final ? `Prova final · ${questionario.titulo}` : questionario.titulo;
     if (questionario.id_modulo) document.querySelectorAll('a[href*="sala-aula.html"]') .forEach((link) => { link.href = `/sala-aula.html?id_turma=${idTurma}#aula-${questionario.id_modulo}`; });
     $('subtitulo-questionario').textContent = 'As respostas serão corrigidas e persistidas pelo servidor.';
+    $('link-refazer').hidden = Boolean(questionario.prova_final);
+    if (questionario.tentativa_finalizada) {
+        mostrarResultadoFinal(questionario.resultado_final);
+        await carregarHistorico();
+        return;
+    }
     renderizarQuestionario();
     await carregarHistorico();
+}
+
+function mostrarResultadoFinal(resultado) {
+    $('form-questionario').hidden = true;
+    $('resultado-questionario').hidden = false;
+    $('resultado-titulo').textContent = `Resultado final: ${Number(resultado?.percentual || 0).toFixed(2)}%`;
+    if (resultado?.aprovado) {
+        const certificadoAtivo = resultado.status_certificado === 'ATIVO';
+        $('resultado-descricao').textContent = certificadoAtivo
+            ? 'APROVADO. Seu certificado está ATIVO e disponível na área do aluno.'
+            : resultado.status_certificado === 'REVOGADO'
+                ? 'APROVADO. Seu certificado foi revogado; procure a equipe para solicitar uma nova versão.'
+                : 'APROVADO. A emissão do certificado está pendente; ele ficará disponível na área do aluno.';
+        $('link-refazer').href = '/meus-certificados.html';
+        $('link-refazer').textContent = 'Meus certificados';
+        $('link-refazer').hidden = false;
+    } else {
+        $('resultado-descricao').textContent = 'Não aprovado no Teste Final. A tentativa foi finalizada e não há nova tentativa disponível.';
+        $('link-refazer').hidden = true;
+    }
 }
 
 $('form-questionario').addEventListener('submit', async (event) => {
@@ -215,11 +241,14 @@ $('form-questionario').addEventListener('submit', async (event) => {
         $('resultado-titulo').textContent = `Resultado: ${body.resultado.percentual}%`;
         $('resultado-descricao').textContent = `Você acertou ${body.resultado.acertos} de ${body.resultado.total_perguntas} questões. Pontuação: ${body.resultado.pontuacao}.`;
         if (questionario.prova_final) {
-            $('resultado-descricao').textContent += body.resultado.requisitos?.status_aprovacao === 'APROVADO' && body.resultado.requisitos.elegivel_aprovacao
-                ? ' APROVADO — todos os requisitos acadêmicos foram atendidos.'
-                : body.resultado.requisitos?.prova_final_aprovada
-                    ? ' Requisito da prova atendido. Finalize os conteúdos restantes para concluir o curso.'
-                    : ' Você precisa atingir pelo menos 75% na prova final. Você pode tentar novamente.';
+            const resultadoFinal = {
+                percentual: body.resultado.percentual,
+                aprovado: body.resultado.requisitos?.status_aprovacao === 'APROVADO'
+                    && body.resultado.requisitos.elegivel_aprovacao,
+                status_certificado: body.resultado.status_certificado
+                    || body.resultado.requisitos?.status_certificado
+            };
+            mostrarResultadoFinal(resultadoFinal);
         }
         $('form-questionario').querySelectorAll('input,button').forEach((elemento) => {
             elemento.disabled = true;

@@ -6,9 +6,16 @@ import { loadStudentCourse } from './student-course-context.js';
 const idTurma = positiveId('id_turma');
 
 function assessmentState(item, closed) {
+    if (item.prova_final && item.requisitos?.prova_final_tentada) {
+        const nota = item.requisitos.prova_final_percentual;
+        return item.requisitos.prova_final_aprovada
+            ? `Aprovado · ${nota}%`
+            : `Resultado final · ${nota}%`;
+    }
     if (closed) return 'Turma encerrada';
     if (item.bloqueada) return `Bloqueada · ${item.requisitos?.progresso_para_prova || 0}% da trilha`;
     if (item.concluido) return item.melhor_nota !== null && item.melhor_nota !== undefined ? `Realizada · melhor nota ${item.melhor_nota}%` : 'Realizada';
+    if (item.prova_final) return '✓ Disponível';
     return item.ativo ? 'Disponível' : 'Indisponível';
 }
 
@@ -21,12 +28,23 @@ function renderList(target, items, emptyMessage, closed) {
         if (item.prova_final && item.bloqueada) {
             const requisito = item.requisitos?.requisito_percentual_prova;
             const progresso = item.requisitos?.progresso_para_prova ?? 0;
-            copy.append(createElement('p', '', `Complete pelo menos ${requisito}% da trilha para liberar esta avaliação.`));
+            copy.append(createElement('p', '', `Complete pelo menos ${requisito}% da trilha para liberar o Teste Final.`));
             copy.append(createElement('p', '', `Seu progresso: ${progresso}%.`));
         }
-        const link = createElement('a', 'action-button', item.concluido ? 'Revisar / tentar novamente' : 'Iniciar');
+        if (item.prova_final && item.requisitos?.prova_final_tentada) {
+            const certificateStatus = item.requisitos.status_certificado;
+            const certificateMessage = item.requisitos.prova_final_aprovada
+                ? certificateStatus === 'ATIVO' ? 'Certificado ATIVO disponível na área do aluno.'
+                    : 'Aprovado · emissão do certificado pendente.'
+                : 'Tentativa finalizada · nenhuma nova tentativa disponível.';
+            copy.append(createElement('p', '', certificateMessage));
+        }
+        const finalAttempted = Boolean(item.prova_final && item.requisitos?.prova_final_tentada);
+        const link = createElement('a', 'action-button', finalAttempted ? 'Ver resultado'
+            : item.prova_final ? 'Iniciar Teste Final'
+                : item.concluido ? 'Revisar / tentar novamente' : 'Iniciar');
         link.href = `/questionario.html?tipo=${String(item.tipo).toLowerCase()}&id_turma=${encodeURIComponent(idTurma)}&id_questionario=${encodeURIComponent(item.id_questionario)}`;
-        if (closed || item.bloqueada || !item.ativo || !Number(item.total_perguntas)) { link.removeAttribute('href'); link.setAttribute('aria-disabled', 'true'); link.classList.add('is-disabled'); }
+        if ((closed && !finalAttempted) || (!finalAttempted && item.bloqueada) || !item.ativo || !Number(item.total_perguntas)) { link.removeAttribute('href'); link.setAttribute('aria-disabled', 'true'); link.classList.add('is-disabled'); }
         row.append(copy, link); list.append(row);
     });
 }

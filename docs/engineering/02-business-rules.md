@@ -126,21 +126,21 @@ Aluno informa INICIADO ou CONCLUIDO. Upsert preserva CONCLUIDO e datas anteriore
 
 ## RN-021 — Progresso acadêmico derivado
 
-Percentual = arredondar(100 × conteúdos concluídos / total de conteúdos da turma), limitado a 0–100; turma vazia retorna 0. VIDEO, TEXTO, PDF, LINK e ATIVIDADE (todos os registros de Conteudos) entram; Questionarios, inclusive EXERCICIO/PROVA, não entram. Campo armazenado é cache visual; consultas derivam contagens e percentual. Conclusão acadêmica usa exclusivamente `total_conteudos > 0 && conteudos_concluidos === total_conteudos` em `academic-progress.service.js`; 0/0 é falso. Não comprova leitura/tempo de vídeo.
+Percentual = arredondar(100 × conteúdos concluídos / total de conteúdos da turma), limitado a 0–100; turma vazia retorna 0. VIDEO, TEXTO, PDF, LINK e ATIVIDADE entram; Questionarios não entram. Campo armazenado é cache visual; consultas derivam contagens e percentual. A razão exata `conteudos_concluidos × 100 >= total_conteudos × 80`, com total maior que zero, libera o Teste Final. A conclusão integral permanece informativa e não decide aprovação/certificação. Progresso não comprova leitura/tempo de vídeo.
 
 **Estado:** IMPLEMENTADO no escopo descrito, salvo lacuna explicitada. **Evidência:** `matricula.models.js:COLUNAS_PROGRESSO_DERIVADO; conteudos.models.js`.
 
 ## RN-022 — Progresso de apresentação da aula
 
-Resumo por aula inclui conteúdos e questionários ativos. EXERCICIO/prova intermediária contam após tentativa finalizada; PROVA FINAL indica requisito atendido somente com tentativa >=75%. Esse resumo não decide conclusão nem liberação da prova. Não há bloqueio sequencial de aulas.
+Resumo por aula inclui conteúdos e questionários ativos. EXERCICIO/prova intermediária contam após tentativa finalizada; PROVA FINAL indica resultado persistido e requisito de aprovação quando >=75%. O gate de abertura considera somente conteúdos e não este resumo. Não há bloqueio sequencial de aulas.
 
 **Estado:** IMPLEMENTADO no escopo descrito, salvo lacuna explicitada. **Evidência:** `learning-path.js:progressoAula; questoes.models.js:listarTrilhaAluno`.
 
 ## RN-023 — Aprovação objetiva e nota manual compatível
 
-CURSANDO vira APROVADO automaticamente quando `total_conteudos > 0 && conteudos_concluidos === total_conteudos` e existe tentativa FINALIZADA da PROVA FINAL ativa da turma com percentual >=75. A avaliação ocorre na transação de progresso e de submissão final, nas duas ordens; é idempotente e não emite certificado. Tentativa pior não remove conquista anterior; resultado <75 não reprova. CANCELADO/REPROVADO manuais não são reativados automaticamente.
+CURSANDO vira APROVADO automaticamente quando existe resultado finalizado da PROVA FINAL da turma com percentual >=75. A avaliação ocorre após a submissão e ao atualizar progresso/rematrícula; conteúdo incompleto não bloqueia. Uma única tentativa finalizada é permitida por aluno+turma, portanto não há tentativa posterior pior; resultado <75 consome a tentativa e não reprova automaticamente. CANCELADO/REPROVADO manuais não são reativados automaticamente, salvo a aprovação objetiva após rematrícula.
 
-`nota_final` permanece campo manual opcional 0–10, sem conversão automática do percentual. Sua ausência não bloqueia APROVADO. PATCH de professor/ADMIN exige os mesmos requisitos objetivos para APROVADO. REPROVADO mantém decisão manual, conclusão integral e nota obrigatória. Não existe mínimo para EXERCICIO. 200/201 pode mostrar 100%, mas nunca passa no gate exato.
+`nota_final` permanece campo manual opcional 0–10, sem conversão automática do percentual. Sua ausência não bloqueia APROVADO. PATCH de professor/ADMIN exige Teste Final >=75 para APROVADO. REPROVADO mantém decisão manual, conclusão integral e nota obrigatória. Não existe mínimo para EXERCICIO. O percentual de progresso não substitui a contagem exata do gate de 80%.
 
 **Evidência:** `academic-progress.service.js:avaliarAprovacao/buscarRequisitos`; `conteudos.models.js:registrarProgresso`; `questoes.models.js:submeter`; `matricula.models.js:atualizarMatricula`.
 
@@ -154,7 +154,7 @@ Conteúdo com qualquer progresso não pode ser excluído; módulo com conteúdos
 
 Questionário ativo pode ser PROVA ou EXERCICIO. Rota respondível é apenas ALUNO matriculado, turma não encerrada; sem ID explícito escolhe um por ordem DESC/título, padrão PROVA. Metadados para aluno filtram ativos, mas não bloqueiam turma encerrada. A designação estrutural `Questionarios.prova_final=1` identifica a única prova final por turma; NULL significa avaliação comum. Nenhuma prova legada é inferida como final. Alterar a designação com histórico é bloqueado.
 
-A PROVA FINAL somente entrega perguntas e aceita nova submissão se `total_trilha > 0 && trilha_realizada * 100 >= total_trilha * 80`. Trilha = todos os Conteudos + Questionarios EXERCICIO ativos da turma. Exercício vale uma unidade quando existe tentativa do aluno na mesma turma com finalizada_em não nula, qualquer nota, sem duplicar retries. Provas, inativos e outros alunos/turmas ficam fora. 0/0 bloqueia; 80/101 bloqueia; 81/101 libera. O gate é revalidado na submissão; metadados expõem requisitos sem perguntas/gabarito.
+O Teste Final somente entrega perguntas e aceita a primeira submissão final se `total_conteudos > 0 && concluidos * 100 >= total_conteudos * 80`. Somente Conteudos entram; EXERCICIO, inclusive Simulado, é opcional. 0/0 e 79/100 bloqueiam; 80/100 libera. O gate é revalidado na submissão; metadados expõem requisitos sem perguntas/gabarito. Após a tentativa finalizada, o aluno pode consultar o resultado persistido mesmo que a turma tenha sido encerrada.
 
 **Estado:** IMPLEMENTADO no escopo descrito, salvo lacuna explicitada. **Evidência:** `questoes.controller.js:listar/listarMetadados; questoes.models.js:listarAluno`.
 
@@ -178,7 +178,7 @@ Questionário com tentativas não pode ser excluído; alterações ficam limitad
 
 ## RN-029 — Submissão integral
 
-Somente aluno; envia UUID submission_id e exatamente uma opção por pergunta atual, sem duplicatas, com pertencimento validado. Não aceita nota/gabarito do cliente. Questionário precisa estar ativo e ter perguntas suportadas.
+Somente aluno; envia UUID submission_id e uma resposta válida por pergunta atual, sem duplicatas, com pertencimento validado. Não aceita nota/gabarito do cliente. Questionário precisa estar ativo e ter perguntas suportadas. A restrição de tentativa única aplica-se somente à PROVA FINAL; exercícios mantêm retries.
 
 **Estado:** IMPLEMENTADO no escopo descrito, salvo lacuna explicitada. **Evidência:** `questoes.routes.js; questoes.models.js:validarRespostas/submeter`.
 
@@ -186,13 +186,13 @@ Somente aluno; envia UUID submission_id e exatamente uma opção por pergunta at
 
 Acertos conta opções corretas e pontuação soma seus pontos; ambos calculados no backend. Pontos DECIMAL(...,2) são somados em centésimos inteiros para a razão. Percentual persiste com duas casas: PROVA FINAL usa truncamento conservador, para que um resultado real abaixo de 75 nunca arredonde para 75; demais avaliações mantêm arredondamento anterior. 74,99 não atende; 75,00 atende. Depois de finalizar a prova final, avalia aprovação automática na mesma transação. Não altera nota_final.
 
-A conquista é EXISTS tentativa FINALIZADA >=75 da prova final atual/ativa; não depende da última tentativa. Tentativas ilimitadas, histórico e idempotência por submission_id permanecem. Repetir a mesma chave retorna a tentativa existente, sem criar nova tentativa ou exigir novamente a meta de abertura.
+A aprovação existe quando o resultado da tentativa única FINALIZADA da PROVA FINAL do aluno+turma é >=75; não depende do ciclo da matrícula. Repetir a mesma submission_id retorna o resultado existente, sem nova tentativa ou nova avaliação. Um novo UUID após a finalização retorna 409. Exercícios mantêm tentativas livres e não aprovam.
 
 **Estado:** IMPLEMENTADO no escopo descrito, salvo lacuna explicitada. **Evidência:** `questoes.models.js:submeter`.
 
 ## RN-031 — Idempotência de tentativa
 
-UNIQUE usuário+questionário+ciclo+chave. Repetição de chave no mesmo ciclo devolve tentativa finalizada; a mesma chave em novo ciclo cria nova tentativa e nunca reutiliza resultado histórico. Não compara hash das respostas. Checagens de disponibilidade ocorrem antes da busca da tentativa; retry após inativação/encerramento pode falhar. Novos UUIDs criam novas tentativas sem limite acadêmico encontrado.
+UNIQUE de schema usuário+questionário+ciclo+chave continua protegendo retries técnicos. Para PROVA FINAL, o model também localiza tentativa existente pelo aluno+turma antes de exigir turma ativa/gate: mesma submission_id retorna resultado inclusive após encerramento, e novo UUID recebe 409 depois da tentativa finalizada, inclusive após rematrícula. Para exercícios, a chave continua por ciclo e novos UUIDs podem criar tentativas. Não compara hash das respostas.
 
 **Estado:** IMPLEMENTADO no escopo descrito, salvo lacuna explicitada. **Evidência:** `questoes.models.js:submeter; schema.sql`.
 
@@ -216,7 +216,7 @@ Idempotency-Key 16–64 caracteres seguros; UNIQUE global. Hash inclui origem e 
 
 ## RN-035 — Emissão de certificado
 
-Professor responsável ou ADMIN emite só para matrícula APROVADO. Uma nova emissão revalida a conclusão exata atual e a existência de tentativa FINALIZADA da PROVA FINAL ativa >=75 na mesma conexão/transação, após bloquear contexto (matrícula/turma) e antes de PDF, arquivo ou INSERT. Falha retorna 409 CONTEUDOS_PENDENTES ou PROVA_FINAL_PENDENTE sem efeitos de emissão. Turma ENCERRADA continua elegível; não exige ABERTA nem muda nota. Novo conteúdo após aprovação mantém APROVADO, mas impede nova emissão até sua conclusão. Retorna somente o documento ATIVO existente sem regeneração. Histórico revogado bloqueia emissão normal (409 REEMISSAO_ADMIN_NECESSARIA), inclusive para ADMIN. A correção usa o endpoint explícito de reemissão.
+Após a aprovação, o sistema emite automaticamente para matrícula APROVADO com Teste Final >=75. A emissão revalida esses requisitos sob transação, sem exigir conclusão atual dos conteúdos. Falha de PDF não desfaz tentativa/aprovação e pode ser recuperada idempotentemente por professor responsável ou ADMIN. Retorna documento ATIVO existente sem regeneração; histórico revogado continua exigindo reemissão administrativa explícita. A turma ENCERRADA não exige reabertura para ler resultado/certificado.
 
 **Estado:** IMPLEMENTADO no escopo descrito, salvo lacuna explicitada. **Evidência:** `certificate.service.js:autorizarEmissao/emitirCertificado; certificados.models.js`.
 
@@ -268,7 +268,7 @@ Versão começa em 1 e cresce sob lock de matrícula/turma, sem exclusão pelo f
 
 CANCELADO é terminal no ciclo vigente. Sua única saída é o `POST /api/matriculas` feito pelo próprio aluno, com turma ABERTA; o PATCH de professor/ADMIN não pode transformá-lo em CURSANDO, APROVADO ou REPROVADO. A operação oficial reutiliza a linha, incrementa `ciclo_atual` exatamente uma vez sob os locks de turma/matrícula, redefine nota e progresso atual e apaga somente `ConteudosProgresso` da turma. FECHADA/ENCERRADA recusam rematrícula; REPROVADO mantém a política anterior.
 
-Cada tentativa grava o `ciclo_matricula` obtido da matrícula bloqueada. Exercício realizado, 80%, prova final >=75, aprovação automática e elegibilidade de certificado consideram apenas o ciclo atual. Tentativas e respostas antigas permanecem consultáveis e rotuladas por ciclo. Certificado ATIVO continua bloqueando cancelamento; rematrícula nunca revoga, reemite ou modifica certificado histórico.
+Cada tentativa grava o `ciclo_matricula` obtido da matrícula bloqueada. Exercícios e progresso usam o ciclo atual; Teste Final tem tentativa única por aluno+turma e seu resultado >=75 permanece válido após rematrícula. A matrícula reativada pode aprovar automaticamente com esse resultado e receber emissão automática. Tentativas/respostas antigas permanecem consultáveis e rotuladas por ciclo. Certificado ATIVO continua bloqueando cancelamento; rematrícula nunca revoga, reemite ou modifica certificado histórico.
 
 
 ## Atualização — Goal 06

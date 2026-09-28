@@ -22,8 +22,9 @@ Não tente reparar falha operacional apagando volumes, arquivos privados ou hist
 | CSRF retorna 403 | Obtenha `/api/auth/csrf` com a sessão atual e envie `X-CSRF-Token` nas mutações. |
 | Login bloqueado por e-mail | Conta precisa de verificação explícita. Confira entrega, remetente e reenvio; falha de envio não deve apagar conta. |
 | Código/reset não chega | Confira `EMAIL_DELIVERY_ENABLED`, provedor, timeout e limites. Modo desabilitado não devolve código no response. |
-| Prova final bloqueada | Confira conteúdos + exercícios ativos realizados no ciclo atual; arredondamento da tela não substitui 80% real. |
-| 100% na tela sem aprovação | Confira contagem exata dos conteúdos e tentativa da final ativa >=75 no ciclo atual. |
+| Prova final bloqueada | Confira a contagem de conteúdos concluídos contra o total da turma; somente conteúdos contam, e o gate é 80% exatos. Simulado e exercícios são opcionais. |
+| Prova final já tentada | Uma tentativa finalizada é definitiva por aluno/turma, inclusive após rematrícula; confira o resultado salvo em Avaliações. |
+| Aprovado sem certificado visível | Confirme resultado final >=75 e estado APROVADO; a emissão automática pode ficar pendente após falha de PDF. Professor responsável/ADMIN podem recuperar a emissão. |
 | Emissão retorna 409 | Revalide requisitos e histórico: certificado revogado exige reemissão ADMIN; não basta o status APROVADO. |
 | Turma impede autoria | Confira estado ENCERRADA, responsabilidade atual e vínculos/histórico do item. |
 | Backup fora do RPO | Confira timer/journal, espaço, identidade offsite, complete e latest-good; readiness pode continuar OK. |

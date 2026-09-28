@@ -20,8 +20,12 @@ describe('modelo transacional de matrícula', () => {
     it('cria matrícula sob bloqueio da turma', async () => {
         const connection = createConnection(async (sql) => {
             if (sql.includes('FROM Turmas')) return [[{ id_turma: 7, status: 'ABERTA' }]];
+            if (sql.includes('SELECT m.status_aprovacao, m.ciclo_atual')) return [[{ status_aprovacao: 'CURSANDO', ciclo_atual: 1, prova_final_aprovada: 0 }]];
             if (sql.includes('FROM Matriculas')) return [[]];
             if (sql.includes('INSERT INTO Matriculas')) return [{ insertId: 15, affectedRows: 1 }];
+            if (sql.includes('SELECT COUNT(c.id_conteudo)')) return [[{ total: 0, concluidos: 0 }]];
+            if (sql.includes('FROM Questionarios')) return [[{ status_aprovacao: 'CURSANDO', ciclo_atual: 1, prova_final_aprovada: 0 }]];
+            if (sql.includes('FROM Certificados')) return [[]];
             throw new Error(`SQL inesperado: ${sql}`);
         });
         db.getConnection.mockResolvedValue(connection);
@@ -38,9 +42,13 @@ describe('modelo transacional de matrícula', () => {
     it('reativa a mesma linha cancelada e reinicia avaliação e progresso', async () => {
         const connection = createConnection(async (sql) => {
             if (sql.includes('FROM Turmas')) return [[{ id_turma: 7, status: 'ABERTA' }]];
+            if (sql.includes('SELECT m.status_aprovacao, m.ciclo_atual')) return [[{ status_aprovacao: 'CURSANDO', ciclo_atual: 5, prova_final_aprovada: 0 }]];
             if (sql.includes('FROM Matriculas')) return [[{ id_matricula: 21, status_aprovacao: 'CANCELADO', ciclo_atual: 4 }]];
             if (sql.includes('DELETE progresso')) return [{ affectedRows: 2 }];
             if (sql.includes('UPDATE Matriculas')) return [{ affectedRows: 1 }];
+            if (sql.includes('SELECT COUNT(c.id_conteudo)')) return [[{ total: 0, concluidos: 0 }]];
+            if (sql.includes('FROM Questionarios')) return [[{ status_aprovacao: 'CURSANDO', ciclo_atual: 5, prova_final_aprovada: 0 }]];
+            if (sql.includes('FROM Certificados')) return [[]];
             throw new Error(`SQL inesperado: ${sql}`);
         });
         db.getConnection.mockResolvedValue(connection);
@@ -102,8 +110,8 @@ describe('modelo transacional de matrícula', () => {
  describe('gate acadêmico exato', () => {
     beforeEach(() => jest.clearAllMocks());
     it.each([
-        [0, 0, 'APROVADO', 9, 'CONTEUDOS_PENDENTES'],
-        [201, 200, 'APROVADO', 9, 'CONTEUDOS_PENDENTES'],
+        [0, 0, 'APROVADO', 9, null],
+        [201, 200, 'APROVADO', 9, null],
         [201, 200, 'REPROVADO', 3, 'CONTEUDOS_PENDENTES'],
         [201, 201, 'APROVADO', null, null],
         [201, 201, 'APROVADO', 0, null],
@@ -116,6 +124,7 @@ describe('modelo transacional de matrícula', () => {
             }]];
             if (sql.includes('FROM Questionarios')) return [[{ prova_final_aprovada: 1 }]];
             if (sql.includes('FROM Conteudos')) return [[{ total, concluidos }]];
+            if (sql.includes('FROM Certificados')) return [[]];
             if (sql.includes('UPDATE Matriculas')) return [{ affectedRows: 1 }];
             throw new Error(`SQL inesperado: ${sql}`);
         });

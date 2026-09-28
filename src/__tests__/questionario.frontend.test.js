@@ -99,7 +99,7 @@ describe('questionário real no frontend do aluno', () => {
         );
     });
 
-    it('mantém as mensagens acadêmicas coerentes com exercício, prova final e novas tentativas', () => {
+    it('mantém as mensagens acadêmicas coerentes com o resultado definitivo do Teste Final', () => {
         const sala = fs.readFileSync(publicPath('js', 'sala-avaliacoes.js'), 'utf8');
         const fluxo = fs.readFileSync(publicPath('js', 'questionario.js'), 'utf8');
         const modelo = fs.readFileSync(
@@ -107,10 +107,11 @@ describe('questionário real no frontend do aluno', () => {
             'utf8'
         );
 
-        expect(sala).toContain('Complete pelo menos ${requisito}% da trilha para liberar esta avaliação.');
+        expect(sala).toContain('Complete pelo menos ${requisito}% da trilha para liberar o Teste Final.');
         expect(sala).toContain('Seu progresso: ${progresso}%.');
-        expect(fluxo).toContain('Você pode tentar novamente.');
-        expect(fluxo).not.toMatch(/reprovad[oa]/i);
+        expect(fluxo).toContain('questionario.tentativa_finalizada');
+        expect(fluxo).toContain('não há nova tentativa disponível');
+        expect(fluxo).not.toContain('Você pode tentar novamente.');
         expect(fluxo).toContain("questionario.prova_final ? 'PROVA FINAL · mínimo 75%'");
         expect(fluxo).toContain(": tipo === 'prova' ? 'Prova intermediária' : 'Exercício'");
         expect(modelo).toContain('somente disponibilidade, aula e ordem podem ser ajustadas.');

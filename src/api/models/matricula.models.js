@@ -3,7 +3,8 @@ const db = require('../../config/database');
 
 const STATUS_APROVACAO_PADRAO = 'CURSANDO';
 
-const { COLUNAS_PROGRESSO_DERIVADO, normalizarProgresso, buscarRequisitos } = require('../services/academic-progress.service');
+const { COLUNAS_PROGRESSO_DERIVADO, normalizarProgresso, buscarRequisitos, avaliarAprovacao } = require('../services/academic-progress.service');
+const certificateService = require('../services/certificate.service');
 
 function enrollmentError(code, status, message) {
     const error = new Error(message);
@@ -57,12 +58,16 @@ async function matricularAluno(id_aluno, id_turma) {
                  WHERE id_matricula = ? AND status_aprovacao = 'CANCELADO'`,
                 [id_matricula]
             );
+            const requisitos = await avaliarAprovacao(connection, id_aluno, id_turma);
             await connection.commit();
+            if (requisitos.aprovacao_atualizada) {
+                await certificateService.emitirCertificadoAutomaticamente(id_aluno, id_turma);
+            }
             return {
                 id_matricula,
                 id_aluno,
                 id_turma,
-                status_aprovacao: STATUS_APROVACAO_PADRAO,
+                status_aprovacao: requisitos.status_aprovacao || STATUS_APROVACAO_PADRAO,
                 progresso_percentual: 0,
                 nota_final: null,
                 ciclo_atual: Number(existing[0].ciclo_atual) + 1,
@@ -74,12 +79,16 @@ async function matricularAluno(id_aluno, id_turma) {
             'INSERT INTO Matriculas (id_aluno, id_turma) VALUES (?, ?)',
             [id_aluno, id_turma]
         );
+        const requisitos = await avaliarAprovacao(connection, id_aluno, id_turma);
         await connection.commit();
+        if (requisitos.aprovacao_atualizada) {
+            await certificateService.emitirCertificadoAutomaticamente(id_aluno, id_turma);
+        }
         return {
             id_matricula: result.insertId,
             id_aluno,
             id_turma,
-            status_aprovacao: STATUS_APROVACAO_PADRAO,
+            status_aprovacao: requisitos.status_aprovacao || STATUS_APROVACAO_PADRAO,
             progresso_percentual: 0,
             nota_final: null,
             ciclo_atual: 1,
@@ -242,6 +251,7 @@ async function atualizarMatricula(id, dadosParaAtualizar, usuario) {
     }
 
     const connection = await db.getConnection();
+    let emitirCertificadoAprovado = null;
     try {
         const turma = await iniciarTransacaoMatricula(connection, id);
         if (turma) exigirGestaoEstrutural(usuario, turma);
@@ -270,19 +280,21 @@ async function atualizarMatricula(id, dadosParaAtualizar, usuario) {
             );
         }
 
-        if (['APROVADO', 'REPROVADO'].includes(statusFinal)) {
+        if (statusFinal === 'APROVADO') {
+            const progresso = await buscarRequisitos(connection, atual.id_aluno, atual.id_turma);
+            if (!progresso.prova_final_aprovada) {
+                throw enrollmentError('PROVA_FINAL_PENDENTE', 409, 'Conquiste pelo menos 75% na prova final.');
+            }
+        } else if (statusFinal === 'REPROVADO') {
             const progresso = await buscarRequisitos(connection, atual.id_aluno, atual.id_turma);
             if (!progresso.conteudo_concluido) {
                 throw enrollmentError(
                     'CONTEUDOS_PENDENTES',
                     409,
-                    'A situação final só pode ser definida após a conclusão de todos os conteúdos.'
+                    'A situação REPROVADO manual exige a conclusão de todos os conteúdos.'
                 );
             }
-            if (statusFinal === 'APROVADO' && !progresso.prova_final_aprovada) {
-                throw enrollmentError('PROVA_FINAL_PENDENTE', 409, 'Conquiste pelo menos 75% na prova final.');
-            }
-            if (statusFinal === 'REPROVADO' && (notaFinal === null || notaFinal === undefined || !Number.isFinite(Number(notaFinal)))) {
+            if (notaFinal === null || notaFinal === undefined || !Number.isFinite(Number(notaFinal))) {
                 throw enrollmentError(
                     'NOTA_FINAL_OBRIGATORIA',
                     409,
@@ -315,12 +327,21 @@ async function atualizarMatricula(id, dadosParaAtualizar, usuario) {
             [...valoresParaAtualizar, id]
         );
         await connection.commit();
+        if (statusFinal === 'APROVADO') {
+            emitirCertificadoAprovado = { idAluno: atual.id_aluno, idTurma: atual.id_turma };
+        }
         return { affectedRows: result.affectedRows };
     } catch (error) {
         await connection.rollback().catch(() => undefined);
         throw error;
     } finally {
         connection.release();
+        if (emitirCertificadoAprovado) {
+            await certificateService.emitirCertificadoAutomaticamente(
+                emitirCertificadoAprovado.idAluno,
+                emitirCertificadoAprovado.idTurma
+            );
+        }
     }
 }
 

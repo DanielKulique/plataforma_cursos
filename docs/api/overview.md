@@ -30,10 +30,11 @@ um envelope único: há `mensagem`, `code` ou `codigo` conforme o endpoint.
 | Comparar certificado público | Multipart com somente `arquivo`, sem hash fornecido pelo cliente |
 | Replicar turma | Header `Idempotency-Key` (16–64 caracteres seguros), nome, professor, datas e estado de destino |
 
-Envie exatamente uma opção válida por pergunta na submissão; não envie nota ou gabarito.
-Repetir o mesmo UUID no mesmo ciclo recupera a tentativa existente. A leitura
-`questionarios/disponivel` aceita `tipo` e `id_questionario`; perguntas da final só são
-entregues após a liberação. Metadados não equivalem a autorização para responder.
+Envie uma resposta válida por pergunta na submissão; não envie nota ou gabarito. Para o Teste
+Final, repetir o mesmo UUID recupera o resultado mesmo após encerramento/rematrícula; outro UUID
+após tentativa finalizada recebe 409. Exercícios preservam retries por ciclo. A leitura
+`questionarios/disponivel` aceita `tipo` e `id_questionario`; perguntas do Teste Final só são
+entregues após 80% dos conteúdos concluídos. Metadados não equivalem a autorização para responder.
 
 ## Saúde pública
 

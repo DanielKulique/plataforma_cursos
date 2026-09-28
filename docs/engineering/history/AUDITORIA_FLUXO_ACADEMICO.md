@@ -34,8 +34,9 @@ intenções validadas pela API.
 7. O questionário ativo entrega perguntas/opções sem o campo de gabarito. O servidor valida uma
    opção pertencente a cada pergunta, calcula acertos/pontos/percentual e persiste tudo em uma
    transação.
-8. Cada envio leva `submission_id` UUID. Repetir o mesmo UUID reutiliza o resultado persistido;
-   outro UUID cria uma nova tentativa. A política atual é de tentativas ilimitadas deliberadas.
+8. Cada envio leva `submission_id` UUID. Na política histórica deste relatório, repetir o UUID
+   reutilizava o resultado e outro UUID criava nova tentativa. A regra final limita o Teste Final
+   a uma tentativa por aluno/turma; exercícios mantêm tentativas livres.
 9. O professor responsável ou ADMIN consulta resultados. Conteúdo com progresso, pergunta com
    resposta e questionário com tentativa não podem sofrer exclusão/reescrita destrutiva.
 10. Após 100% dos conteúdos, PROFESSOR responsável ou ADMIN registra nota final e situação

@@ -14,7 +14,7 @@ no banco em cada requisição; o perfil enviado pelo navegador não concede perm
 | Cancelar matrícula | Própria, sem certificado ativo | Não | Sem certificado ativo |
 | Gerenciar cursos, turmas e perfis | Não | Não | Sim |
 | Replicar turma | Não | Não | Sim |
-| Emitir certificado | Não | Próprias turmas | Sim |
+| Recuperar emissão pendente | Não | Próprias turmas | Sim |
 | Revogar ou reemitir certificado | Não | Não | Sim, com motivo |
 | Health detalhado e métricas | Não | Não | Sim |
 

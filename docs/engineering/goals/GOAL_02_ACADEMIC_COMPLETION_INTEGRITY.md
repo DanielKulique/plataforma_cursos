@@ -1,6 +1,8 @@
 > **Histórico de engenharia.** Este registro preserva decisões e resultados da época; para desenvolver ou operar, use a [documentação vigente](../../index.md).
 
-> Documento histórico: regras de aprovação manual substituídas pelo [Goal 02 consolidado](GOAL_02_ACADEMIC_EXAM_APPROVAL.md).
+> **Regras deste registro foram supersedidas pela regra acadêmica final.** Consulte
+> [`docs/product/business-rules.md`](../../product/business-rules.md): conclusão exata é somente
+> informativa; 80% dos conteúdos libera o Teste Final, >=75 aprova e o certificado é automático.
 
 # Goal 02 — Integridade da conclusão acadêmica
 
@@ -8,13 +10,13 @@
 
 ## Causas e correção
 
-- D-03: `round(concluidos / total * 100) === 100` permitia decisão final com 200/201. O percentual continua visual, limitado a 0–100; não comprova conclusão.
-- D-13: emissão verificava apenas APROVADO. Inclusão de conteúdo depois da aprovação deixava a matrícula aprovada elegível sem comprovar sua conclusão atual.
-- Regra única: `total_conteudos > 0 && conteudos_concluidos === total_conteudos`, em `src/api/services/academic-progress.service.js`. 0/0 produz 0% e falso; 200/201 produz 100% visual e falso; 201/201 produz verdadeiro.
-- `matricula.models.js` usa a regra para APROVADO e REPROVADO, mantendo a exigência anterior de conclusão integral para ambos. Professor responsável e ADMIN continuam sujeitos ao mesmo gate e à nota manual 0–10. Não existe mínimo automático ou aprovação pelo progresso.
+- D-03 e D-13 registram a motivação histórica para medir conclusão sem arredondamento e revalidar certificados.
+- Na política então vigente, conclusão exata bloqueava aprovação e emissão. Essa exigência foi revogada: `conteudo_concluido` e o percentual permanecem informativos; só o resultado >=75 do Teste Final aprova e habilita certificado.
+- O gate atual de 80% usa `total_conteudos > 0` e comparação inteira exata entre conteúdos concluídos e total. Exercícios, incluindo Simulado, são opcionais e não entram no denominador.
+- PATCH APROVADO e certificado não exigem conclusão integral. A decisão de REPROVADO continua manual conforme o contrato existente.
 - `conteudos.models.js` reutiliza consulta/normalização; listagens derivam contagens. Cache percentual SQL permanece apenas visual. O rótulo do professor usa a conclusão explícita.
-- `certificate.service.js` revalida novas emissões dentro da transação existente, após bloquear contexto e antes de PDF/arquivo/registro. Pendência retorna 409 CONTEUDOS_PENDENTES.
-- Novo conteúdo mantém APROVADO, mas impede nova emissão até conclusão atual integral. Turma ENCERRADA continua permitida. Certificados existentes são reutilizados conforme regra anterior, sem revogação automática.
+- `certificate.service.js` revalida APROVADO e Teste Final >=75 dentro da transação. Conteúdo incompleto ou adicionado depois não bloqueia emissão.
+- Emissão é automática após a prova aprovada e idempotente; falha de PDF não desfaz tentativa/aprovação. Documento ATIVO e versionamento existentes são preservados.
 
 ## Seleção e concorrência
 

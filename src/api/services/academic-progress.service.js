@@ -49,9 +49,19 @@ async function buscarProgresso(connection, idAluno, idTurma) {
     return resumirProgresso(rows[0].total, rows[0].concluidos);
 }
 
-function resumirRequisitos(progresso, totalExercicios, exerciciosRealizados, provaFinalAprovada) {
-    const total = progresso.total_conteudos + Number(totalExercicios || 0);
-    const realizados = progresso.conteudos_concluidos + Number(exerciciosRealizados || 0);
+function resumirRequisitos(
+    progresso,
+    totalExercicios,
+    exerciciosRealizados,
+    provaFinalAprovada,
+    provaFinalTentada = false,
+    provaFinalPercentual = null,
+    provaFinalIdTentativa = null
+) {
+    // A trilha obrigatória do gate é formada pelos conteúdos. Questionários EXERCICIO,
+    // incluindo o Simulado, são prática opcional e nunca reduzem este percentual.
+    const total = progresso.total_conteudos;
+    const realizados = progresso.conteudos_concluidos;
     return {
         ...progresso,
         total_exercicios: Number(totalExercicios || 0),
@@ -61,7 +71,10 @@ function resumirRequisitos(progresso, totalExercicios, exerciciosRealizados, pro
         requisito_percentual_prova: PERCENTUAL_LIBERACAO_PROVA,
         prova_liberada: total > 0 && realizados * 100 >= total * PERCENTUAL_LIBERACAO_PROVA,
         prova_final_aprovada: Boolean(Number(provaFinalAprovada)),
-        elegivel_aprovacao: progresso.conteudo_concluido && Boolean(Number(provaFinalAprovada))
+        prova_final_tentada: Boolean(Number(provaFinalTentada)),
+        prova_final_percentual: provaFinalPercentual == null ? null : Number(provaFinalPercentual),
+        prova_final_id_tentativa: provaFinalIdTentativa == null ? null : Number(provaFinalIdTentativa),
+        elegivel_aprovacao: Boolean(Number(provaFinalAprovada))
     };
 }
 
@@ -79,18 +92,48 @@ async function buscarRequisitos(connection, idAluno, idTurma) {
                          AND t.finalizada_em IS NOT NULL)) AS exercicios_realizados,
                 EXISTS(SELECT 1 FROM Questionarios f INNER JOIN Q_Tentativas t
                     ON t.id_questionario = f.id_questionario AND t.id_turma = f.id_turma
-                    WHERE f.id_turma = ? AND f.tipo = 'PROVA' AND f.prova_final = 1 AND f.ativo = 1
-                      AND t.id_usuario = m.id_aluno AND t.ciclo_matricula = m.ciclo_atual
+                    WHERE f.id_turma = ? AND f.tipo = 'PROVA' AND f.prova_final = 1
+                      AND t.id_usuario = m.id_aluno
                       AND t.finalizada_em IS NOT NULL AND t.percentual >= 75) AS prova_final_aprovada
+                , EXISTS(SELECT 1 FROM Questionarios f INNER JOIN Q_Tentativas t
+                    ON t.id_questionario = f.id_questionario AND t.id_turma = f.id_turma
+                    WHERE f.id_turma = ? AND f.tipo = 'PROVA' AND f.prova_final = 1
+                      AND t.id_usuario = m.id_aluno AND t.finalizada_em IS NOT NULL) AS prova_final_tentada
+                , (SELECT t.percentual FROM Questionarios f INNER JOIN Q_Tentativas t
+                    ON t.id_questionario = f.id_questionario AND t.id_turma = f.id_turma
+                    WHERE f.id_turma = ? AND f.tipo = 'PROVA' AND f.prova_final = 1
+                      AND t.id_usuario = m.id_aluno AND t.finalizada_em IS NOT NULL
+                    ORDER BY t.finalizada_em DESC, t.id_tentativa DESC LIMIT 1) AS prova_final_percentual
+                , (SELECT t.id_tentativa FROM Questionarios f INNER JOIN Q_Tentativas t
+                    ON t.id_questionario = f.id_questionario AND t.id_turma = f.id_turma
+                    WHERE f.id_turma = ? AND f.tipo = 'PROVA' AND f.prova_final = 1
+                      AND t.id_usuario = m.id_aluno AND t.finalizada_em IS NOT NULL
+                    ORDER BY t.finalizada_em DESC, t.id_tentativa DESC LIMIT 1) AS prova_final_id_tentativa
          FROM Matriculas m WHERE m.id_aluno = ? AND m.id_turma = ?`,
-        [idTurma, idTurma, idTurma, idAluno, idTurma]
+        [idTurma, idTurma, idTurma, idTurma, idTurma, idTurma, idAluno, idTurma]
     );
     const row = rows[0] || {};
-    return {
-        ...resumirRequisitos(progresso, row.total_exercicios, row.exercicios_realizados, row.prova_final_aprovada),
+    const requisitos = {
+        ...resumirRequisitos(
+            progresso,
+            row.total_exercicios,
+            row.exercicios_realizados,
+            row.prova_final_aprovada,
+            row.prova_final_tentada,
+            row.prova_final_percentual,
+            row.prova_final_id_tentativa
+        ),
         status_aprovacao: row.status_aprovacao,
         ciclo_atual: row.ciclo_atual == null ? null : Number(row.ciclo_atual)
     };
+    const [certificados] = await connection.query(
+        `SELECT status FROM Certificados
+         WHERE id_aluno = ? AND id_turma = ?
+         ORDER BY versao DESC LIMIT 1`,
+        [idAluno, idTurma]
+    );
+    requisitos.status_certificado = certificados[0]?.status || 'NAO_EMITIDO';
+    return requisitos;
 }
 
 function exigirProvaLiberada(requisitos) {
@@ -104,13 +147,16 @@ function exigirProvaLiberada(requisitos) {
 async function avaliarAprovacao(connection, idAluno, idTurma) {
     // Chamadores já detêm os locks da turma/matrícula; não abre outra transação.
     const requisitos = await buscarRequisitos(connection, idAluno, idTurma);
-    if (requisitos.elegivel_aprovacao) {
+    if (requisitos.elegivel_aprovacao && requisitos.status_aprovacao === 'CURSANDO') {
         const [result] = await connection.query(
             `UPDATE Matriculas SET status_aprovacao = 'APROVADO'
              WHERE id_aluno = ? AND id_turma = ? AND status_aprovacao = 'CURSANDO'`,
             [idAluno, idTurma]
         );
-        if (result.affectedRows) requisitos.status_aprovacao = 'APROVADO';
+        if (result.affectedRows) {
+            requisitos.status_aprovacao = 'APROVADO';
+            requisitos.aprovacao_atualizada = true;
+        }
     }
     return requisitos;
 }

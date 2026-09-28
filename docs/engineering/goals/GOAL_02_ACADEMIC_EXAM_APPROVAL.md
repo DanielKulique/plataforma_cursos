@@ -1,6 +1,11 @@
 > **Histórico de engenharia.** Este registro preserva decisões e resultados da época; para desenvolver ou operar, use a [documentação vigente](../../index.md).
 
-# Goal 02 consolidado — progresso, prova final e aprovação
+# Goal 02 consolidado — registro histórico do contrato acadêmico anterior
+
+> **Supersedido pela regra acadêmica final.** Este arquivo preserva evidências da implementação
+> de setembro de 2026. A regra vigente está em [`docs/product/business-rules.md`](../../product/business-rules.md):
+> 80% dos conteúdos libera o Teste Final; há uma tentativa; nota >=75 aprova sem exigir 100% dos
+> conteúdos; certificado é automático. Não use as condições históricas abaixo como contrato atual.
 
 **ACADEMIC_PROGRESS_EXAM_APPROVAL_READY**. Implementação de 08/09/2026, staging validado em 09/09/2026. Substitui a política manual do Goal 02 inicial.
 
@@ -10,9 +15,9 @@ Antes: conclusão exata já corrigida para conteúdos, aprovação manual com no
 
 | Métrica | Fonte/regra | Uso |
 | --- | --- | --- |
-| Trilha de liberação | Conteudos + EXERCICIO ativo; `realizados * 100 >= total * 80` e total >0 | Abrir/responder PROVA FINAL |
-| Conclusão de conteúdos | total_conteudos >0 e conteudos_concluidos === total_conteudos | Aprovação/certificado |
-| Conquista da prova | EXISTS tentativa da prova final ativa, do aluno/turma, finalizada_em não nulo e percentual >=75 | Aprovação/certificado |
+| Trilha de liberação histórica | Conteudos + EXERCICIO ativo | Substituída: somente conteúdos contam; exercícios são opcionais |
+| Conclusão de conteúdos histórica | total_conteudos >0 e conteudos_concluidos === total_conteudos | Não é requisito de aprovação/certificado |
+| Conquista do Teste Final atual | tentativa finalizada do aluno/turma >=75, uma por aluno/turma | Aprovação e certificado automático |
 
 Todos os tipos de Conteudos contam (VIDEO, TEXTO, PDF, LINK, ATIVIDADE). Exercício ativo vale uma unidade se houver qualquer tentativa finalizada, qualquer nota; retries não multiplicam unidades. Provas, inativos, outras turmas/alunos não entram na trilha. Não há bloqueio sequencial de aulas ou mínimo para EXERCICIO. Ativo é o critério atual de publicação/aplicabilidade; autoria deve publicar exercícios respondíveis.
 
@@ -28,15 +33,15 @@ GET respondível usa transação e bloqueio; consulta requisitos antes de carreg
 
 A pontuação vem das respostas corrigidas no servidor. Pontos persistidos DECIMAL(...,2) são somados em centésimos inteiros para calcular a razão. Percentual da prova final é truncado para duas casas ao persistir, evitando que valor real abaixo de 75 seja arredondado para 75. EXERCICIO e prova intermediária mantêm arredondamento anterior para duas casas. Não há conversão para nota_final.
 
-Tentativas continuam ilimitadas. A mesma submission_id reutiliza a tentativa concluída sem gerar outra ou reaplicar o gate de abertura. Qualquer conquista >=75 permanece válida após tentativa posterior pior. Resultado <75 mantém CURSANDO quando ainda não aprovado, sem reprovação automática. Histórico permanece completo.
+Na implementação histórica, tentativas eram ilimitadas. Regra vigente: uma tentativa finalizada no Teste Final por aluno/turma, retry técnico pelo mesmo submission_id reutiliza o resultado e novo ID recebe 409. Resultado <75 consome a tentativa, permanece registrado e não gera certificado. Exercícios continuam com tentativas livres.
 
 ## Aprovação, nota e certificado
 
-Após progresso e submissão final, `avaliarAprovacao` aplica UPDATE condicional CURSANDO→APROVADO quando conteúdos estão completos e a prova foi atendida. Cobre conteúdos antes da prova e prova antes dos últimos conteúdos. Operação é idempotente e transacional, sem certificado automático. CANCELADO/REPROVADO manuais não são sobrescritos.
+Regra vigente: `avaliarAprovacao` aplica CURSANDO→APROVADO quando existe Teste Final finalizado >=75; não consulta conclusão total dos conteúdos. A tentativa e aprovação persistem antes da emissão automática do certificado. CANCELADO/REPROVADO manuais mantêm o contrato existente.
 
-`nota_final` permanece manual e nullable, 0–10; não bloqueia APROVADO, não recebe percentual/10. PATCH professor/ADMIN revalida conteúdos + prova; nota manual não contorna esses gates. REPROVADO preserva regra manual anterior de nota e conclusão, sem automação.
+`nota_final` permanece manual e nullable, 0–10; não bloqueia APROVADO, não recebe percentual/10. PATCH professor/ADMIN revalida somente a prova final >=75; conteúdo incompleto e nota ausente não bloqueiam. REPROVADO preserva regra manual anterior de nota e conclusão, sem automação.
 
-Nova emissão exige status APROVADO, conteúdos completos e prova final ativa >=75, revalidados na transação antes de PDF/temporário/arquivo/INSERT. Falhas são 409 CONTEUDOS_PENDENTES ou PROVA_FINAL_PENDENTE. Conteúdo adicionado mantém status legado, mas bloqueia nova emissão. Inativar a final remove elegibilidade atual. Turma ENCERRADA continua permitindo certificado elegível, mas não novas provas/progresso.
+Nova emissão exige status APROVADO e Teste Final >=75, revalidados na transação. Conteúdos incompletos e conteúdos adicionados depois não bloqueiam o certificado. Emissão normal é automática e idempotente; falha no PDF não desfaz resultado acadêmico e pode ser recuperada sem repetir a prova.
 
 Certificados existentes mantêm reutilização, download, hash/QR, validação e revogação atuais. Nenhuma revogação automática, reemissão ou versionamento.
 
@@ -53,11 +58,11 @@ Certificados existentes mantêm reutilização, download, hash/QR, validação e
 - `npm run build` e validação dos assets finais: aprovados. `git diff --check`: aprovado.
 - `npm audit` e `npm audit --omit=dev`: uma execução cada, zero vulnerabilidades. Não foi executado test:stability.
 
-Fronteiras: 0/0 bloqueado; 7/10 bloqueado; 8/10 liberado; 3/4 bloqueado; 4/5 liberado; 80/101 bloqueado; 81/101 liberado. Conteúdos 200/201 permanecem incompletos mesmo com 100% visual/prova atendida. 74,99 falha; 75,00 e 75,01 atendem. Exercício/intermediária >=75 não aprova. Testes reais validam ausência de PDF/linha nas falhas e convergência da última conclusão com submissão concorrente.
+Fronteiras atuais cobertas na suíte final: 0/0 bloqueado; 79/100 bloqueado; 80/100 liberado; 0/1 bloqueado. Conteúdo 20/22 + 100% e 18/22 + 75% aprova; 74,99 não aprova e 75,00 aprova. Duas submissões concorrentes finalizam somente uma tentativa. Exercício permanece com tentativas livres.
 
 ## Staging e baseline
 
-Smoke A–F implementado em `scripts/smoke_academic_completion_staging.js`: 8 conteúdos + 2 exercícios; 7/10 bloqueado, 8/10 liberado, 74,99 CURSANDO com retry, 75 com pendência CURSANDO, último conteúdo APROVADO sem nota manual, certificado elegível. Inclui outro aluno, múltiplas tentativas de exercício, alteração estrutural posterior, ausência de arquivo/linha quando bloqueado e certificado em ENCERRADA. Cenário temporário removido em finally.
+O smoke A–F citado abaixo registra o baseline histórico, que incluía exercícios no denominador e permitia repetir a prova. Ele não valida o contrato atual e não é evidência de aceitação da regra final. A cobertura vigente está em `src/__tests__/integration/academic-exam.integration.test.js` e `tests/e2e/`.
 
 Atualizados requirements, business rules, data model, API/authorization, testing, risks, traceability e executive summary. Relatório anterior marcado como histórico substituído. D-03 RESOLVIDO; D-13 PARCIAL exclusivamente pela política sobre documentos já emitidos reservada ao Goal 03.
 

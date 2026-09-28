@@ -105,7 +105,8 @@ describe('modelos do Goal 3', () => {
                     status: 'CONCLUIDO', iniciado_em: new Date(), concluido_em: new Date()
                 }]])
                 .mockResolvedValueOnce([[{ total: 2, concluidos: 1 }]])
-                .mockResolvedValueOnce([[{ total_exercicios: 0, exercicios_realizados: 0, prova_final_aprovada: 0 }]]);
+                .mockResolvedValueOnce([[{ total_exercicios: 0, exercicios_realizados: 0, prova_final_aprovada: 0 }]])
+                .mockResolvedValueOnce([[]]);
             db.getConnection.mockResolvedValue(conexao);
 
             const resultado = await conteudos.registrarProgresso(3, 8, 'CONCLUIDO');
@@ -241,6 +242,7 @@ describe('modelos do Goal 3', () => {
                 .mockResolvedValueOnce([[{
                     id_questionario: 4, id_turma: 1, titulo: 'Exercício', tipo: 'EXERCICIO'
                 }]])
+                .mockResolvedValueOnce([[{ status: 'ABERTA' }]])
                 .mockResolvedValueOnce([[{
                     id_pergunta: 5, texto_pergunta: 'Pergunta', tipo_pergunta: 'MULTIPLA_ESCOLHA'
                 }]])
@@ -262,6 +264,7 @@ describe('modelos do Goal 3', () => {
         it('recusa RESPOSTA_CURTA no fluxo do aluno', async () => {
             db.query
                 .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
+                .mockResolvedValueOnce([[{ status: 'ABERTA' }]])
                 .mockResolvedValueOnce([[{ id_pergunta: 5, tipo_pergunta: 'RESPOSTA_CURTA' }]]);
 
             await expect(questoes.listarAluno(1, 'EXERCICIO'))

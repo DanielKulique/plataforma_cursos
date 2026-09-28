@@ -322,9 +322,9 @@ Catálogo do comportamento observado, sem compromisso de produção. RF com depe
 
 **Descrição:** Lançar nota e situação por meio do fluxo existente. **Estado:** IMPLEMENTADO no escopo descrito.
 
-**Atores:** Professor responsável ou ADMIN. **Pré-condições:** Matrícula; contagens exatas (`total > 0 && concluidos === total`); prova final >=75 para APROVADO; nota manual para REPROVADO.
+**Atores:** Professor responsável ou ADMIN. **Pré-condições:** Matrícula e Teste Final >=75 para APROVADO; conclusão integral e nota manual continuam exigidas para decisão manual REPROVADO.
 
-**Fluxo principal:** Concluir conteúdos e prova final >=75 do ciclo atual aprova automaticamente; PATCH manual revalida esses requisitos. CANCELADO não aceita transição de status por PATCH e exige rematrícula oficial. Nota 0–10 permanece opcional para APROVADO, sem conversão do percentual. **Pós-condições:** Situação consistente, sem reprovação automática ou bypass do ciclo.
+**Fluxo principal:** Teste Final >=75 aprova automaticamente, sem exigir conteúdo completo; PATCH manual para APROVADO revalida o mesmo resultado. CANCELADO não aceita transição de status por PATCH e exige rematrícula oficial. Nota 0–10 permanece opcional para APROVADO, sem conversão do percentual. **Pós-condições:** Situação consistente, sem reprovação automática ou bypass do ciclo.
 
 **Regras:** RN-012, RN-023.
 
@@ -414,13 +414,13 @@ Catálogo do comportamento observado, sem compromisso de produção. RF com depe
 
 **Evidência:** `GET /api/turmas/:id/replicacao-resumo; POST /api/turmas/:id/replicar`; `turma-replication.service.js`; teste `src/__tests__/integration/turma-replication.integration.test.js`.
 
-### RF-035 — Emitir certificado
+### RF-035 — Emitir e recuperar certificado
 
-**Descrição:** Emitir certificado por meio do fluxo existente. **Estado:** IMPLEMENTADO no escopo descrito.
+**Descrição:** Emitir automaticamente após aprovação; professor responsável ou ADMIN pode recuperar uma emissão pendente. **Estado:** IMPLEMENTADO no escopo descrito.
 
-**Atores:** Professor responsável ou ADMIN. **Pré-condições:** Matrícula APROVADO, conclusão exata atual e prova final ativa >=75 para nova emissão; turma ENCERRADA é permitida.
+**Atores:** Sistema; professor responsável ou ADMIN somente para recuperação. **Pré-condições:** Matrícula APROVADO e Teste Final >=75; conteúdos incompletos não bloqueiam. Turma ENCERRADA é permitida.
 
-**Fluxo principal:** Bloquear contexto, reutilizar somente certificado ATIVO ou revalidar os requisitos do Goal 02 antes de gerar v1 com PDF/QR/hash próprio. Histórico revogado retorna 409 e exige ADMIN no endpoint de reemissão. Pendência retorna 409 sem PDF/registro; novo conteúdo não rebaixa APROVADO automaticamente. **Pós-condições:** Identidade única por versão, no máximo um ATIVO por aluno/turma e arquivo final privado.
+**Fluxo principal:** Após commit da nota/aprovação, bloquear contexto e revalidar elegibilidade; reutilizar certificado ATIVO ou gerar v1 com PDF/QR/hash próprio. Retry não cria versão duplicada. Histórico revogado segue reemissão administrativa. Falha de PDF mantém tentativa e aprovação para recuperação posterior. **Pós-condições:** Identidade única por versão, no máximo um ATIVO por aluno/turma e arquivo final privado.
 
 **Regras:** RN-035, RN-036.
 
@@ -783,9 +783,14 @@ Não são SLAs prometidos. Estados descrevem mecanismos atuais; recomendações 
 **Risco/limitação:** Não há matriz automatizada de navegadores ou paridade total de versões local/entrega.
 
 
-## Consolidação acadêmica substitutiva — Goal 02 (08/09/2026)
+## Contrato acadêmico vigente — regra final
 
-PROVA FINAL é designada explicitamente, única por turma. Abertura e nova submissão exigem >=80% exatos de conteúdos + exercícios ativos realizados; EXERCICIO realizado significa ao menos uma tentativa finalizada, independentemente da nota. A prova exige >=75%; 74,99 falha e não reprova, retries permanecem ilimitados. Conteúdos completos + prova atendida aprovam automaticamente, sem nota/clique docente. Certificado revalida ambos os requisitos e APROVADO. Ver RN-021/023/025/030/035 e [evidências](goals/GOAL_02_ACADEMIC_EXAM_APPROVAL.md).
+O Teste Final é designado explicitamente e é único por turma. Abre quando conteúdos concluídos
+* 100 >= total de conteúdos * 80; EXERCICIO, inclusive Simulado, é opcional e não conta. 0/0 e
+79% bloqueiam; 80% libera. O Teste Final tem uma tentativa finalizada por aluno+turma, com
+idempotência para o mesmo submission_id. Nota >=75 aprova sem exigir conteúdos completos; 74,99
+não aprova. Certificado é emitido automaticamente e de forma idempotente. Ver [regras vigentes]
+(../product/business-rules.md) e [evidências da refatoração](goals/GOAL_02_ACADEMIC_EXAM_APPROVAL.md).
 
 ### Goal 03 — extensão de RF-035/036/037
 
@@ -793,4 +798,4 @@ ADMIN corrige/reemite explicitamente a última versão com motivo de 3–500 car
 
 ### Goal 04 — ciclo da matrícula
 
-O vínculo aluno/turma permanece único, mas possui `ciclo_atual` monotônico. A matrícula inicial começa no ciclo 1. Somente `POST /api/matriculas`, pelo próprio aluno e com turma ABERTA, pode reativar CANCELADO; professor e ADMIN recebem 409 ao tentar `CANCELADO → CURSANDO/APROVADO/REPROVADO` pelo PATCH acadêmico. A rematrícula incrementa o ciclo uma vez sob lock, reinicia conteúdo/nota e preserva tentativas/respostas. Exercícios, meta de 80%, prova final >=75, aprovação e certificação consultam exclusivamente `Q_Tentativas.ciclo_matricula = Matriculas.ciclo_atual`; histórico retorna todos os ciclos.
+O vínculo aluno/turma permanece único, mas possui `ciclo_atual` monotônico. A matrícula inicial começa no ciclo 1. Somente `POST /api/matriculas`, pelo próprio aluno e com turma ABERTA, pode reativar CANCELADO; professor e ADMIN recebem 409 ao tentar `CANCELADO → CURSANDO/APROVADO/REPROVADO` pelo PATCH. A rematrícula incrementa o ciclo uma vez sob lock, reinicia conteúdo/nota e preserva tentativas/respostas. Progresso e exercícios permanecem no ciclo atual. Exceção: o Teste Final tem identidade, tentativa única e resultado por aluno+turma, preservados entre ciclos; nota >=75 pode aprovar a matrícula reativada.

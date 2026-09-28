@@ -14,7 +14,7 @@
 - Emissão inicial: ADMIN ou professor responsável; reutiliza somente ATIVO. Histórico sem ativo exige reemissão administrativa, 409 também para ADMIN na rota inicial.
 - Revogação isolada: permanece ADMIN, irreversível pela API, sem exclusão/reescrita de PDF e sem reemissão automática.
 - Reemissão: `POST /api/certificados/:id_certificado/reemitir`, ADMIN, JSON apenas motivo. Última versão ATIVA é revogada na mesma transação da sucessora. Se já REVOGADA, autoria/data/motivo originais não mudam.
-- Academia: usa `buscarRequisitos` do Goal 02 após lock de contexto; exige matrícula APROVADO, conclusão exata dos conteúdos e prova final ativa com conquista >=75%. Não altera 80%/75%, aprovação automática ou tentativas.
+- Academia: usa `buscarRequisitos` após lock de contexto; exige matrícula APROVADO e Teste Final >=75%. A regra acadêmica final não exige conclusão exata e inicia emissão automaticamente. Versionamento, snapshot, hash e proteção de um único ATIVO permanecem.
 - Concorrência: lock de matrícula/turma e leitura atual da última versão com FOR UPDATE; duas requisições ao mesmo ID resultam em 201 + 409 e somente uma sucessora. Versão cresce sobre histórico preservado.
 - Retry: o ID anterior é precondição persistente; após substituição retorna 409. Idempotency-Key foi avaliado e não introduzido: não há repetição automática usando o ID sucessor, e o histórico permite reconciliar resposta perdida.
 - Filesystem/SQL: gerar e publicar PDF novo antes da transição; revogação + INSERT + COMMIT na mesma transação. Rollback compensa somente arquivo novo. UUID, código/QR e SHA são novos; template institucional preservado.

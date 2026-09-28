@@ -21,7 +21,7 @@ conexão, identidade do banco, sessão e políticas de storage.
 | Serviço | Uso |
 | --- | --- |
 | `academic-access` | Autoria por professor responsável/ADMIN e bloqueio de turma encerrada |
-| `academic-progress` | Conteúdos completos, trilha de 80% e aprovação na final |
+| `academic-progress` | Gate de 80% dos conteúdos e aprovação do Teste Final >=75 |
 | `turma-replication` | Cópia transacional de estrutura com idempotência |
 | `material-upload` / `pdf-validation` | Recepção, validação estrutural e publicação privada de PDF |
 | `private-storage` / `material-lifecycle` | Arquivos imutáveis, referências e retenção |

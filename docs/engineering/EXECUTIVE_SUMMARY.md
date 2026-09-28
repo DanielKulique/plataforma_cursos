@@ -14,7 +14,7 @@ O levantamento catalogou **47 requisitos funcionais, 26 não funcionais e 41 reg
 
 As funcionalidades possuem delimitações relevantes. A matrícula exige turma ABERTA; FECHADA mantém acesso dos já matriculados; ENCERRADA bloqueia estudo e submissões do aluno, mas pode ser reaberta por ADMIN. O professor tem escopo de turma, não administração global. “Atividade” é um material textual, sem fluxo de entrega pelo aluno. Resposta curta existe no schema como legado, mas não é aceita nas avaliações atuais.
 
-A pontuação das tentativas é calculada no servidor com pesos das perguntas. A aprovação é automática com conteúdos completos e prova final >=75%; a prova final libera com >=80% da trilha de conteúdos/exercícios. A nota final permanece manual e opcional para aprovação; reprovação não é automática. O progresso da matrícula considera conteúdos concluídos; o resumo visual de uma aula também inclui avaliações. Essas duas medidas não devem ser tratadas como equivalentes.
+A pontuação das tentativas é calculada no servidor com pesos das perguntas. O Teste Final libera com pelo menos 80% dos conteúdos; exercícios, incluindo Simulado, são opcionais. Há uma tentativa finalizada por aluno/turma. Resultado >=75% aprova automaticamente e inicia a emissão do certificado, mesmo que restem conteúdos. A nota final manual não é requisito.
 
 ## Arquitetura e tecnologias
 
@@ -28,7 +28,7 @@ Arquivos PDF novos são armazenados em diretórios privados persistentes. Os mat
 
 ## Certificados e segurança
 
-Certificados são emitidos por ADMIN ou professor responsável para matrícula APROVADO. O PDF final contém dados acadêmicos, identificação do aluno, responsável, conteúdo/aulas, código público e QR. O banco preserva snapshot dos dados principais e hash dos bytes finais. Cada aluno/turma pode ter várias versões históricas, com no máximo uma ATIVA garantida pelo banco e proteção contra concorrência e repetição. O download exige autorização; a validação pública por código consulta existência/status, e o upload público compara SHA-256 dos bytes recebidos.
+Certificados são emitidos automaticamente após a aprovação; ADMIN/professor responsável podem recuperar falhas de emissão para matrícula APROVADO. O PDF final contém dados acadêmicos, identificação do aluno, responsável, conteúdo/aulas, código público e QR. O banco preserva snapshot dos dados principais e hash dos bytes finais. Cada aluno/turma pode ter várias versões históricas, com no máximo uma ATIVA garantida pelo banco e proteção contra concorrência e repetição. O download exige autorização; a validação pública por código consulta existência/status, e o upload público compara SHA-256 dos bytes recebidos.
 
 A revogação é administrativa, preserva documento e histórico e passa a ser informada na validação pública. Não existe reativação. ADMIN corrige/reemite explicitamente com motivo e nova versão; emissão normal recusa histórico revogado. O banco garante no máximo um ATIVO por aluno/turma. O mecanismo é validação registral e comparação de integridade, não assinatura digital criptográfica do emissor.
 
@@ -56,13 +56,13 @@ Na operação, permanecem host único, ausência de HA/PITR e offsite na mesma r
 
 Para manutenção, convém reduzir duplicação de regras de progresso/autorização e completar autoria docente, preservando contratos e testes. Em crescimento, devem ser medidos paginação, consultas, pool e transações longas antes de propor serviços distribuídos. O levantamento fornece diagramas C4, ER, sequências, estados, matriz de autorização, inventário de API e rastreabilidade para que essas decisões futuras partam de evidência do sistema real.
 
-O Goal 04 formalizou o ciclo da matrícula: CANCELADO só retorna a CURSANDO pela rematrícula própria em turma ABERTA, com incremento monotônico do ciclo. Tentativas históricas permanecem consultáveis, mas exercícios, 80%, prova final >=75, aprovação e elegibilidade de certificado usam somente o ciclo atual. D-04 e D-05 foram resolvidos; detalhes e evidências estão em [Goal 04](goals/GOAL_04_ENROLLMENT_LIFECYCLE.md).
+O Goal 04 formalizou o ciclo da matrícula: CANCELADO só retorna a CURSANDO pela rematrícula própria em turma ABERTA, com incremento monotônico do ciclo. A regra acadêmica vigente mantém conteúdos e exercícios no ciclo atual, enquanto a tentativa única do Teste Final e seu resultado são por aluno+turma entre ciclos. Resultado >=75 pode aprovar a matrícula reativada e iniciar a emissão automática do certificado. O relatório do Goal 04 registra o contexto histórico e as regras atuais devem ser lidas em [regras de negócio](02-business-rules.md).
 
 
 Goal 02 inicial (histórico, substituído pela consolidação abaixo): **ACADEMIC_COMPLETION_INTEGRITY_READY**. 200/201 não permite decisão final nem nova emissão; a conclusão é exata e a certificação revalida a estrutura atual. Gates locais concluídos e smoke A–D aprovado no staging Azure, com limpeza e certificados anteriores preservados. D-03 RESOLVIDO; D-13 PARCIAL pela política pós-emissão reservada ao Goal 03. [Evidências e limites](goals/GOAL_02_ACADEMIC_COMPLETION_INTEGRITY.md).
 
 
-O Goal 02 consolidado substitui aprovação manual por aprovação automática de CURSANDO quando todos os conteúdos estão concluídos exatamente e há tentativa finalizada da prova final ativa >=75%. A final é estrutural e única por turma; abre e aceita novas submissões a partir de 80% reais de conteúdos + exercícios realizados. Exercícios não têm mínimo; 74,99 na final não reprova e permite retry. Nota_final permanece manual/compatível e não bloqueia aprovação. Certificado revalida os requisitos completos; política histórica de certificados e ownership geral foram tratados posteriormente nos Goals 03 e 06. [Implementação e evidências atuais](goals/GOAL_02_ACADEMIC_EXAM_APPROVAL.md).
+O Goal 02 histórico foi supersedido pela refatoração final das regras acadêmicas. O contrato vigente libera o Teste Final com 80% dos conteúdos, limita a uma tentativa finalizada e aprova com >=75%, sem conclusão integral. A emissão do certificado é automática e idempotente. O relatório histórico preserva evidências da política anterior e está marcado como substituído.
 
 
 **ACADEMIC_PROGRESS_EXAM_APPROVAL_READY** — staging validado em 09/09/2026: casos A–F aprovados, cenário temporário removido, certificados anteriores preservados e fontes implantados iguais aos locais. [Evidências finais](goals/GOAL_02_ACADEMIC_EXAM_APPROVAL.md).

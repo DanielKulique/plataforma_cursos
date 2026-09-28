@@ -7,6 +7,7 @@ const pdfService = require('./certificate-pdf.service');
 const storage = require('./certificate-storage.service');
 const privateStorage = require('./private-storage.service');
 const { buscarRequisitos } = require('./academic-progress.service');
+const logger = require('../../utils/logger');
 
 const CODIGO_PUBLICO_PATTERN = /^CERT-[0-9A-F]{8}(?:-[0-9A-F]{8}){3}$/;
 
@@ -126,12 +127,6 @@ async function emitirCertificado(idMatricula, usuario, reemissao = null) {
         }
 
         const progresso = await buscarRequisitos(connection, contexto.id_aluno, contexto.id_turma);
-        if (!progresso.conteudo_concluido) {
-            throw certificateError(
-                'CONTEUDOS_PENDENTES', 409,
-                'Conclua todos os conteúdos atuais da turma antes de emitir o certificado.'
-            );
-        }
 
         if (!progresso.prova_final_aprovada) {
             throw certificateError('PROVA_FINAL_PENDENTE', 409, 'Conquiste pelo menos 75% na prova final antes de emitir o certificado.');
@@ -224,6 +219,41 @@ async function emitirCertificado(idMatricula, usuario, reemissao = null) {
         throw error;
     } finally {
         connection.release();
+    }
+}
+
+// A chamada é interna ao fluxo acadêmico. O professor responsável fica registrado
+// como emissor institucional; nenhuma ação do professor é necessária no fluxo normal.
+async function emitirCertificadoAutomaticamente(idAluno, idTurma) {
+    let matricula;
+    try {
+        const [rows] = await db.query(
+            `SELECT m.id_matricula, turma.id_professor
+             FROM Matriculas m
+             INNER JOIN Turmas turma ON turma.id_turma = m.id_turma
+             WHERE m.id_aluno = ? AND m.id_turma = ?
+               AND m.status_aprovacao <> 'CANCELADO'
+             LIMIT 1`,
+            [idAluno, idTurma]
+        );
+        matricula = rows[0];
+        if (!matricula) return { status: 'PENDENTE' };
+
+        const resultado = await emitirCertificado(matricula.id_matricula, {
+            tipo: 'PROFESSOR', id_usuario: Number(matricula.id_professor)
+        });
+        return {
+            status: resultado.certificado.status,
+            certificado: resultado.certificado,
+            reutilizado: resultado.reutilizado
+        };
+    } catch (error) {
+        logger.error('certificado.emissao_automatica.falhou', {
+            enrollmentId: matricula?.id_matricula,
+            classId: idTurma,
+            error
+        });
+        return { status: 'PENDENTE', code: error.code || 'EMISSAO_FALHOU' };
     }
 }
 
@@ -346,6 +376,7 @@ async function validarArquivo(buffer) {
 module.exports = {
     CODIGO_PUBLICO_PATTERN,
     emitirCertificado,
+    emitirCertificadoAutomaticamente,
     reemitirCertificado,
     listarHistorico,
     gerarCodigoPublico,

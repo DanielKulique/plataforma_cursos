@@ -53,7 +53,7 @@ Execute em ambiente descartável equivalente à produção, com domínio HTTPS e
 
 - [ ] Login redireciona para a área do professor e lista somente turmas autorizadas.
 - [ ] Acompanhamento exibe alunos, notas, progresso automático e estados vazios/erro/sucesso.
-- [ ] Professor altera nota/situação, mas não o progresso; aprovação/reprovação final exige 100% dos conteúdos e nota informada.
+- [ ] Checklist histórico supersedido: aprovação vigente exige Teste Final >=75, não 100% dos conteúdos; REPROVADO permanece manual conforme contrato.
 - [ ] Atualizações permitidas persistem; turmas de outro professor e operações administrativas retornam 403.
 - [ ] Conteúdo/pergunta/questionário com histórico acadêmico não pode ser removido ou reescrito destrutivamente.
 - [ ] Controles sem endpoint real não aparecem como ações disponíveis.

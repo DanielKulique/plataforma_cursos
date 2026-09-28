@@ -1,6 +1,7 @@
 const db = require('../../config/database');
 const { lockTurmaParaMutacao, localizarRecurso, bloquearTurma, bloquearRecurso } = require('../services/academic-access.service');
 const { buscarRequisitos, exigirProvaLiberada, avaliarAprovacao } = require('../services/academic-progress.service');
+const certificateService = require('../services/certificate.service');
 
 const TIPOS_PERGUNTA_SUPORTADOS = new Set(['MULTIPLA_ESCOLHA', 'VERDADEIRO_FALSO']);
 
@@ -397,8 +398,8 @@ async function listarTrilhaAluno(idTurma, idAluno) {
     );
     const requisitos = await buscarRequisitos(db, idAluno, idTurma);
     return rows.map(row => ({ ...row, requisitos,
-        concluido: row.prova_final ? requisitos.prova_final_aprovada : row.concluido,
-        bloqueada: Boolean(row.prova_final) && !requisitos.prova_liberada }));
+        concluido: row.prova_final ? requisitos.prova_final_tentada : row.concluido,
+        bloqueada: Boolean(row.prova_final) && !requisitos.prova_final_tentada && !requisitos.prova_liberada }));
 }
 
 async function listarAluno(idTurma, tipo, idQuestionario = null, idAluno = null) {
@@ -415,16 +416,25 @@ async function listarAluno(idTurma, tipo, idQuestionario = null, idAluno = null)
 }
 
 async function carregarQuestionario(connection, idTurma, tipo, idQuestionario, idAluno) {
+    const permiteResultadoFinalizado = Boolean(idQuestionario && idAluno);
+    const filtroResultadoInativo = permiteResultadoFinalizado
+        ? ` OR (Questionarios.prova_final = 1 AND EXISTS(
+            SELECT 1 FROM Q_Tentativas t
+            WHERE t.id_questionario = Questionarios.id_questionario
+              AND t.id_usuario = ? AND t.finalizada_em IS NOT NULL
+        ))`
+        : '';
     const [questionarios] = await connection.query(
         `SELECT id_questionario, id_turma, id_modulo, ordem, titulo, descricao, tipo, prova_final,
                 (SELECT titulo FROM Modulos m WHERE m.id_modulo = Questionarios.id_modulo) AS titulo_aula,
                 (SELECT COUNT(*) FROM Modulos m WHERE m.id_turma = Questionarios.id_turma
                  AND m.ordem <= (SELECT ordem FROM Modulos atual WHERE atual.id_modulo = Questionarios.id_modulo)) AS numero_aula
          FROM Questionarios
-         WHERE id_turma = ? AND tipo = ? AND ativo = 1${idQuestionario ? " AND id_questionario = ?" : ""}
+         WHERE id_turma = ? AND tipo = ?
+           AND (ativo = 1${filtroResultadoInativo})${idQuestionario ? " AND id_questionario = ?" : ""}
          ORDER BY ordem DESC, titulo
          LIMIT 1`,
-        [idTurma, tipo, ...(idQuestionario ? [idQuestionario] : [])]
+        [idTurma, tipo, ...(permiteResultadoFinalizado ? [idAluno] : []), ...(idQuestionario ? [idQuestionario] : [])]
     );
     if (!questionarios.length) return null;
 
@@ -432,9 +442,28 @@ async function carregarQuestionario(connection, idTurma, tipo, idQuestionario, i
     let requisitos;
     if (questionario.prova_final) {
         const [[turma]] = await connection.query('SELECT status FROM Turmas WHERE id_turma = ?', [idTurma]);
-        if (!turma || turma.status === 'ENCERRADA') throw questionnaireError('TURMA_ENCERRADA', 403, 'Esta turma está encerrada.');
         requisitos = await buscarRequisitos(connection, idAluno, idTurma);
+        if (requisitos.prova_final_tentada) {
+            return {
+                ...questionario,
+                perguntas: [],
+                tentativa_finalizada: true,
+                resultado_final: {
+                    id_tentativa: requisitos.prova_final_id_tentativa,
+                    percentual: requisitos.prova_final_percentual,
+                    aprovado: requisitos.prova_final_aprovada,
+                    status_certificado: requisitos.status_certificado
+                },
+                requisitos
+            };
+        }
+        if (!turma || turma.status === 'ENCERRADA') throw questionnaireError('TURMA_ENCERRADA', 403, 'Esta turma está encerrada.');
         exigirProvaLiberada(requisitos);
+    } else {
+        const [[turma]] = await connection.query('SELECT status FROM Turmas WHERE id_turma = ?', [idTurma]);
+        if (!turma || turma.status === 'ENCERRADA') {
+            throw questionnaireError('TURMA_ENCERRADA', 403, 'Esta turma está encerrada.');
+        }
     }
     const [perguntas] = await connection.query(
         `SELECT id_pergunta, texto_pergunta, tipo_pergunta, ordem, pontos
@@ -566,7 +595,7 @@ async function submeter(idQuestionario, idAluno, respostas, chaveIdempotencia) {
         const turma = await bloquearTurma(conexao, contexto.idTurma);
         const questionario = await bloquearRecurso(conexao, contexto);
         const questionarios = [{ ...questionario, status_turma: turma.status }];
-        if (!questionarios.length || !questionarios[0].ativo) {
+        if (!questionarios.length) {
             throw questionnaireError(
                 'QUESTIONARIO_INDISPONIVEL',
                 404,
@@ -574,7 +603,14 @@ async function submeter(idQuestionario, idAluno, respostas, chaveIdempotencia) {
             );
         }
         const idTurma = questionarios[0].id_turma;
-        if (questionarios[0].status_turma === 'ENCERRADA') {
+        if (!questionarios[0].prova_final && !questionarios[0].ativo) {
+            throw questionnaireError(
+                'QUESTIONARIO_INDISPONIVEL',
+                404,
+                'Questionário inexistente ou inativo.'
+            );
+        }
+        if (!questionarios[0].prova_final && questionarios[0].status_turma === 'ENCERRADA') {
             throw questionnaireError(
                 'TURMA_ENCERRADA',
                 403,
@@ -600,17 +636,25 @@ async function submeter(idQuestionario, idAluno, respostas, chaveIdempotencia) {
         const [tentativasExistentes] = await conexao.query(
             `SELECT id_tentativa, acertos, total_perguntas, pontuacao, percentual
              FROM Q_Tentativas
-             WHERE id_questionario = ? AND id_usuario = ? AND ciclo_matricula = ?
+             WHERE id_questionario = ? AND id_usuario = ? AND id_turma = ?
+               ${questionarios[0].prova_final ? '' : 'AND ciclo_matricula = ?'}
                AND chave_idempotencia = ?
                AND finalizada_em IS NOT NULL
              LIMIT 1
              FOR UPDATE`,
-            [idQuestionario, idAluno, matriculas[0].ciclo_atual, chaveIdempotencia]
+            questionarios[0].prova_final
+                ? [idQuestionario, idAluno, idTurma, chaveIdempotencia]
+                : [idQuestionario, idAluno, idTurma, matriculas[0].ciclo_atual, chaveIdempotencia]
         );
         if (tentativasExistentes.length) {
             const requisitos = questionarios[0].prova_final
                 ? await avaliarAprovacao(conexao, idAluno, idTurma) : undefined;
             await conexao.commit();
+            const emissao = questionarios[0].prova_final
+                && Number(tentativasExistentes[0].percentual) >= 75
+                && requisitos?.status_aprovacao === 'APROVADO'
+                ? await certificateService.emitirCertificadoAutomaticamente(idAluno, idTurma)
+                : undefined;
             return {
                 requisitos, prova_final: Boolean(questionarios[0].prova_final),
                 id_tentativa: Number(tentativasExistentes[0].id_tentativa),
@@ -618,8 +662,41 @@ async function submeter(idQuestionario, idAluno, respostas, chaveIdempotencia) {
                 total_perguntas: Number(tentativasExistentes[0].total_perguntas),
                 pontuacao: Number(tentativasExistentes[0].pontuacao),
                 percentual: Number(tentativasExistentes[0].percentual),
-                reutilizada: true
+                reutilizada: true,
+                status_certificado: emissao?.status || requisitos?.status_certificado
             };
+        }
+
+        if (questionarios[0].prova_final) {
+            const [tentativaFinalizada] = await conexao.query(
+                `SELECT id_tentativa FROM Q_Tentativas
+                 WHERE id_questionario = ? AND id_usuario = ? AND id_turma = ?
+                   AND finalizada_em IS NOT NULL
+                 LIMIT 1 FOR UPDATE`,
+                [idQuestionario, idAluno, idTurma]
+            );
+            if (tentativaFinalizada.length) {
+                throw questionnaireError(
+                    'PROVA_FINAL_JA_TENTADA',
+                    409,
+                    'O Teste Final permite uma única tentativa finalizada.'
+                );
+            }
+        }
+
+        if (!questionarios[0].ativo) {
+            throw questionnaireError(
+                'QUESTIONARIO_INDISPONIVEL',
+                404,
+                'Questionário inexistente ou inativo.'
+            );
+        }
+        if (questionarios[0].status_turma === 'ENCERRADA') {
+            throw questionnaireError(
+                'TURMA_ENCERRADA',
+                403,
+                'A turma está encerrada e não aceita novas tentativas.'
+            );
         }
 
         if (questionarios[0].prova_final) {
@@ -726,6 +803,13 @@ async function submeter(idQuestionario, idAluno, respostas, chaveIdempotencia) {
             ? await avaliarAprovacao(conexao, idAluno, idTurma) : undefined;
         await conexao.commit();
 
+        const emissao = questionarios[0].prova_final
+            && percentual >= 75
+            && requisitos?.status_aprovacao === 'APROVADO'
+            ? await certificateService.emitirCertificadoAutomaticamente(idAluno, idTurma)
+            : undefined;
+        if (emissao?.status) requisitos.status_certificado = emissao.status;
+
         return {
             requisitos,
             prova_final: Boolean(questionarios[0].prova_final),
@@ -735,7 +819,8 @@ async function submeter(idQuestionario, idAluno, respostas, chaveIdempotencia) {
             total_perguntas: perguntas.length,
             pontuacao,
             percentual,
-            reutilizada: false
+            reutilizada: false,
+            status_certificado: emissao?.status || requisitos?.status_certificado
         };
     } catch (error) {
         await conexao.rollback().catch(() => undefined);

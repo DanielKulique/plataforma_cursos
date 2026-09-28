@@ -70,7 +70,7 @@ Fonte: [`certificados.routes.js`](../../src/api/routes/certificados.routes.js).
 
 | Método e path | AUTH / ROLE / condição | Entrada | Saída | Principais erros | Responsabilidade (handler) |
 | --- | --- | --- | --- | --- | --- |
-| `POST /api/certificados/matriculas/:id_matricula/emitir` | Gestor | id_matricula | 201 v1 ou 200 ATIVO reutilizado | 403; 404; 409 inelegível/histórico revogado; 503 colisões | `emitir` |
+| `POST /api/certificados/matriculas/:id_matricula/emitir` | Professor responsável ou ADMIN (recuperação) | id_matricula | 201 v1 ou 200 ATIVO reutilizado | 403; 404; 409 inelegível/histórico revogado; 503 colisões | `emitir` |
 | `POST /api/certificados/:id_certificado/reemitir` | ADMIN | ID da última versão; JSON somente motivo (3–500) | 201 nova versão | 400 motivo/campos; 401; 403; 404; 409 inelegível/versão substituída/conflito; 503 colisões | `reemitir` |
 | `GET /api/certificados/:id_certificado/historico` | Aluno dono, professor responsável ou ADMIN | id_certificado | Todas as versões, ordem decrescente, metadados de auditoria | 401; 403 ownership; 404 | `historico` |
 | `GET /api/certificados/meus` | ALUNO | — | 200 total, certificados | 403 papel | `meus` |
@@ -137,7 +137,7 @@ Fonte: [`matricula.routes.js`](../../src/api/routes/matricula.routes.js).
 | `GET /api/matriculas/minha-sala` | ALUNO | — | 200 total, turmas não canceladas/não encerradas | 500 | `buscarMinhaSalaVirtual` |
 | `GET /api/matriculas/turma/:id_turma` | Gestor | id_turma | 200 matriculas e dados de alunos/certificados | 403; 404 turma | `buscarMatriculasDaTurma` |
 | `GET /api/matriculas/:id` | Aluno dono, professor responsável ou ADMIN | id matrícula | 200 matrícula e progresso derivado | 403; 404 | `buscarMatriculaPorId` |
-| `PATCH /api/matriculas/:id` | Gestor | id; nota_final e/ou status_aprovacao | 200 message | 400; 409 pendências/nota/certificado; CANCELADO exige rematrícula | `atualizarMatricula` |
+| `PATCH /api/matriculas/:id` | Gestor | id; nota_final e/ou status_aprovacao | 200 message | 400; 409 Teste Final <75/nota/certificado; CANCELADO exige rematrícula | `atualizarMatricula` |
 | `DELETE /api/matriculas/:id` | Aluno dono ou ADMIN | id | 200 message; cancelamento lógico | 403; 404; 409 certificado ativo | `cancelarMatricula` |
 
 ## plagio
@@ -170,11 +170,11 @@ Fonte: [`questoes.routes.js`](../../src/api/routes/questoes.routes.js).
 | `POST /api/perguntas/:id_pergunta/opcoes` | Gestor, turma editável | id_pergunta; texto_opcao,ordem,correta | 201 opcao | 404; 409 histórico/ordem | `criarOpcao` |
 | `PATCH /api/opcoes/:id_opcao` | Gestor, turma editável | id_opcao; texto_opcao/ordem/correta | 200 mensagem | 404; 409 histórico/gabarito | `atualizarOpcao` |
 | `DELETE /api/opcoes/:id_opcao` | Gestor, turma editável | id_opcao | 200 mensagem | 404; 409 histórico/mínimo/gabarito | `removerOpcao` |
-| `GET /api/turmas/:id_turma/questionarios` | Aluno matriculado ou Gestor | id_turma | 200 questionarios; aluno recebe ativos e concluido por tentativa | 403; 404; não bloqueia aluno em ENCERRADA | `listarMetadados` |
-| `GET /api/turmas/:id_turma/questionarios/disponivel` | ALUNO matriculado, turma não ENCERRADA | id_turma; query tipo e id_questionario opcionais | 200 questionario com perguntas/opções sem gabarito | 403; 404 inexistente/inativo; 409 tipo legado | `listar` |
+| `GET /api/turmas/:id_turma/questionarios` | Aluno matriculado ou Gestor | id_turma | 200 questionarios; aluno recebe ativos, status e resultado final persistido | 403; 404; não bloqueia aluno em ENCERRADA | `listarMetadados` |
+| `GET /api/turmas/:id_turma/questionarios/disponivel` | ALUNO matriculado, turma não ENCERRADA ou resultado final já persistido | id_turma; query tipo e id_questionario opcionais | 200 questionario com perguntas/opções ou somente resultado final | 403; 404 inexistente/inativo; 409 gate 80%/tipo legado | `listar` |
 | `PATCH /api/perguntas/:id_pergunta` | Gestor, turma editável | id_pergunta; texto_pergunta/tipo_pergunta/ordem/pontos | 200 mensagem | 404; 409 histórico | `atualizarPergunta` |
 | `DELETE /api/perguntas/:id_pergunta` | Gestor, turma editável | id_pergunta | 200 mensagem | 404; 409 histórico | `removerPergunta` |
-| `POST /api/questionarios/:id_questionario/submissoes` | ALUNO matriculado, turma não ENCERRADA | id_questionario; submission_id UUID, respostas [{id_pergunta,id_opcao}] | 200 resultado com acertos/pontuação/percentual/reutilizada | 400 integridade; 403; 404 inativo; 409 sem perguntas/tipo | `submeter` |
+| `POST /api/questionarios/:id_questionario/submissoes` | ALUNO matriculado, turma não ENCERRADA | id_questionario; submission_id UUID, respostas [{id_pergunta,id_opcao}] | 200 resultado persistido | 400 integridade; 403; 404 inativo; 409 sem perguntas/tipo/PROVA_FINAL_JA_TENTADA | `submeter` |
 | `GET /api/questionarios/historico` | ALUNO | query id_questionario opcional | 200 tentativas próprias de todos os ciclos, com `ciclo_matricula` | 400 query | `historico` |
 | `GET /api/turmas/:id_turma/questionarios/resultados` | Gestor | id_turma | 200 resultados históricos da turma, com ciclo | 403; 404 | `resultados` |
 
@@ -274,11 +274,11 @@ No staging, Basic Auth do Caddy cobre inclusive cadastro e validação “públi
 ## Goal 02 consolidado — contratos acadêmicos
 
 - POST/PATCH de questionário aceita `prova_final` booleano; false persiste NULL, true persiste 1. Apenas PROVA; única por turma (409 PROVA_FINAL_DUPLICADA); histórico impede reclassificação. Ownership professor/ADMIN permanece.
-- GET metadados de questionários para aluno inclui `prova_final`, `bloqueada`, `requisitos` (contagens, progresso_para_prova visual, prova_liberada, prova_final_aprovada, elegivel_aprovacao, status_aprovacao). Final só aparece com concluido verdadeiro se há prova >=75. Não retorna perguntas/gabarito.
-- GET respondível de PROVA FINAL abaixo de 80% retorna 409 PROVA_FINAL_BLOQUEADA antes de perguntas/opções. Nova submissão revalida a mesma regra na transação; idempotência de tentativa já existente preservada.
-- PUT progresso e POST submissão final avaliam aprovação automática; respostas trazem requisitos. Submissão inclui prova_final/requisito_prova_atendido e percentual calculado pelo servidor, não enviado pelo cliente.
-- PATCH APROVADO requer conteúdos exatos e prova final >=75, com 409 CONTEUDOS_PENDENTES/PROVA_FINAL_PENDENTE; não exige nota_final. REPROVADO continua manual com nota/conclusão.
-- Nova emissão requer APROVADO + conclusão + prova final ativa >=75. Falha retorna 409 antes de PDF/arquivo/INSERT. ENCERRADA permite emissão e continua recusando novas provas/progresso. Documentos existentes são reutilizados sem revogação automática.
+- GET metadados de questionários para aluno inclui `prova_final`, gate, tentativa/nota, requisitos e estado de certificação, sem perguntas/gabarito. O gate é 80% dos conteúdos; EXERCICIO/Simulado é opcional. Após tentativa final, o resultado fica consultável mesmo se a turma encerrar.
+- GET respondível de Teste Final abaixo de 80% retorna 409 PROVA_FINAL_BLOQUEADA. Depois de finalizada, devolve somente o resultado persistido. POST revalida gate e tentativa sob locks; mesmo submission_id é idempotente e novo UUID recebe 409 PROVA_FINAL_JA_TENTADA. Exercícios mantêm tentativas livres.
+- POST de submissão finaliza o resultado e aprova automaticamente quando percentual >=75, independentemente de conclusão integral. Resultado <75 também finaliza e consome a tentativa. Nota percentual é calculada pelo servidor.
+- PATCH APROVADO requer Teste Final >=75, sem exigir conteúdos completos ou `nota_final`; REPROVADO continua manual pelo contrato existente.
+- Após aprovação, a emissão é automática e idempotente. Professor responsável/ADMIN podem recuperar uma emissão pendente; serviço revalida APROVADO + Teste Final >=75 e não exige conclusão de conteúdo. Falha no PDF mantém a aprovação.
 
 ### Contrato de reemissão e histórico (Goal 03)
 

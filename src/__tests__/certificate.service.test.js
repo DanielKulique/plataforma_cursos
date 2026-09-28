@@ -96,15 +96,17 @@ describe('regras do serviço de certificados', () => {
         storage.removerArquivo.mockResolvedValue();
     });
 
-    it.each([[0, 0], [3, 0], [201, 200]])('recusa nova emissão com %i conteúdos e %i concluídos sem efeitos', async (total, concluidos) => {
-        mockConnection.query.mockResolvedValue([[{ total, concluidos }]]);
-        await expect(service.emitirCertificado(21, usuario('ADMIN', 1)))
-            .rejects.toMatchObject({ code: 'CONTEUDOS_PENDENTES', status: 409 });
-        expect(mockConnection.query).toHaveBeenCalledWith(expect.any(String), [3, 8]);
-        expect(pdfService.gerarCertificadoPdf).not.toHaveBeenCalled();
-        expect(storage.persistirPdfFinal).not.toHaveBeenCalled();
-        expect(model.inserir).not.toHaveBeenCalled();
-        expect(mockConnection.rollback).toHaveBeenCalled();
+    it.each([[0, 0], [22, 18], [22, 20]])('emite com progresso %i/%i se o Teste Final está aprovado', async (total, concluidos) => {
+        mockConnection.query
+            .mockResolvedValueOnce([[{ total, concluidos }]])
+            .mockResolvedValueOnce([[
+                { status_aprovacao: 'APROVADO', ciclo_atual: 1, total_exercicios: 1, exercicios_realizados: 0,
+                    prova_final_aprovada: 1, prova_final_tentada: 1, prova_final_percentual: 100, prova_final_id_tentativa: 9 }
+            ]])
+            .mockResolvedValueOnce([[]]);
+        const resultado = await service.emitirCertificado(21, usuario('ADMIN', 1));
+        expect(resultado.certificado.status).toBe('ATIVO');
+        expect(model.inserir).toHaveBeenCalled();
     });
 
     it.each([
@@ -179,6 +181,19 @@ describe('regras do serviço de certificados', () => {
         expect(model.inserir).not.toHaveBeenCalled();
         expect(storage.removerArquivo).not.toHaveBeenCalled();
         expect(mockConnection.rollback).toHaveBeenCalledTimes(1);
+    });
+
+    it('a emissão automática usa o responsável como emissor e é segura para retry', async () => {
+        require('../config/database').query.mockResolvedValueOnce([[{ id_matricula: 21, id_professor: 2 }]]);
+        const first = await service.emitirCertificadoAutomaticamente(3, 8);
+        expect(first).toMatchObject({ status: 'ATIVO', reutilizado: false });
+        expect(model.buscarPorAlunoTurma).toHaveBeenCalledWith(mockConnection, 3, 8, true);
+
+        model.buscarPorAlunoTurma.mockResolvedValue(registro);
+        require('../config/database').query.mockResolvedValueOnce([[{ id_matricula: 21, id_professor: 2 }]]);
+        const second = await service.emitirCertificadoAutomaticamente(3, 8);
+        expect(second).toMatchObject({ status: 'ATIVO', reutilizado: true });
+        expect(model.inserir).toHaveBeenCalledTimes(1);
     });
 
     it('gera códigos públicos criptográficos com 128 bits e formato não enumerável', () => {
@@ -338,9 +353,8 @@ describe('versionamento administrativo', () => {
         expect(pdfService.gerarCertificadoPdf).not.toHaveBeenCalled();
     });
     it.each([
-        [{ total: 2, concluidos: 1, prova_final_aprovada: 1 }, 'CONTEUDOS_PENDENTES'],
         [{ total: 1, concluidos: 1, prova_final_aprovada: 0 }, 'PROVA_FINAL_PENDENTE']
-    ])('revalida integridade acadêmica', async (progress, code) => {
+    ])('revalida elegibilidade acadêmica', async (progress, code) => {
         mockConnection.query.mockResolvedValue([[progress]]);
         await expect(corrigir()).rejects.toMatchObject({ status: 409, code });
         expect(model.revogar).not.toHaveBeenCalled();

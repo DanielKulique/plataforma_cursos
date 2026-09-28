@@ -1,0 +1,75 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: plataforma_cursos_test
+      MYSQL_USER: e2e
+      MYSQL_PASSWORD: e2e-only-database-password
+      MYSQL_ROOT_PASSWORD: e2e-only-root-password
+      PLATFORM_DB_IDENTITY: plataforma_cursos_test
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 2s
+      timeout: 2s
+      retries: 45
+    volumes:
+      - e2e_db:/var/lib/mysql
+    networks: [e2e]
+
+  migrate:
+    build: .
+    environment: &app_env
+      NODE_ENV: test
+      E2E_RUN: "1"
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: e2e
+      DB_PASSWORD: e2e-only-database-password
+      DB_NAME: plataforma_cursos_test
+      DB_ENVIRONMENT_IDENTITY: plataforma_cursos_test
+      JWT_SECRET: e2e-only-jwt-secret-never-used-outside-this-stack
+      TEST_SEED_PASSWORD: E2e-only-password-42!
+      APP_PORT: "3000"
+      APP_BASE_URL: http://127.0.0.1:3000
+      APP_NAME: Plataforma E2E
+      EMAIL_DELIVERY_ENABLED: "false"
+      PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED: "false"
+      RESEND_API_KEY: ""
+      MAIL_FROM: e2e@example.test
+      AUTH_RATE_LIMIT_MAX: "1000"
+      MATERIAL_STORAGE_DIR: /tmp/plataforma-cursos-e2e/materials
+      CERTIFICATE_STORAGE_DIR: /tmp/plataforma-cursos-e2e/certificates
+      DETECTOR_ENABLED: "false"
+    networks: [e2e]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build: .
+    environment:
+      <<: *app_env
+      E2E_RUN: "1"
+    command: ["node", "index.js"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 2s
+      retries: 45
+    ports:
+      - "127.0.0.1:3400:3000"
+    expose: ["3000"]
+    volumes:
+      - e2e_storage:/tmp/plataforma-cursos-e2e
+    networks: [e2e]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  e2e_db:
+  e2e_storage:
+
+networks:
+  e2e:
+    driver: bridge

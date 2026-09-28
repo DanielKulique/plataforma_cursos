@@ -8,7 +8,7 @@ const ROOT = path.join(__dirname, '..');
 const SCANNED_ROOTS = ['.github', 'scripts', 'src/config', 'mysql/init'];
 const SCANNED_FILES = [
     '.env', '.env.test', '.env.example', '.env.test.example', '.env.production.example', '.env.staging.example',
-    'compose.yaml', 'compose.staging.yaml', 'compose.local-db.yaml', 'Dockerfile', 'package.json'
+    'compose.yaml', 'compose.staging.yaml', 'compose.local-db.yaml', 'compose.e2e.yaml', 'Dockerfile', 'package.json'
 ];
 const SKIPPED = new Set([
     'scripts/validate_database_isolation.js',
@@ -40,11 +40,18 @@ function walk(directory) {
 
 function isAllowed(relative, rule, content, line) {
     if (rule === 'host-datadir-reference') {
-        return relative === 'compose.yaml' && /^\s*-\s*mysql_data:\/var\/lib\/mysql\s*$/.test(line);
+        return (relative === 'compose.yaml' && /^\s*-\s*mysql_data:\/var\/lib\/mysql\s*$/.test(line))
+            || (relative === 'compose.e2e.yaml' && /^\s*-\s*e2e_db:\/var\/lib\/mysql\s*$/.test(line));
     }
     if (rule === 'literal-db-port') {
         if (['compose.yaml', '.env.production.example', '.env.staging.example', 'scripts/configure_staging_env.sh']
             .includes(relative)) return /DB_HOST\s*[:=]\s*['"]?db\b/.test(content);
+        if (relative === 'compose.e2e.yaml') {
+            return /DB_HOST:\s*db\b/.test(content)
+                && /DB_ENVIRONMENT_IDENTITY:\s*plataforma_cursos_test\b/.test(content)
+                && /DB_NAME:\s*plataforma_cursos_test\b/.test(content)
+                && /MYSQL_DATABASE:\s*plataforma_cursos_test\b/.test(content);
+        }
         if (relative === '.github/workflows/ci.yml') {
             return content.includes('ALLOW_EPHEMERAL_CI_MYSQL: I_UNDERSTAND_EPHEMERAL_CI_MYSQL')
                 && content.includes('CI_EPHEMERAL_MYSQL_ID: plataforma-cursos-ci-');

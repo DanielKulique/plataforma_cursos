@@ -309,7 +309,7 @@ Criação/replicação também podem receber FECHADA ou ENCERRADA. Não há cron
 ```mermaid
 stateDiagram-v2
   [*] --> CURSANDO
-  CURSANDO --> APROVADO: conteúdos completos e prova final atual >=75
+  CURSANDO --> APROVADO: Teste Final finalizado >=75
   CURSANDO --> REPROVADO: responsável, conteúdos completos e nota
   APROVADO --> CURSANDO: sem certificado ativo
   APROVADO --> REPROVADO: sem certificado ativo e gates finais

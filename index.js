@@ -158,7 +158,9 @@ async function encerrarServidor(signal) {
 module.exports = { app, createApp, encerrarServidor, iniciarServidor };
 
 // Inicia o servidor se não estiver em modo teste
-if (process.env.NODE_ENV !== 'test') {
+// The isolated Playwright environment runs the production entrypoint against its
+// disposable MySQL service while retaining the test database identity.
+if (process.env.NODE_ENV !== 'test' || process.env.E2E_RUN === '1') {
     iniciarServidor();
     for (const signal of ['SIGTERM', 'SIGINT']) {
         process.once(signal, () => {

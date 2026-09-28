@@ -114,7 +114,7 @@ afterAll(async () => {
     await applicationDb.end();
 });
 
-test('D-04/D-05: rematrícula isola progresso, exercícios, prova e aprovação por ciclo', async () => {
+test('rematrícula reinicia conteúdo e exercícios, preservando a tentativa e o resultado do Teste Final por turma', async () => {
     const primeira = await request(app).post('/api/matriculas').set(auth('aluno')).send({ id_turma: turma });
     expect(primeira.status).toBe(201);
     expect(primeira.body.matricula).toMatchObject({
@@ -138,10 +138,10 @@ test('D-04/D-05: rematrícula isola progresso, exercícios, prova e aprovação 
     expect((await submeter(exercicioB)).status).toBe(200);
     let requisitos = await buscarRequisitos(pool, users.aluno.id_usuario, turma);
     expect(requisitos).toMatchObject({
-        ciclo_atual: 1, trilha_realizada: 8, total_trilha: 10,
-        prova_liberada: true, prova_final_aprovada: false
+        ciclo_atual: 1, trilha_realizada: 6, total_trilha: 8,
+        prova_liberada: false, prova_final_aprovada: false
     });
-    expect((await submeter(provaFinal)).status).toBe(200);
+    expect((await submeter(provaFinal)).status).toBe(409);
     expect((await matriculaAtual()).status_aprovacao).toBe('CURSANDO');
 
     expect((await request(app).delete(`/api/matriculas/${idMatricula}`).set(auth('aluno'))).status).toBe(200);
@@ -170,7 +170,7 @@ test('D-04/D-05: rematrícula isola progresso, exercícios, prova e aprovação 
     expect((await submeter(provaFinal)).status).toBe(409);
     const historicoAntigo = await request(app).get('/api/questionarios/historico').set(auth('aluno'));
     expect(historicoAntigo.status).toBe(200);
-    expect(historicoAntigo.body.tentativas).toHaveLength(3);
+    expect(historicoAntigo.body.tentativas).toHaveLength(2);
     expect(new Set(historicoAntigo.body.tentativas.map((item) => item.ciclo_matricula))).toEqual(new Set([1]));
 
     await concluir(conteudos, 6);
@@ -180,27 +180,44 @@ test('D-04/D-05: rematrícula isola progresso, exercícios, prova e aprovação 
     expect((await submeter(exercicioB)).status).toBe(200);
     requisitos = await buscarRequisitos(pool, users.aluno.id_usuario, turma);
     expect(requisitos).toMatchObject({
-        ciclo_atual: 2, exercicios_realizados: 2, trilha_realizada: 8,
+        ciclo_atual: 2, exercicios_realizados: 2, trilha_realizada: 6,
+        total_trilha: 8,
+        prova_liberada: false, prova_final_aprovada: false
+    });
+    await concluir(conteudos.slice(6), 1);
+    requisitos = await buscarRequisitos(pool, users.aluno.id_usuario, turma);
+    expect(requisitos).toMatchObject({
+        ciclo_atual: 2, exercicios_realizados: 2, trilha_realizada: 7,
         prova_liberada: true, prova_final_aprovada: false
     });
     expect((await submeter(provaFinal)).status).toBe(200);
-    expect((await matriculaAtual()).status_aprovacao).toBe('CURSANDO');
-    await concluir(conteudos.slice(6), 2);
+    expect((await matriculaAtual()).status_aprovacao).toBe('APROVADO');
+    expect((await submeter(provaFinal)).status).toBe(409);
     expect((await matriculaAtual()).status_aprovacao).toBe('APROVADO');
 
     const historicoCompleto = await request(app).get('/api/questionarios/historico').set(auth('aluno'));
-    expect(historicoCompleto.body.tentativas).toHaveLength(6);
+    expect(historicoCompleto.body.tentativas).toHaveLength(5);
     expect(new Set(historicoCompleto.body.tentativas.map((item) => item.ciclo_matricula))).toEqual(new Set([1, 2]));
 
+    const [[certificate]] = await pool.query(
+        'SELECT id_certificado FROM Certificados WHERE id_aluno = ? AND id_turma = ?',
+        [users.aluno.id_usuario, turma]
+    );
+    const revoked = await request(app).post(`/api/certificados/${certificate.id_certificado}/revogar`)
+        .set(auth('admin')).send({ motivo: 'Verificação da rematrícula após revogação.' });
+    expect(revoked.status).toBe(200);
     expect((await request(app).delete(`/api/matriculas/${idMatricula}`).set(auth('aluno'))).status).toBe(200);
     const segundoCiclo = await Promise.all([1, 2].map(() => request(app)
         .post('/api/matriculas').set(auth('aluno')).send({ id_turma: turma })));
     expect(segundoCiclo.map((response) => response.status).sort()).toEqual([200, 409]);
-    expect(await matriculaAtual()).toMatchObject({ ciclo_atual: 3, status_aprovacao: 'CURSANDO' });
+    expect(await matriculaAtual()).toMatchObject({ ciclo_atual: 3, status_aprovacao: 'APROVADO' });
     expect(await buscarRequisitos(pool, users.aluno.id_usuario, turma)).toMatchObject({
-        ciclo_atual: 3, exercicios_realizados: 0, prova_final_aprovada: false,
-        prova_liberada: false, elegivel_aprovacao: false
+        ciclo_atual: 3, conteudos_concluidos: 0, exercicios_realizados: 0,
+        prova_final_tentada: true, prova_final_aprovada: true,
+        prova_liberada: false, elegivel_aprovacao: true,
+        status_aprovacao: 'APROVADO', status_certificado: 'REVOGADO'
     });
+    expect((await submeter(provaFinal)).status).toBe(409);
 });
 
 test.each(['FECHADA', 'ENCERRADA'])('rematrícula oficial recusa turma %s sem incrementar ciclo', async (status) => {

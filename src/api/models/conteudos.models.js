@@ -4,6 +4,7 @@ const db = require('../../config/database');
 const { buscarProgresso, normalizarProgresso, avaliarAprovacao } = require('../services/academic-progress.service');
 const { lockTurmaParaMutacao, iniciarMutacaoRecurso, localizarRecurso, bloquearTurma, bloquearRecurso } = require('../services/academic-access.service');
 const { normalizeYouTubeEmbedUrl } = require('../../public/js/security-utils');
+const certificateService = require('../services/certificate.service');
 
 function flowError(code, status, message) {
     const error = new Error(message);
@@ -511,6 +512,10 @@ async function registrarProgresso(idAluno, idConteudo, novoStatus) {
 
         const requisitos = await avaliarAprovacao(conexao, idAluno, idTurma);
         await conexao.commit();
+        if (requisitos.aprovacao_atualizada) {
+            const emissao = await certificateService.emitirCertificadoAutomaticamente(idAluno, idTurma);
+            requisitos.status_certificado = emissao.status;
+        }
         return {
             requisitos,
             id_conteudo: Number(idConteudo),

@@ -145,29 +145,25 @@ afterAll(async () => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('certificados de conclusão', () => {
-    it('D-13: novo conteúdo bloqueia emissão sem PDF/registro; completar restaura elegibilidade', async () => {
+    it('novo conteúdo incompleto não bloqueia emissão ou reutilização do certificado', async () => {
         await pool.query("UPDATE Turmas SET status = 'ABERTA' WHERE id_turma = ?", [ids.turma]);
         const novo = await request(app).post(`/api/turmas/${ids.turma}/conteudos`)
             .set(auth(tokens.professor)).send({ titulo: 'Novo conteúdo', tipo: 'TEXTO', corpo: 'Texto', ordem: 2 });
         expect(novo.status).toBe(201);
-        const [[conteudo]] = await pool.query('SELECT id_conteudo FROM Conteudos WHERE id_turma = ? AND ordem = 2', [ids.turma]);
         const gerar = jest.spyOn(pdfService, 'gerarCertificadoPdf');
         try {
-            const bloqueado = await emitir();
-            expect(bloqueado.status).toBe(409);
-            expect(bloqueado.body.code).toBe('CONTEUDOS_PENDENTES');
-            expect(gerar).not.toHaveBeenCalled();
-            expect(fs.readdirSync(certificateStorageDir)).toHaveLength(0);
+            const emitido = await emitir();
+            expect(emitido.status).toBe(201);
+            expect(gerar).toHaveBeenCalledTimes(1);
+            expect(fs.readdirSync(certificateStorageDir)).toHaveLength(1);
             const [[total]] = await pool.query('SELECT COUNT(*) AS total FROM Certificados');
-            expect(total.total).toBe(0);
+            expect(total.total).toBe(1);
             const [[matricula]] = await pool.query('SELECT status_aprovacao FROM Matriculas WHERE id_matricula = ?', [ids.matriculaAprovada]);
             expect(matricula.status_aprovacao).toBe('APROVADO');
         } finally { gerar.mockRestore(); }
-        expect((await request(app).put(`/api/conteudos/${conteudo.id_conteudo}/progresso`)
-            .set(auth(tokens.aluno)).send({ status: 'CONCLUIDO' })).status).toBe(200);
         await pool.query("UPDATE Turmas SET status = 'ENCERRADA' WHERE id_turma = ?", [ids.turma]);
-        expect((await emitir()).status).toBe(201);
-        // Documento emitido permanece reutilizável mesmo após mudança estrutural posterior.
+        expect((await emitir()).status).toBe(200);
+        // Documento emitido permanece reutilizável após mudança estrutural posterior.
         await pool.query("INSERT INTO Conteudos (id_turma, titulo, tipo, ordem) VALUES (?, 'Posterior', 'TEXTO', 3)", [ids.turma]);
         expect((await emitir()).status).toBe(200);
         expect(fs.readdirSync(certificateStorageDir)).toHaveLength(1);
@@ -188,9 +184,8 @@ describe('certificados de conclusão', () => {
             await aguardando;
             await writer.commit();
             const response = await emissao;
-            expect(response.status).toBe(409);
-            expect(response.body.code).toBe('CONTEUDOS_PENDENTES');
-            expect(fs.readdirSync(certificateStorageDir)).toHaveLength(0);
+            expect(response.status).toBe(201);
+            expect(fs.readdirSync(certificateStorageDir)).toHaveLength(1);
         } finally {
             await writer.rollback();
             writer.release();
@@ -512,14 +507,21 @@ describe('D-14: reemissão, integridade e versões históricas', () => {
         expect(await registros()).toHaveLength(1);
     });
 
-    it.each(['conteudos', 'prova', 'matricula'])('bloqueia reemissão com inconsistência em %s', async etapa => {
+    it.each(['conteudos', 'prova', 'matricula'])('revalida aprovação e nota, ignorando conteúdos em %s', async etapa => {
         const id = (await emitir()).body.certificado.id_certificado;
         if (etapa === 'conteudos') await pool.query("INSERT INTO Conteudos (id_turma, titulo, tipo, ordem) VALUES (?, 'Pendente', 'TEXTO', 2)", [ids.turma]);
         if (etapa === 'prova') await pool.query('UPDATE Q_Tentativas SET percentual = 74 WHERE id_usuario = ?', [users.aluno.id_usuario]);
         if (etapa === 'matricula') await pool.query("UPDATE Matriculas SET status_aprovacao = 'CANCELADO' WHERE id_matricula = ?", [ids.matriculaAprovada]);
-        expect((await reemitir(id)).status).toBe(409);
-        expect((await registros()).map(r => r.status)).toEqual(['ATIVO']);
-        expect(fs.readdirSync(certificateStorageDir)).toHaveLength(1);
+        const response = await reemitir(id);
+        if (etapa === 'conteudos') {
+            expect(response.status).toBe(201);
+            expect((await registros()).map(r => r.status)).toEqual(['REVOGADO', 'ATIVO']);
+            expect(fs.readdirSync(certificateStorageDir)).toHaveLength(2);
+        } else {
+            expect(response.status).toBe(409);
+            expect((await registros()).map(r => r.status)).toEqual(['ATIVO']);
+            expect(fs.readdirSync(certificateStorageDir)).toHaveLength(1);
+        }
     });
 
     it.each(['pdf', 'storage', 'sql', 'codigo'])('falha de %s mantém o anterior ATIVO e remove somente novos arquivos', async etapa => {

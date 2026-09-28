@@ -6,10 +6,17 @@ com os emitidos. Isso não é assinatura ICP-Brasil ou PAdES.
 
 ## Emissão e preservação
 
-Professor responsável ou ADMIN pode emitir para matrícula APROVADO. O serviço bloqueia
-contexto e revalida todos os conteúdos concluídos e prova final ativa >=75 no ciclo atual
-antes de gerar arquivo ou registro. Falta de requisito retorna conflito sem emissão.
+Quando o Teste Final é finalizado com nota >=75, o sistema marca a matrícula APROVADO e inicia
+a emissão automaticamente. A elegibilidade revalida matrícula APROVADO e resultado >=75 do
+Teste Final; conteúdos restantes não bloqueiam aprovação ou certificado. Simulado e outros
+EXERCICIO são opcionais. Professor responsável ou ADMIN pode recuperar uma emissão ausente,
+mas nenhuma ação humana é necessária no fluxo normal. Alunos não podem chamar emissão pela API.
 Documento ATIVO existente é reutilizado; histórico revogado exige reemissão administrativa.
+
+Se a geração do PDF falhar, a tentativa e o estado APROVADO permanecem persistidos. A emissão
+idempotente pode ser repetida sem criar segundo certificado ATIVO. O procedimento administrativo
+`npm run academic:reconcile-certificates` localiza estados legados inconsistentes; começa em
+DRY-RUN e só aplica com `--apply`.
 
 Cada versão tem PDF, UUID, código, hash, dados do emissor e snapshot acadêmico próprios.
 O snapshot inclui nome, CPF, curso, turma, carga, data, responsável, conteúdos e requisitos.

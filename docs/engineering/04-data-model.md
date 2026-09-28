@@ -238,7 +238,7 @@ EmailVerificacoes não tem FK para Usuarios: a associação é consulta por stri
 | Cursos.carga_horaria | Horas da formação | Backend exige inteiro positivo; sem CHECK próprio no curso. |
 | Turmas.status | ABERTA, FECHADA, ENCERRADA | ENUM; atualização manual por ADMIN, sem agendamento. |
 | Turmas.data_inicio/data_fim | Período nominal | Fim nullable; backend valida ordenação, não vincula automaticamente acesso. |
-| Matriculas.status_aprovacao | CURSANDO, APROVADO, REPROVADO, CANCELADO | Cancelamento lógico; nota manual; CURSANDO→APROVADO automático por conteúdos exatos + prova final >=75; REPROVADO manual. |
+| Matriculas.status_aprovacao | CURSANDO, APROVADO, REPROVADO, CANCELADO | Cancelamento lógico; nota manual; CURSANDO→APROVADO por Teste Final >=75, sem exigir conteúdo completo; REPROVADO manual. |
 | Matriculas.nota_final | DECIMAL(5,2), NULL ou 0–10 | CHECK; percentual da prova não é nota final. |
 | Matriculas.progresso_percentual | TINYINT 0–100 armazenado | CHECK; consultas centrais derivam novo percentual de ConteudosProgresso. |
 | Modulos.ordem | Ordem da aula dentro da turma | UNIQUE turma+ordem; número exibido é posição ordenada, não ID. |
@@ -250,13 +250,13 @@ EmailVerificacoes não tem FK para Usuarios: a associação é consulta por stri
 | Conteudos.ordem | Ordem global de conteúdos na turma | UNIQUE turma+ordem; avaliação tem ordenação independente. |
 | ConteudosProgresso.status | NAO_INICIADO, INICIADO, CONCLUIDO | Ausência de registro também significa não iniciado; PUT não aceita regressão. |
 | Matriculas.ciclo_atual | Inteiro >=1 | Identifica o ciclo acadêmico vigente; incrementa apenas na rematrícula oficial. |
-| Questionarios.tipo/ativo | PROVA ou EXERCICIO; disponibilidade | Não existe limite de tentativas por tipo no model. |
+| Questionarios.tipo/ativo | PROVA ou EXERCICIO; disponibilidade | Teste Final permite uma tentativa finalizada por aluno+turma; outras avaliações mantêm retries. |
 | Questionarios.id_curso/id_turma/id_modulo | Escopo redundante e aula opcional | FK individuais não garantem coerência entre si; ver risco de troca de curso da turma. |
 | Q_Perguntas.tipo_pergunta | MULTIPLA_ESCOLHA, VERDADEIRO_FALSO, RESPOSTA_CURTA | Último é legado e bloqueado no fluxo atual. |
 | Q_Perguntas.pontos | Peso DECIMAL(6,2), padrão 1 | Rota aceita >0 até 1000, sem CHECK correspondente. |
 | Q_Opcoes.correta | Gabarito booleano | Exatamente uma opção correta é regra do backend, sem índice condicional/CHECK. |
 | Q_Tentativas.pontuacao/percentual/acertos | Resultado da submissão | Percentual 0–100 com CHECK; pontuação ponderada e acertos são diferentes. |
-| Q_Tentativas.chave_idempotencia/ciclo_matricula | UUID e ciclo explícito | UNIQUE usuário+questionário+ciclo+chave; permite a mesma chave em novo ciclo sem reutilizar tentativa antiga. |
+| Q_Tentativas.chave_idempotencia/ciclo_matricula | UUID e ciclo explícito | UNIQUE por ciclo mantém idempotência técnica; Teste Final também aplica tentativa única por aluno+turma na camada de aplicação. |
 | Q_Respostas.resposta_opcao/resposta_texto | Opção escolhida ou campo textual legado | Rota atual só recebe id_opcao; texto não é fluxo suportado. |
 | ArquivosMateriais.storage_name/original_name | UUID.pdf e nome de apresentação | Nome original nunca compõe caminho interno. |
 | ArquivosMateriais.sha256/size_bytes/status | Integridade, tamanho e ATIVO/RETIDO/PURGANDO/PURGADO | Hash não é UNIQUE; retido_em e purgado_em auditam retenção e purge (migration 011). |
@@ -290,7 +290,7 @@ EmailVerificacoes não tem FK para Usuarios: a associação é consulta por stri
 | Unicidade de matrícula/certificado | Evita duplicação | Lock do contexto e versão-alvo | UNIQUE matrícula, versão e coluna gerada de ATIVO |
 | Pertencimento de aula à turma | Select de aulas | Valida ID + turma | FK simples só garante existência |
 | Nota 0–10/progresso 0–100 | Campos/feedback | Validação e cálculo | CHECK de faixa |
-| Aprovação após conclusão | Orientação visual | Percentual arredondado e nota obrigatória | Não há CHECK entre progresso e status |
+| Gate do Teste Final e aprovação | Progresso visual e estado/resultados | 80% dos conteúdos abre; resultado final >=75 aprova | Não há CHECK acadêmico entre tentativa, progresso e status |
 | Gabarito único | Criação guiada | Validações e updates transacionais | Sem garantia de exatamente uma correta |
 | Preservar histórico | Desabilita algumas ações | Bloqueios em models | Várias FK CASCADE permitiriam exclusão por SQL direto |
 | Material seguro | Validação preliminar | MIME/extensão/bytes/caminho | Apenas metadados/FK, não arquivo físico |
@@ -303,7 +303,7 @@ Acesso SQL administrativo pode contornar várias regras de aplicação. Alterar 
 
 Migration idempotente `008_prova_final.sql`: `Questionarios.prova_final TINYINT(1) NULL DEFAULT NULL`. Valor 1 identifica final; NULL representa avaliação comum. CHECK permite 1 somente em tipo PROVA. UNIQUE `uk_prova_final_turma(id_turma, prova_final)` permite várias avaliações NULL e somente uma final por turma. Não há backfill por título/ID/ordem. Professor/ADMIN deve designar uma prova sem histórico ou criar uma final; alteração de designação com tentativas é recusada. Replicação copia a marcação, sem copiar progresso/tentativas.
 
-`Matriculas.nota_final` continua nullable 0–10, manual; não é percentual da prova nem pré-condição para APROVADO. `Q_Tentativas.percentual` continua DECIMAL com duas casas; final usa truncamento conservador para evitar cruzar 75 por arredondamento. Q_Tentativas.finalizada_em não nulo + percentual>=75 na prova final ativa constitui a conquista. Não há tabela de aprovação adicional ou certificado automático.
+`Matriculas.nota_final` continua nullable 0–10, manual; não é percentual da prova nem pré-condição para APROVADO. `Q_Tentativas.percentual` continua DECIMAL com duas casas; final usa truncamento conservador para evitar cruzar 75 por arredondamento. Tentativa finalizada >=75 no Teste Final constitui a aprovação, sem exigir conclusão integral. A aplicação limita a uma tentativa finalizada por aluno+turma; schema permanece inalterado. Certificado inicia automaticamente após aprovação.
 
 ### Migration 009 — versões de certificado
 

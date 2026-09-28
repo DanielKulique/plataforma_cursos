@@ -150,8 +150,8 @@ D-13 permanece parcial porque a política de estrutura após emissão/reemissão
 | Requisito | Fonte | Verificação |
 | --- | --- | --- |
 | Designação final única, sem inferência | migration 008, schema, questoes.models/routes, formulário docente, replicação | migration upgrade/idempotência e testes de designação/replicação |
-| 80% conteúdos + exercícios realizados | academic-progress.service; leitura/submissão questoes.models | academic-progress.test; academic-exam.integration |
-| 75%, retries e melhor conquista | Q_Tentativas, correção em centésimos, EXISTS | 74,99/75, prova pior posterior, histórico/idempotência |
+| 80% dos conteúdos; EXERCICIO/Simulado opcional | academic-progress.service; leitura/submissão questoes.models | academic-progress.test; academic-exam.integration |
+| 75%, tentativa final única e idempotência | Q_Tentativas, correção em centésimos, locks turma/matrícula | 74,99/75, retry UUID igual, novo UUID recusado, concorrência com uma tentativa final |
 | Aprovação automática sem nota | avaliarAprovacao após progresso/submissão final | duas ordens, concorrência, sem certificado automático |
 | D-03 RESOLVIDO / D-13 PARCIAL histórico | conclusão exata e certificado com todos os requisitos | 200/201, ausência de prova, sem PDF/linha em falhas |
 | Interface e staging A–F | sala-aula, questionario, professor-turma; smoke_academic_completion_staging.js | [entrega](goals/GOAL_02_ACADEMIC_EXAM_APPROVAL.md) |
@@ -178,7 +178,7 @@ Esta consolidação substitui a política manual documentada anteriormente; D-13
 | CANCELADO só sai por rematrícula própria em ABERTA | guarda em `atualizarMatricula`; fluxo `matricularAluno` | PATCH professor/ADMIN 409; FECHADA/ENCERRADA 403 |
 | Ciclo 1 e incremento monotônico | `Matriculas.ciclo_atual`; lock turma→matrícula | ciclos 1→2→3 e concorrência 200/409 |
 | Tentativa pertence ao ciclo bloqueado | `Q_Tentativas.ciclo_matricula`; idempotência por ciclo | mesma submission_id cria tentativa nova em ciclo novo |
-| Estado atual isolado | `academic-progress.service` e trilha filtram igualdade de ciclo | exercício, 80%, prova >=75 e aprovação zerados na rematrícula |
+| Estado atual isolado | `academic-progress.service` filtra conteúdos/exercícios pelo ciclo; Teste Final usa aluno+turma | conteúdos/exercícios reiniciam; Teste Final conserva tentativa única e resultado >=75 entre ciclos |
 | Histórico preservado | histórico/resultados retornam ciclo sem filtro | tentativas/respostas antigas idênticas e consultáveis |
 | Legados | migration 010 reaplicável e backfill conservador | órfão rejeitado; ciclo 1 normal; data reiniciada separa anterior/atual |
 | Certificados | proteção de ATIVO e elegibilidade atual preservadas | suíte de certificados e nenhuma mutação pela rematrícula |

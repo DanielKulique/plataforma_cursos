@@ -141,6 +141,7 @@ describe('contrato de migrations no MySQL Docker 127.0.0.1:33307', () => {
 
     it('serializa dois runners concorrentes e aplica uma migration pendente uma vez', async () => {
         await resetToEmptyDatabase();
+        await runMigrations(runnerOptions());
         const directory = migrationFixture({ '017_lock_probe.sql': 'DO SLEEP(0.4);\n' });
         const results = await Promise.all([
             runMigrations(runnerOptions({ migrationsDir: directory })),

@@ -31,9 +31,10 @@ scripts, jobs de backup, Docker/Compose, Caddy, documentação e workflow GitHub
 |---|---|---|---|---|---|---|
 | G17-01 | HIGH | Avaliações | A baseline implantada não inclui `ASSOCIACAO`, gabarito booleano e múltiplas corretas por conjunto exato, exigidos pelos tipos oficiais. | Trabalho preexistente foi revisado e incorporado isoladamente: migration 016, serviço, API, UI e testes. | Integração dirigida 40/40; E2E de três tipos 1/1; suíte completa local 763 unitários e 278 integração. | CORRIGIDO LOCALMENTE; implantação pendente |
 | G17-02 | HIGH | CI | O novo runner de integração lia `.env.test` antes de detectar `CI=true`; o arquivo não é versionado e quebraria a CI. | Carregamento do arquivo limitado à execução local. | `CI=true node scripts/run_integration.js --listTests` com `.env.test` temporariamente ausente listou 21 suítes. | CORRIGIDO LOCALMENTE |
-| G17-03 | MEDIUM | Matriz de testes | Gerador marcava rotas `COVERED` por lista fixa sem evidência, omitia as quatro rotas diretas e não justificava linhas `PARTIAL`. | Evidência explícita para rotas cobertas; lacuna por item parcial; inventário 89 rotas. | `npm run test:matrix`; revisão do arquivo gerado. | CORRIGIDO LOCALMENTE |
+| G17-03 | MEDIUM | Matriz de testes | Gerador marcava rotas `COVERED` por lista fixa sem evidência, omitia quatro rotas diretas, tratava quatro rotas com middleware como não montadas e não justificava linhas `PARTIAL`. | Evidência explícita para rotas cobertas; leitura do último argumento dos mounts com middleware; lacuna por item parcial; inventário 89 rotas. | `npm run test:matrix`; revisão do arquivo gerado, inclusive `/api/analises` e `/api/plagio`. | CORRIGIDO LOCALMENTE |
 | G17-04 | MEDIUM | Configuração/documentação | Exemplo de produção ativava e-mail/verificação, e o runbook descrevia cadastro 503 mesmo com verificação opcional. | Exemplo e documentação alinhados às flags reais `false/false`. | Leitura das flags de produção; E2E de cadastro e login na suíte de browser. | CORRIGIDO LOCALMENTE |
 | G17-07 | MEDIUM | Lint/testes | Após Playwright, `test:stability` varria JavaScript gerado em `playwright-report/` e parava com erros externos ao código da aplicação. | Ignorar `playwright-report/**` e `test-results/**` no ESLint. | `npm run lint` passou com os artefatos E2E presentes; estabilidade repetida em andamento. | CORRIGIDO LOCALMENTE |
+| G17-08 | MEDIUM | Teste de migrations | O teste de dois runners iniciava ambos em banco vazio; sob carga, o primeiro podia gastar mais de 30 s aplicando 001–016, fazendo o segundo expirar e contaminando os testes seguintes. | Preparar o schema canônico antes da disputa; os dois runners competem apenas pela migration pendente 017, que é o comportamento sob teste. | Suíte de migration dirigida 6/6; `test:stability` em andamento. | CORRIGIDO LOCALMENTE |
 | G17-05 | DEFERRED | Dependências | `npm audit` identificou um alerta alto em `brace-expansion` usado por lint/testes e dois moderados em `ip-address` e `multer`. | Sem atualização automática; avaliar patches em ciclo próprio. `multer` usa `memoryStorage`, fora do caminho de escrita em disco do aviso. | `npm audit` e `npm audit --omit=dev`; inspeção da árvore de dependências e das rotas de upload. | DOCUMENTADO |
 | G17-06 | BLOCKER | Gates da release | WebKit real, CI da revisão, restore drill após mudança de backup/schema e estado implantado ainda não estão comprovados. | Completar os gates antes de tag/READY. | Pendente. | ABERTO |
 
@@ -50,7 +51,7 @@ scripts, jobs de backup, Docker/Compose, Caddy, documentação e workflow GitHub
 
 ## MEDIUM
 
-- G17-03, G17-04 e G17-07 foram corrigidos. As lacunas de cobertura individual permanecem
+- G17-03, G17-04, G17-07 e G17-08 foram corrigidos. As lacunas de cobertura individual permanecem
   registradas como `PARTIAL` na matriz.
 
 ## LOW
@@ -60,8 +61,15 @@ scripts, jobs de backup, Docker/Compose, Caddy, documentação e workflow GitHub
 ## DEFERRED
 
 - G17-05: atualizar dependências apenas após verificar relevância e regressões.
-- `RESPOSTA_CURTA` permanece no schema por compatibilidade, sem novo fluxo.
-- Detector/plágio permanece isolado por `DETECTOR_ENABLED=false` em produção.
+- `KEEP_LEGACY`: `RESPOSTA_CURTA` permanece no schema e na leitura histórica por
+  compatibilidade; os fluxos novos de autoria e resposta usam os três tipos oficiais.
+- `KEEP_LEGACY`: chaves antigas de resposta HTTP, seletores de logout e verificações
+  de curso legado no bootstrap ainda têm consumidores ou função de segurança.
+- `DEFERRED`: detector/plágio permanece montado e isolado por
+  `DETECTOR_ENABLED=false` em produção; não há motivo demonstrado para removê-lo agora.
+- `DEFERRED`: scripts antigos de teste e implantação precisam de confirmação de uso
+  antes de remoção. `legacyHeaders: false` é opção atual do limitador, não código morto.
+- `REMOVE_NOW`: nenhum item foi comprovado sem uso e seguro para remoção nesta release.
 
 ## Regras acadêmicas
 

@@ -23,8 +23,9 @@ for (const match of appSource.matchAll(/const\s+(\w+)\s*=\s*require\(['"]\.\/src
     routeImports.set(match[1], `${match[2]}.js`);
 }
 const mounts = new Map();
-for (const match of appSource.matchAll(/app\.use\(['"]([^'"]+)['"]\s*,\s*(\w+)\)/g)) {
-    if (routeImports.has(match[2])) mounts.set(routeImports.get(match[2]), match[1]);
+for (const match of appSource.matchAll(/app\.use\(['"]([^'"]+)['"]\s*,\s*([\w,\s]+)\);/g)) {
+    const router = match[2].split(',').at(-1).trim();
+    if (routeImports.has(router)) mounts.set(routeImports.get(router), match[1]);
 }
 
 function roleFor(handler) {

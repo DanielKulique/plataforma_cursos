@@ -1,5 +1,5 @@
 {
-  "expectedVersion": 14,
+  "expectedVersion": 16,
   "generatedFrom": "mysql/schema.sql + migrations on disposable MySQL 8.4",
   "tables": {
     "AnalisesContextuais": {
@@ -1993,6 +1993,285 @@
       ],
       "checks": []
     },
+    "Q_AssociacaoGabaritos": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_pergunta",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_item_esquerda",
+          "ordinal": 2,
+          "type": "char(36)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "id_item_direita",
+          "ordinal": 3,
+          "type": "char(36)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "fk_associacao_gabarito_esquerda",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_item_esquerda",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_associacao_gabarito_direita",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_item_direita",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_pergunta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_item_esquerda",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_associacao_gabarito_direita",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_pergunta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_item_direita",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_associacao_gabarito_direita",
+          "columns": [
+            "id_item_direita"
+          ],
+          "referencedTable": "Q_AssociacaoItens",
+          "referencedColumns": [
+            "id_item"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_associacao_gabarito_esquerda",
+          "columns": [
+            "id_item_esquerda"
+          ],
+          "referencedTable": "Q_AssociacaoItens",
+          "referencedColumns": [
+            "id_item"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_associacao_gabarito_pergunta",
+          "columns": [
+            "id_pergunta"
+          ],
+          "referencedTable": "Q_Perguntas",
+          "referencedColumns": [
+            "id_pergunta"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "Q_AssociacaoItens": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_item",
+          "ordinal": 1,
+          "type": "char(36)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "id_pergunta",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "lado",
+          "ordinal": 3,
+          "type": "enum('ESQUERDA','DIREITA')",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "texto",
+          "ordinal": 4,
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "utf8mb4",
+          "collation": "utf8mb4_unicode_ci"
+        },
+        {
+          "name": "ordem",
+          "ordinal": 5,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_associacao_item_pergunta_lado",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_pergunta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "lado",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_item",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_associacao_pergunta_lado_ordem",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_pergunta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "lado",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "ordem",
+              "ordinal": 3,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_associacao_item_pergunta",
+          "columns": [
+            "id_pergunta"
+          ],
+          "referencedTable": "Q_Perguntas",
+          "referencedColumns": [
+            "id_pergunta"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
     "Q_Opcoes": {
       "engine": "innodb",
       "collation": "utf8mb4_unicode_ci",
@@ -2143,7 +2422,7 @@
         {
           "name": "tipo_pergunta",
           "ordinal": 4,
-          "type": "enum('MULTIPLA_ESCOLHA','VERDADEIRO_FALSO','RESPOSTA_CURTA')",
+          "type": "enum('MULTIPLA_ESCOLHA','VERDADEIRO_FALSO','ASSOCIACAO','RESPOSTA_CURTA')",
           "nullable": false,
           "default": null,
           "extra": "",
@@ -2152,8 +2431,19 @@
           "collation": "utf8mb4_unicode_ci"
         },
         {
-          "name": "ordem",
+          "name": "resposta_booleana",
           "ordinal": 5,
+          "type": "tinyint(1)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "ordem",
+          "ordinal": 6,
           "type": "int",
           "nullable": false,
           "default": null,
@@ -2164,7 +2454,7 @@
         },
         {
           "name": "pontos",
-          "ordinal": 6,
+          "ordinal": 7,
           "type": "decimal(6,2)",
           "nullable": false,
           "default": "1.00",
@@ -2217,6 +2507,244 @@
           "referencedTable": "Questionarios",
           "referencedColumns": [
             "id_questionario"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": [
+        {
+          "name": "chk_pergunta_resposta_booleana",
+          "clause": "(resposta_booleana is null) or ((tipo_pergunta = _utf8mb4\\'VERDADEIRO_FALSO\\') and (resposta_booleana in (0,1)))"
+        }
+      ]
+    },
+    "Q_RespostaAssociacoes": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_resposta",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_item_esquerda",
+          "ordinal": 2,
+          "type": "char(36)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        },
+        {
+          "name": "id_item_direita",
+          "ordinal": 3,
+          "type": "char(36)",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": "ascii",
+          "collation": "ascii_bin"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "fk_resposta_associacao_item_esquerda",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_item_esquerda",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "idx_resposta_associacao_item_direita",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_item_direita",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_resposta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_item_esquerda",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "uk_resposta_associacao_direita",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_resposta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_item_direita",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_resposta_associacao_item_direita",
+          "columns": [
+            "id_item_direita"
+          ],
+          "referencedTable": "Q_AssociacaoItens",
+          "referencedColumns": [
+            "id_item"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_resposta_associacao_item_esquerda",
+          "columns": [
+            "id_item_esquerda"
+          ],
+          "referencedTable": "Q_AssociacaoItens",
+          "referencedColumns": [
+            "id_item"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "RESTRICT"
+        },
+        {
+          "name": "fk_resposta_associacao_resposta",
+          "columns": [
+            "id_resposta"
+          ],
+          "referencedTable": "Q_Respostas",
+          "referencedColumns": [
+            "id_resposta"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        }
+      ],
+      "checks": []
+    },
+    "Q_RespostaOpcoes": {
+      "engine": "innodb",
+      "collation": "utf8mb4_unicode_ci",
+      "columns": [
+        {
+          "name": "id_resposta",
+          "ordinal": 1,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "id_opcao",
+          "ordinal": 2,
+          "type": "int",
+          "nullable": false,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_resposta_opcao_opcao",
+          "unique": false,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_opcao",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "unique": true,
+          "type": "btree",
+          "columns": [
+            {
+              "name": "id_resposta",
+              "ordinal": 1,
+              "prefixLength": null,
+              "order": "A"
+            },
+            {
+              "name": "id_opcao",
+              "ordinal": 2,
+              "prefixLength": null,
+              "order": "A"
+            }
+          ]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_resposta_opcao_opcao",
+          "columns": [
+            "id_opcao"
+          ],
+          "referencedTable": "Q_Opcoes",
+          "referencedColumns": [
+            "id_opcao"
+          ],
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "name": "fk_resposta_opcao_resposta",
+          "columns": [
+            "id_resposta"
+          ],
+          "referencedTable": "Q_Respostas",
+          "referencedColumns": [
+            "id_resposta"
           ],
           "onUpdate": "NO ACTION",
           "onDelete": "CASCADE"
@@ -2306,8 +2834,19 @@
           "collation": null
         },
         {
-          "name": "data_resposta",
+          "name": "resposta_booleana",
           "ordinal": 8,
+          "type": "tinyint(1)",
+          "nullable": true,
+          "default": null,
+          "extra": "",
+          "generationExpression": "",
+          "characterSet": null,
+          "collation": null
+        },
+        {
+          "name": "data_resposta",
+          "ordinal": 9,
           "type": "datetime",
           "nullable": false,
           "default": "current_timestamp",
@@ -2318,7 +2857,7 @@
         },
         {
           "name": "correta",
-          "ordinal": 9,
+          "ordinal": 10,
           "type": "tinyint(1)",
           "nullable": false,
           "default": "0",
@@ -2476,7 +3015,12 @@
           "onDelete": "CASCADE"
         }
       ],
-      "checks": []
+      "checks": [
+        {
+          "name": "chk_resposta_booleana",
+          "clause": "(resposta_booleana is null) or (resposta_booleana in (0,1))"
+        }
+      ]
     },
     "Q_Tentativas": {
       "engine": "innodb",

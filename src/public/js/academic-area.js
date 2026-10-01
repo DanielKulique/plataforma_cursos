@@ -24,8 +24,18 @@ export async function requestJson(url, options = {}) {
         throw Object.assign(new Error('Sua sessão expirou.'), { status: 401 });
     }
     if (!response.ok) {
+        const safeMessages = {
+            400: 'Dados inválidos na requisição.',
+            403: 'Você não tem permissão para esta ação.',
+            404: 'Recurso não encontrado.',
+            409: 'A operação entrou em conflito com o estado atual.',
+            422: 'Os dados enviados não passaram na validação.',
+            429: 'Muitas solicitações. Aguarde e tente novamente.',
+            500: 'O servidor não conseguiu concluir a solicitação.',
+            503: 'Serviço temporariamente indisponível.'
+        };
         throw Object.assign(new Error(
-            body.mensagem || body.message || body.erros?.[0]?.msg || 'Não foi possível carregar esta área.'
+            safeMessages[response.status] || 'Não foi possível carregar esta área.'
         ), { status: response.status, code: body.code });
     }
     return body;

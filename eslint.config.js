@@ -5,7 +5,7 @@ const globals = require('globals');
 
 module.exports = [
     {
-        ignores: ['node_modules/**', 'coverage/**', 'goal*/**', 'audit-autoria.js']
+        ignores: ['node_modules/**', 'coverage/**', 'playwright-report/**', 'test-results/**', 'goal*/**', 'audit-autoria.js']
     },
     js.configs.recommended,
     {

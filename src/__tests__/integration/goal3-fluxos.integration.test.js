@@ -671,7 +671,7 @@ describe('Goal 3 — fluxos reais de aluno e professor', () => {
             expect(response.body.code).toBe('MODULO_FORA_DA_TURMA');
         });
 
-        it('mantém CRUD de alternativas com exatamente um gabarito correto', async () => {
+        it('mantém CRUD de alternativas com múltiplas corretas', async () => {
             const criada = await request(app)
                 .post(`/api/perguntas/${ids.perguntaUm}/opcoes`)
                 .set(como(tokens.admin))
@@ -695,9 +695,9 @@ describe('Goal 3 — fluxos reais de aluno e professor', () => {
                 [ids.perguntaUm]
             );
             expect(opcoes).toHaveLength(2);
-            expect(opcoes.filter((opcao) => Boolean(opcao.correta))).toHaveLength(1);
-            expect(opcoes.find((opcao) => Boolean(opcao.correta)).id_opcao)
-                .toBe(criada.body.opcao.id_opcao);
+            expect(opcoes.filter((opcao) => Boolean(opcao.correta))).toHaveLength(2);
+            expect(opcoes.filter((opcao) => Boolean(opcao.correta)).map((opcao) => opcao.id_opcao))
+                .toEqual(expect.arrayContaining([ids.opcaoUmCorreta, criada.body.opcao.id_opcao]));
         });
 
         it('preserva históricos acadêmicos contra exclusão ou alteração destrutiva', async () => {

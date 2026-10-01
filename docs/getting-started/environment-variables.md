@@ -55,9 +55,12 @@ Staging usa `NODE_ENV=production` para as proteções de produção.
 
 ## E-mail, autenticação e limites
 
-`EMAIL_DELIVERY_ENABLED` é true por padrão. Quando ativo em produção, exige `RESEND_API_KEY`
-e `MAIL_FROM`; para entrega real, o remetente precisa estar configurado no provedor.
-Desabilitar entrega não confirma contas nem revela códigos ao cliente.
+`EMAIL_DELIVERY_ENABLED` é true por padrão no código, mas a configuração atual de
+produção define `EMAIL_DELIVERY_ENABLED=false` e
+`PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED=false`. Nessa combinação, o cadastro
+público cria ALUNO já verificado, sem código ou envio, e permite login imediato;
+a recuperação por e-mail permanece indisponível. Quando a entrega está ativa em
+produção, exige `RESEND_API_KEY` e `MAIL_FROM` configurados no provedor.
 `EMAIL_VERIFICATION_TTL_MINUTES=10`, `PASSWORD_RESET_TTL_MINUTES=20` e
 `EMAIL_PROVIDER_TIMEOUT_MS=10000` controlam prazos.
 

@@ -22,6 +22,7 @@ const STATUS_MESSAGES = Object.freeze({
     404: 'Recurso não encontrado.',
     408: 'Tempo limite excedido. Tente novamente.',
     409: 'A operação entrou em conflito com o estado atual.',
+    422: 'Os dados enviados não passaram na validação.',
     429: 'Muitas solicitações. Aguarde e tente novamente.',
     500: 'O servidor não conseguiu concluir a solicitação.',
     502: 'Serviço temporariamente indisponível.',
@@ -117,7 +118,14 @@ function getMethod(options) {
 
 function createHttpError(status, payload) {
     const fallback = STATUS_MESSAGES[status] || 'Erro na requisição';
-    const message = status >= 500 ? fallback : extractErrorMessage(payload) || fallback;
+    const candidate = extractErrorMessage(payload);
+    const messageIsSafe = typeof candidate === 'string'
+        && candidate.length <= 240
+        && ![...candidate].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127)
+        && !/(?:stack(?:\s+trace)?|traceback|password|secret|token|database|mysql|postgres|\binternal\b|\bselect\b|\bupdate\b|\bdelete\b|\binsert\b|\bER_[A-Z_]+\b|\bECONN[A-Z_]+\b|\/(?:srv|app|var|home)\/)/i.test(candidate);
+    const message = status >= 500 || !messageIsSafe || candidate === 'Erro na requisição'
+        ? fallback
+        : candidate;
     return new APIError(message === 'Erro na requisição' ? fallback : message, status, payload);
 }
 

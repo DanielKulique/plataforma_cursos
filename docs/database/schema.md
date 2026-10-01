@@ -20,9 +20,10 @@ sem duplicar o SQL.
 | `ConteudosProgresso` | Progresso único por aluno/conteúdo |
 | `ArquivosMateriais` | UUID, tamanho/hash, estado e retenção do PDF privado |
 | `Questionarios` | EXERCICIO/PROVA, aula opcional, ativo e designação da final |
-| `Q_Perguntas`, `Q_Opcoes` | Perguntas, pontos e alternativas/gabarito |
+| `Q_Perguntas`, `Q_Opcoes` | Enunciados, pontos, gabarito booleano e alternativas de múltipla escolha |
+| `Q_AssociacaoItens`, `Q_AssociacaoGabaritos` | Itens dos dois lados e correspondências corretas |
 | `Q_Tentativas` | Submissão, ciclo, pontuação e chave de idempotência |
-| `Q_Respostas` | Resposta vinculada à tentativa, pergunta, opção e aluno |
+| `Q_Respostas`, `Q_RespostaOpcoes`, `Q_RespostaAssociacoes` | Resposta por pergunta e detalhes de seleção ou associação |
 | `Certificados` | Versão, situação, snapshot, hash, código e vínculo à matrícula |
 | `ReplicacoesTurma` | Origem/destino, ator, chave e hash da operação |
 | `AnalisesPlagio`, `AnalisesContextuais` | Histórico da integração opcional de similaridade |
@@ -62,7 +63,7 @@ na aplicação: FK isolada não resolve todas as regras acadêmicas.
 
 ## Evolução e verificação
 
-Há 13 migrations versionadas nesta revisão, de segurança até índices de consultas operacionais.
+Há 16 migrations versionadas nesta revisão, incluindo a evolução dos tipos de questão.
 `schema_migrations` registra a evolução realmente aplicada; `environment_identity` identifica
 o destino. Um schema parecido não autoriza scripts destrutivos de teste.
 

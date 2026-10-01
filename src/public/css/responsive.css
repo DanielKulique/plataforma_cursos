@@ -611,6 +611,11 @@
     justify-self: start;
   }
 
+  .academic-page .question-match-row,
+  .academic-dialog .question-builder-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .academic-page .history-item {
     align-items: flex-start;
     flex-direction: column;

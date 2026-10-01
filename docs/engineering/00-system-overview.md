@@ -94,7 +94,7 @@ Estado significa implementação observada, não homologação comercial. READY 
 | Entrega de atividade pelo aluno | NÃO UTILIZADO como fluxo de entrega | ATIVIDADE é conteúdo; não há tabela/rota de envio de arquivo/resposta dessa atividade. Não há evidência de planejamento aprovado. |
 | Upload e substituição de PDF | IMPLEMENTADO / READY | `material-upload.service.js`, integração PDF; acesso privado. |
 | Autoria de questionários e perguntas | PARCIALMENTE IMPLEMENTADO na UX | Backend permite editar/excluir perguntas e opções; tela cria perguntas com duas opções, sem editor completo de perguntas existentes. |
-| Prova e exercício objetivos | IMPLEMENTADO / READY | `questoes.*`; MULTIPLA_ESCOLHA/VERDADEIRO_FALSO; pesos, tentativas e idempotência. |
+| Prova e exercício objetivos | IMPLEMENTADO / READY | `questoes.*`; MULTIPLA_ESCOLHA, VERDADEIRO_FALSO e ASSOCIACAO; pesos, tentativas e idempotência. |
 | Resposta curta/dissertativa | LEGADO no schema / NÃO UTILIZADO no fluxo atual | `RESPOSTA_CURTA` existe no enum; leitura/submissão rejeita esse tipo. |
 | Correção automática | IMPLEMENTADO / READY | Pontuação e percentual da tentativa calculados no backend. |
 | Nota final e aprovação | IMPLEMENTADO como decisão manual | `matricula.models.js`; não há média automática nem nota mínima fixa. |

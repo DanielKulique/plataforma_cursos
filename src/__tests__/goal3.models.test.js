@@ -231,7 +231,10 @@ describe('modelos do Goal 3', () => {
             db.getConnection.mockResolvedValue(conexao);
 
             await expect(questoes.criarPergunta(4, {
-                texto_pergunta: 'Pergunta', ordem: 1, opcoes: []
+                texto_pergunta: 'Pergunta', ordem: 1, opcoes: [
+                    { texto_opcao: 'A', ordem: 1, correta: true },
+                    { texto_opcao: 'B', ordem: 2, correta: false }
+                ]
             }, ADMIN)).rejects.toThrow('falha SQL');
             expect(conexao.rollback).toHaveBeenCalled();
             expect(conexao.release).toHaveBeenCalled();
@@ -328,6 +331,7 @@ describe('modelos do Goal 3', () => {
                 .mockResolvedValueOnce([[{ id_opcao: 6, id_pergunta: 5, ordem: 1, correta: 0 }]])
                 .mockResolvedValueOnce([[]])
                 .mockResolvedValueOnce([[]])
+                .mockResolvedValueOnce([[{ tipo_pergunta: 'MULTIPLA_ESCOLHA' }]])
                 .mockResolvedValueOnce([[{ id_opcao: 7 }]])
                 .mockResolvedValueOnce([{ affectedRows: 1 }])
                 .mockResolvedValueOnce([{ affectedRows: 1 }])
@@ -388,7 +392,13 @@ describe('modelos do Goal 3', () => {
             const conexao = conexaoMock();
             conexao.query
                 .mockResolvedValueOnce([[{ id_questionario: 4, id_turma: 1 }]])
-                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]]).mockResolvedValueOnce([questionarioRows]);
+                .mockResolvedValueOnce([[{ id_turma: 1, status: 'ABERTA' }]])
+                .mockResolvedValueOnce([questionarioRows]);
+            if (status === 404) {
+                conexao.query
+                    .mockResolvedValueOnce([[{ id_matricula: 9, ciclo_atual: 1 }]])
+                    .mockResolvedValueOnce([[]]);
+            }
             if (status === 403) conexao.query.mockResolvedValueOnce([[]]);
             db.getConnection.mockResolvedValue(conexao);
 

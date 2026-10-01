@@ -116,6 +116,12 @@ O ALTER posterior adiciona `fk_questionario_modulo`: id_modulo → Modulos, ON D
 
 **Relacionamentos:** `id_pergunta` → `Q_Perguntas` (`id_pergunta`), DELETE CASCADE.
 
+### Q_AssociacaoItens e Q_AssociacaoGabaritos
+
+**Responsabilidade:** Itens de ambos os lados com UUID próprio, ordem e texto; mapeamento único entre os lados do gabarito. IDs de itens são renovados na replicação de turma. O gabarito nunca é enviado ao aluno.
+
+**Relacionamentos:** itens → `Q_Perguntas`; gabarito → pergunta e respectivos itens. Uma pergunta V/F nova usa `Q_Perguntas.resposta_booleana`, sem opções personalizadas; registros V/F antigos com campo nulo mantêm as opções legadas.
+
 ### Q_Tentativas
 
 **Responsabilidade:** Resultado agregado de uma submissão idempotente, preservado no ciclo explícito `ciclo_matricula`. **PK:** `id_tentativa`.
@@ -133,6 +139,8 @@ O ALTER posterior adiciona `fk_questionario_modulo`: id_modulo → Modulos, ON D
 **Índices:** `uk_resposta_tentativa_pergunta` (`id_tentativa`, `id_pergunta`); `idx_respostas_usuario` (`id_usuario`); `idx_respostas_questionario` (`id_questionario`); `idx_respostas_opcao` (`resposta_opcao`).
 
 **Relacionamentos:** `id_pergunta` → `Q_Perguntas` (`id_pergunta`), DELETE CASCADE; `id_usuario` → `Usuarios` (`id_usuario`), DELETE CASCADE; `id_questionario` → `Questionarios` (`id_questionario`), DELETE CASCADE; `id_tentativa` → `Q_Tentativas` (`id_tentativa`), DELETE CASCADE; `resposta_opcao` → `Q_Opcoes` (`id_opcao`), DELETE SET NULL.
+
+`Q_Respostas.resposta_booleana` guarda V/F novo. `Q_RespostaOpcoes` guarda cada alternativa marcada e `Q_RespostaAssociacoes` guarda cada ligação enviada; ambas dependem da resposta principal. `resposta_opcao` permanece para respostas legadas.
 
 ### Modulos
 
@@ -238,7 +246,7 @@ EmailVerificacoes não tem FK para Usuarios: a associação é consulta por stri
 | Cursos.carga_horaria | Horas da formação | Backend exige inteiro positivo; sem CHECK próprio no curso. |
 | Turmas.status | ABERTA, FECHADA, ENCERRADA | ENUM; atualização manual por ADMIN, sem agendamento. |
 | Turmas.data_inicio/data_fim | Período nominal | Fim nullable; backend valida ordenação, não vincula automaticamente acesso. |
-| Matriculas.status_aprovacao | CURSANDO, APROVADO, REPROVADO, CANCELADO | Cancelamento lógico; nota manual; CURSANDO→APROVADO por Teste Final >=75, sem exigir conteúdo completo; REPROVADO manual. |
+| Matriculas.status_aprovacao | CURSANDO, APROVADO, REPROVADO, CANCELADO | Cancelamento lógico; nota manual; CURSANDO→APROVADO automático por Teste Final >=75, sem exigir conclusão integral de conteúdos; REPROVADO manual. |
 | Matriculas.nota_final | DECIMAL(5,2), NULL ou 0–10 | CHECK; percentual da prova não é nota final. |
 | Matriculas.progresso_percentual | TINYINT 0–100 armazenado | CHECK; consultas centrais derivam novo percentual de ConteudosProgresso. |
 | Modulos.ordem | Ordem da aula dentro da turma | UNIQUE turma+ordem; número exibido é posição ordenada, não ID. |
@@ -250,14 +258,14 @@ EmailVerificacoes não tem FK para Usuarios: a associação é consulta por stri
 | Conteudos.ordem | Ordem global de conteúdos na turma | UNIQUE turma+ordem; avaliação tem ordenação independente. |
 | ConteudosProgresso.status | NAO_INICIADO, INICIADO, CONCLUIDO | Ausência de registro também significa não iniciado; PUT não aceita regressão. |
 | Matriculas.ciclo_atual | Inteiro >=1 | Identifica o ciclo acadêmico vigente; incrementa apenas na rematrícula oficial. |
-| Questionarios.tipo/ativo | PROVA ou EXERCICIO; disponibilidade | Teste Final permite uma tentativa finalizada por aluno+turma; outras avaliações mantêm retries. |
+| Questionarios.tipo/ativo | PROVA ou EXERCICIO; disponibilidade | Não existe limite de tentativas por tipo no model. |
 | Questionarios.id_curso/id_turma/id_modulo | Escopo redundante e aula opcional | FK individuais não garantem coerência entre si; ver risco de troca de curso da turma. |
-| Q_Perguntas.tipo_pergunta | MULTIPLA_ESCOLHA, VERDADEIRO_FALSO, RESPOSTA_CURTA | Último é legado e bloqueado no fluxo atual. |
+| Q_Perguntas.tipo_pergunta | MULTIPLA_ESCOLHA, VERDADEIRO_FALSO, ASSOCIACAO, RESPOSTA_CURTA | Último é legado e bloqueado na autoria atual. |
 | Q_Perguntas.pontos | Peso DECIMAL(6,2), padrão 1 | Rota aceita >0 até 1000, sem CHECK correspondente. |
-| Q_Opcoes.correta | Gabarito booleano | Exatamente uma opção correta é regra do backend, sem índice condicional/CHECK. |
+| Q_Opcoes.correta | Gabarito booleano | Uma ou mais corretas em múltipla escolha; regra validada no backend. |
 | Q_Tentativas.pontuacao/percentual/acertos | Resultado da submissão | Percentual 0–100 com CHECK; pontuação ponderada e acertos são diferentes. |
-| Q_Tentativas.chave_idempotencia/ciclo_matricula | UUID e ciclo explícito | UNIQUE por ciclo mantém idempotência técnica; Teste Final também aplica tentativa única por aluno+turma na camada de aplicação. |
-| Q_Respostas.resposta_opcao/resposta_texto | Opção escolhida ou campo textual legado | Rota atual só recebe id_opcao; texto não é fluxo suportado. |
+| Q_Tentativas.chave_idempotencia/ciclo_matricula | UUID e ciclo explícito | UNIQUE usuário+questionário+ciclo+chave; permite a mesma chave em novo ciclo sem reutilizar tentativa antiga. |
+| Q_Respostas.resposta_opcao/resposta_texto | Opção única ou texto legados | Novos formatos usam `resposta_booleana`, `Q_RespostaOpcoes` ou `Q_RespostaAssociacoes`; texto não é fluxo suportado. |
 | ArquivosMateriais.storage_name/original_name | UUID.pdf e nome de apresentação | Nome original nunca compõe caminho interno. |
 | ArquivosMateriais.sha256/size_bytes/status | Integridade, tamanho e ATIVO/RETIDO/PURGANDO/PURGADO | Hash não é UNIQUE; retido_em e purgado_em auditam retenção e purge (migration 011). |
 | Certificados.codigo_publico | Código aleatório de 128 bits formatado | UNIQUE; não contém ID sequencial do aluno. |
@@ -290,8 +298,8 @@ EmailVerificacoes não tem FK para Usuarios: a associação é consulta por stri
 | Unicidade de matrícula/certificado | Evita duplicação | Lock do contexto e versão-alvo | UNIQUE matrícula, versão e coluna gerada de ATIVO |
 | Pertencimento de aula à turma | Select de aulas | Valida ID + turma | FK simples só garante existência |
 | Nota 0–10/progresso 0–100 | Campos/feedback | Validação e cálculo | CHECK de faixa |
-| Gate do Teste Final e aprovação | Progresso visual e estado/resultados | 80% dos conteúdos abre; resultado final >=75 aprova | Não há CHECK acadêmico entre tentativa, progresso e status |
-| Gabarito único | Criação guiada | Validações e updates transacionais | Sem garantia de exatamente uma correta |
+| Aprovação após conclusão | Orientação visual | Percentual arredondado e nota obrigatória | Não há CHECK entre progresso e status |
+| Gabarito por tipo | Criação guiada | Validações e updates transacionais | CHECK/FK não garantem sozinhos uma correta ou pares completos |
 | Preservar histórico | Desabilita algumas ações | Bloqueios em models | Várias FK CASCADE permitiriam exclusão por SQL direto |
 | Material seguro | Validação preliminar | MIME/extensão/bytes/caminho | Apenas metadados/FK, não arquivo físico |
 | Configuração de e-mail | Fluxo pede confirmação | Registro separado, login permissivo se ausente | Sem FK entre verificação e conta |
@@ -303,7 +311,7 @@ Acesso SQL administrativo pode contornar várias regras de aplicação. Alterar 
 
 Migration idempotente `008_prova_final.sql`: `Questionarios.prova_final TINYINT(1) NULL DEFAULT NULL`. Valor 1 identifica final; NULL representa avaliação comum. CHECK permite 1 somente em tipo PROVA. UNIQUE `uk_prova_final_turma(id_turma, prova_final)` permite várias avaliações NULL e somente uma final por turma. Não há backfill por título/ID/ordem. Professor/ADMIN deve designar uma prova sem histórico ou criar uma final; alteração de designação com tentativas é recusada. Replicação copia a marcação, sem copiar progresso/tentativas.
 
-`Matriculas.nota_final` continua nullable 0–10, manual; não é percentual da prova nem pré-condição para APROVADO. `Q_Tentativas.percentual` continua DECIMAL com duas casas; final usa truncamento conservador para evitar cruzar 75 por arredondamento. Tentativa finalizada >=75 no Teste Final constitui a aprovação, sem exigir conclusão integral. A aplicação limita a uma tentativa finalizada por aluno+turma; schema permanece inalterado. Certificado inicia automaticamente após aprovação.
+`Matriculas.nota_final` continua nullable 0–10, manual; não é percentual da prova nem pré-condição para APROVADO. `Q_Tentativas.percentual` continua DECIMAL com duas casas; a final usa truncamento conservador para evitar cruzar 75 por arredondamento. Uma tentativa finalizada da prova marcada como Teste Final com percentual >=75 constitui aprovação, sem exigir conclusão integral dos conteúdos. A emissão do certificado é disparada automaticamente pela aplicação após a aprovação; não há tabela de aprovação adicional.
 
 ### Migration 009 — versões de certificado
 
@@ -315,7 +323,7 @@ O guard de INFORMATION_SCHEMA torna a migration reaplicável; IDs, status, revog
 
 A migration adiciona `Matriculas.ciclo_atual` e `Q_Tentativas.ciclo_matricula`, ambos inteiros positivos, NOT NULL e com default 1; também amplia a chave idempotente para usuário+questionário+ciclo+chave e cria índice para consultas do ciclo vigente. O preflight rejeita tentativa sem matrícula lógica antes do DDL.
 
-O backfill normal atribui ciclo 1 à matrícula e às tentativas existentes. Quando uma tentativa antecede `data_matricula`, há evidência de que a data foi reiniciada ou de histórico inconsistente: a migration adota conservadoramente ciclo atual 2, mantém tentativas anteriores no ciclo 1 e associa ao ciclo 2 apenas as tentativas iguais/posteriores à data atual. Essa regra usa timestamp somente para o backfill legado; após a migration, toda tentativa recebe explicitamente o ciclo da matrícula bloqueada. Múltiplas rematrículas antigas não podem ser reconstruídas com precisão e permanecem agregadas como histórico anterior, sem satisfazer o estado atual.
+O backfill normal atribui ciclo 1 à matrícula e às tentativas existentes. Quando uma tentativa antecede `data_matricula`, há evidência de que a data foi reiniciada ou de histórico inconsistente: a migration adota conservadoramente ciclo atual 2, mantém tentativas anteriores no ciclo 1 e associa ao ciclo 2 apenas as tentativas iguais/posteriores à data atual. Essa regra usa timestamp somente para o backfill legado; após a migration, tentativas comuns recebem explicitamente o ciclo da matrícula bloqueada. A tentativa do Teste Final é exceção: sua identidade e restrição são por aluno+turma em todos os ciclos, embora `ciclo_matricula` ainda registre em qual ciclo ela ocorreu. Múltiplas rematrículas antigas não podem ser reconstruídas com precisão e permanecem agregadas como histórico anterior.
 
 ## Storage e reconciliação — Goal 07
 

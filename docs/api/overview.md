@@ -24,17 +24,16 @@ um envelope único: há `mensagem`, `code` ou `codigo` conforme o endpoint.
 | Login | `{ "email": "aluno@example.invalid", "senha": "<senha>" }` |
 | Matrícula/rematrícula | `{ "id_turma": 1 }`; aluno vem da sessão |
 | Progresso | `{ "status": "CONCLUIDO" }` ou INICIADO |
-| Submissão | `{ "submission_id": "<UUID>", "respostas": [{ "id_pergunta": 1, "id_opcao": 2 }] }` |
+| Submissão | `{ "submission_id": "<UUID>", "respostas": [{ "id_pergunta": 1, "selected_option_ids": [2, 3] }] }`; V/F usa `resposta_booleana`, associação usa `matches` |
 | Revogar/reemitir | `{ "motivo": "<justificativa de 3 a 500 caracteres>" }` |
 | Criar PDF de conteúdo | Multipart `arquivo`, `titulo`, `ordem`; metadados opcionais permitidos na rota |
 | Comparar certificado público | Multipart com somente `arquivo`, sem hash fornecido pelo cliente |
 | Replicar turma | Header `Idempotency-Key` (16–64 caracteres seguros), nome, professor, datas e estado de destino |
 
-Envie uma resposta válida por pergunta na submissão; não envie nota ou gabarito. Para o Teste
-Final, repetir o mesmo UUID recupera o resultado mesmo após encerramento/rematrícula; outro UUID
-após tentativa finalizada recebe 409. Exercícios preservam retries por ciclo. A leitura
-`questionarios/disponivel` aceita `tipo` e `id_questionario`; perguntas do Teste Final só são
-entregues após 80% dos conteúdos concluídos. Metadados não equivalem a autorização para responder.
+Envie exatamente uma resposta tipada por pergunta na submissão; não envie nota ou gabarito. Veja [contrato das questões](../engineering/question-authoring-types.md).
+Repetir o mesmo UUID no mesmo ciclo recupera a tentativa existente. A leitura
+`questionarios/disponivel` aceita `tipo` e `id_questionario`; perguntas da final só são
+entregues após a liberação. Metadados não equivalem a autorização para responder.
 
 ## Saúde pública
 
@@ -115,6 +114,7 @@ Fonte: [usuarios.routes.js](../../src/api/routes/usuarios.routes.js).
 
 | Método | Endpoint |
 | --- | --- |
+| GET | `/api/usuarios/cadastro-status` |
 | POST | `/api/usuarios` |
 | POST | `/api/usuarios/verificar-disponibilidade` |
 | PATCH | `/api/usuarios/:id` |

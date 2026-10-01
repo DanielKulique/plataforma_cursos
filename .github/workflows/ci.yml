@@ -111,15 +111,19 @@ jobs:
         run: npm run db:test:seed
       - name: Executar a suíte completa sem retry
         run: npm run test:all
-      - name: Instalar Chromium para E2E
-        run: npx playwright install --with-deps chromium
-      - name: Executar fluxo acadêmico E2E
-        run: npm run test:e2e
+      - name: Instalar browsers e dependências do Playwright
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: E2E browser smoke em MySQL descartável separado
+        run: npm run test:e2e:smoke
+      - name: E2E browser smoke crítico em Firefox
+        run: npm run test:e2e:firefox-critical
+      - name: E2E browser smoke crítico em WebKit
+        run: npm run test:e2e:webkit
       - name: Preservar evidências Playwright em falha
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: academic-playwright-failure-${{ github.run_id }}
+          name: playwright-e2e-failure-${{ github.run_id }}
           path: |
             playwright-report/
             test-results/

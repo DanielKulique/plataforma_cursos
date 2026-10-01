@@ -140,9 +140,6 @@ async function listar(req, res, next) {
         }
         const turma = await model.buscarTurma(req.params.id_turma);
         if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada.' });
-        if (turma.status === 'ENCERRADA') {
-            return res.status(403).json({ mensagem: 'Esta turma está encerrada.' });
-        }
         if (!await model.matriculado(req.user.id_usuario, req.params.id_turma)) {
             return res.status(403).json({ mensagem: 'Aluno não matriculado nesta turma.' });
         }

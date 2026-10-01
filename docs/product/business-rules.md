@@ -30,8 +30,8 @@ não substitui a rematrícula. Certificado ATIVO bloqueia cancelamento ou saída
 até revogação administrativa.
 
 Tentativas registram `ciclo_matricula`. Progresso e exercícios pertencem ao ciclo atual; o
-resultado do Teste Final é a exceção, pois a tentativa única é por aluno+turma e continua
-válida após rematrícula. Histórico pode mostrar ciclos anteriores, identificados.
+resultado do Teste Final é a exceção deliberada, pois a tentativa única é por aluno+turma e
+continua válida após rematrícula. Histórico mostra ciclos anteriores identificados.
 
 ## Aulas, conteúdos e exercícios
 
@@ -44,7 +44,8 @@ podem ser excluídos. PDF substituído gera arquivo novo e preserva referências
 
 Questionários são EXERCICIO ou PROVA. Exercício conta como realizado após tentativa finalizada,
 independentemente da nota e sem contar retries duas vezes. Perguntas suportam múltipla escolha
-ou verdadeiro/falso, pelo menos duas alternativas e exatamente uma correta. O gabarito não
+com duas ou mais alternativas e uma ou mais corretas, verdadeiro/falso e associação. A correção
+de cada pergunta exige resposta exata, sem crédito parcial. O gabarito não
 é enviado na leitura respondível do aluno. Histórico acadêmico restringe edição e exclusão;
 para mudar uma avaliação já utilizada, respeite os conflitos retornados pelo backend.
 
@@ -54,43 +55,44 @@ A única prova final da turma é uma PROVA explicitamente marcada com `prova_fin
 Uma prova comum não vira final por nome ou posição.
 
 ```text
-total_conteudos = todos os Conteudos da turma
-conteudos_concluidos = conteúdos concluídos pelo aluno no ciclo atual
-liberado = total_conteudos > 0 e conteudos_concluidos × 100 >= total_conteudos × 80
+total_trilha = todos os Conteudos da turma
+trilha_realizada = conteúdos concluídos pelo aluno
+liberada = total_trilha > 0 e trilha_realizada × 100 >= total_trilha × 80
 ```
 
-EXERCICIO, inclusive Simulado, é opcional e não entra no numerador nem no denominador. 0/0 e
-79/100 bloqueiam; 80/100 libera. O percentual arredondado na tela não decide o gate. O backend
-verifica a regra ao entregar perguntas e antes da primeira submissão do Teste Final.
+Exercícios EXERCICIO, inclusive o Simulado, são opcionais e não entram no denominador nem no
+numerador. O Simulado não bloqueia o Teste Final nem o certificado. 0/0 bloqueia; 79/100
+bloqueia e 80/100 libera. A decisão usa comparação inteira exata, nunca percentual arredondado.
+O backend verifica a regra ao entregar perguntas e antes de aceitar a submissão.
 
-## Tentativa, resultado e aprovação: uma tentativa, nota mínima 75%
+## Resultado do Teste Final: uma tentativa, aprovação com 75%
 
-Há uma tentativa finalizada do Teste Final por aluno+turma, independente do ciclo de matrícula.
-Reenvio da mesma `submission_id` UUID devolve o resultado persistido; novo ID após a tentativa
-finalizada recebe 409. A regra se aplica somente ao Teste Final; exercícios mantêm tentativas
-livres.
+O aluno pode finalizar o Teste Final uma vez por turma. Um reenvio com o mesmo `submission_id`
+UUID devolve o resultado persistido; um novo ID após a tentativa finalizada recebe 409. A regra
+vale somente para PROVA FINAL. Exercícios, incluindo o Simulado, mantêm tentativas livres.
 
 CURSANDO vira APROVADO quando a tentativa finalizada do Teste Final tem percentual >=75.
-74,99 não aprova; 75,00 aprova. Conteúdo incompleto não impede aprovação: por exemplo, 20/22
-conteúdos + 100% e 18/22 + 75% aprovam. Resultado abaixo de 75 consome a tentativa e não gera
-aprovação automática nem certificado.
+74,99 não aprova; 75,00 aprova. Conteúdo incompleto não impede aprovação: 20/22 + 100% e
+18/22 + 75% são exemplos válidos. O progresso informa o aluno e libera o Teste Final, mas não
+é requisito de aprovação após a prova. Tentativa abaixo de 75% fica registrada como resultado
+final, sem nova tentativa e sem certificado.
 
-A correção usa os pontos das perguntas e é calculada no servidor. A final trunca conservadoramente
-o percentual em duas casas. Resultado abaixo de 75 não reprova a matrícula automaticamente.
-Retries técnicos com a mesma `submission_id` são idempotentes e não criam outra tentativa.
+O backend calcula a nota com os pontos das perguntas e a persiste em duas casas, com truncamento
+conservador para a final. Repetir a mesma submissão é idempotente; uma submissão diferente não
+cria segunda tentativa final.
 
 `nota_final` é campo manual opcional entre 0 e 10, sem conversão automática do percentual.
-Sua ausência não impede aprovação. PATCH para APROVADO exige Teste Final >=75 sem exigir
-conteúdo completo. REPROVADO continua sendo decisão manual conforme o contrato existente.
-CANCELADO e REPROVADO não são promovidos automaticamente por progresso ou outras avaliações.
+Sua ausência não impede aprovação. PATCH para APROVADO exige resultado do Teste Final >=75,
+sem exigir conclusão de 100% dos conteúdos. REPROVADO continua sendo decisão manual conforme
+o contrato existente. CANCELADO e REPROVADO não são promovidos automaticamente.
 
 ## Certificados e replicação
 
 Ao aprovar, o sistema inicia automaticamente a emissão do certificado. A elegibilidade exige
 matrícula APROVADO e Teste Final >=75; não exige 100% dos conteúdos. A emissão é idempotente,
 preserva código aleatório, QR, SHA-256, snapshot imutável, arquivo privado, validação pública,
-ACTIVE/REVOKED e histórico de versões. Falha de PDF não desfaz nota ou aprovação; emissão pode
-ser recuperada sem repetir a prova. Professor responsável/ADMIN só intervêm na recuperação.
+ACTIVE/REVOKED e histórico de versões. Uma falha no PDF não desfaz a nota ou a aprovação; a
+emissão pode ser recuperada sem repetir a prova. ADMIN/Professor não precisam autorizar a emissão.
 
 Certificados têm versões imutáveis, revogação e reemissão administrativa explícitas;
 veja [certificação](certificates.md). Replicação administrativa copia apenas estrutura,

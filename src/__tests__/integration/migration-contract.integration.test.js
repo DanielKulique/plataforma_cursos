@@ -102,20 +102,20 @@ describe('contrato de migrations no MySQL Docker 127.0.0.1:33307', () => {
         await runMigrations(runnerOptions());
     });
 
-    it('migra banco totalmente vazio de 001 até 015 e valida o schema final', async () => {
+    it('migra banco totalmente vazio de 001 até 016 e valida o schema final', async () => {
         await resetToEmptyDatabase();
         const result = await runMigrations(runnerOptions());
-        expect(result.applied.map((item) => item.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
-        expect(result.validation).toMatchObject({ status: 'ok', tablesChecked: 21, columnsChecked: 173 });
+        expect(result.applied.map((item) => item.version)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+        expect(result.validation).toMatchObject({ status: 'ok', tablesChecked: 25, columnsChecked: 188 });
         const noOp = await runMigrations(runnerOptions());
-        expect(noOp).toMatchObject({ noOp: true, latestVersion: 15 });
+        expect(noOp).toMatchObject({ noOp: true, latestVersion: 16 });
     });
 
     it('recusa banco existente sem histórico e aceita baseline explícito 001–011', async () => {
         await resetToCanonicalWithoutLedger();
         await expect(runMigrations(runnerOptions())).rejects.toMatchObject({ code: 'BASELINE_REQUIRED' });
         const baseline = await runMigrations(runnerOptions({ baselineVersion: 11 }));
-        expect(baseline.applied.map((item) => item.version)).toEqual([12, 13, 14, 15]);
+        expect(baseline.applied.map((item) => item.version)).toEqual([12, 13, 14, 15, 16]);
         const noOp = await runMigrations(runnerOptions());
         expect(noOp.noOp).toBe(true);
     });
@@ -141,15 +141,15 @@ describe('contrato de migrations no MySQL Docker 127.0.0.1:33307', () => {
 
     it('serializa dois runners concorrentes e aplica uma migration pendente uma vez', async () => {
         await resetToEmptyDatabase();
-        const directory = migrationFixture({ '016_lock_probe.sql': 'DO SLEEP(0.4);\n' });
+        const directory = migrationFixture({ '017_lock_probe.sql': 'DO SLEEP(0.4);\n' });
         const results = await Promise.all([
             runMigrations(runnerOptions({ migrationsDir: directory })),
             runMigrations(runnerOptions({ migrationsDir: directory }))
         ]);
-        expect(results.flatMap((result) => result.applied).filter((item) => item.version === 16)).toHaveLength(1);
+        expect(results.flatMap((result) => result.applied).filter((item) => item.version === 17)).toHaveLength(1);
         const db = await connection();
         try {
-            const [[row]] = await db.query('SELECT COUNT(*) AS total FROM schema_migrations WHERE version = 16');
+            const [[row]] = await db.query('SELECT COUNT(*) AS total FROM schema_migrations WHERE version = 17');
             expect(Number(row.total)).toBe(1);
         } finally {
             await db.end();
@@ -159,8 +159,8 @@ describe('contrato de migrations no MySQL Docker 127.0.0.1:33307', () => {
     it('não registra migration inválida nem executa a seguinte', async () => {
         await resetToEmptyDatabase();
         const directory = migrationFixture({
-            '016_invalid.sql': 'THIS IS NOT VALID SQL;\n',
-            '017_must_not_run.sql': 'CREATE TABLE must_not_run (id INT PRIMARY KEY);\n'
+            '017_invalid.sql': 'THIS IS NOT VALID SQL;\n',
+            '018_must_not_run.sql': 'CREATE TABLE must_not_run (id INT PRIMARY KEY);\n'
         });
         await expect(runMigrations(runnerOptions({ migrationsDir: directory })))
             .rejects.toMatchObject({ code: 'MIGRATION_EXECUTION_FAILED' });
@@ -172,7 +172,7 @@ describe('contrato de migrations no MySQL Docker 127.0.0.1:33307', () => {
                  WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'must_not_run'`,
                 [target.database]
             );
-            expect(Number(ledger.latest)).toBe(15);
+            expect(Number(ledger.latest)).toBe(16);
             expect(Number(table.total)).toBe(0);
         } finally {
             await db.end();

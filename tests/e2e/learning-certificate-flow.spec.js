@@ -63,7 +63,7 @@ test('@full approved learning flow issues a private PDF and a publicly verifiabl
     const examLink = student.locator('#lista-provas a').filter({ hasText: 'Iniciar Teste Final' });
     await expect(examLink).toBeVisible();
     await student.goto(await examLink.getAttribute('href'));
-    const answers = student.locator('input[type="radio"]');
+    const answers = student.locator('input[type="checkbox"]');
     await expect(answers).toHaveCount(8);
     for (let index = 0; index < 8; index += 2) await answers.nth(index).check();
     const submitted = student.waitForResponse((response) => /\/api\/questionarios\/\d+\/submissoes$/.test(response.url()));

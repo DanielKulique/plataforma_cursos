@@ -192,11 +192,13 @@ async function carregarEstrutura(connection, idTurma) {
 
     let perguntas = [];
     let alternativas = [];
+    let itensAssociacao = [];
+    let gabaritosAssociacao = [];
     if (questionarios.length) {
         const placeholders = questionarios.map(() => '?').join(', ');
         const ids = questionarios.map((item) => item.id_questionario);
         [perguntas] = await connection.query(
-            `SELECT id_pergunta, id_questionario, texto_pergunta, tipo_pergunta, ordem, pontos
+            `SELECT id_pergunta, id_questionario, texto_pergunta, tipo_pergunta, ordem, pontos, resposta_booleana
              FROM Q_Perguntas
              WHERE id_questionario IN (${placeholders})
              ORDER BY id_questionario, ordem, id_pergunta FOR UPDATE`,
@@ -211,15 +213,29 @@ async function carregarEstrutura(connection, idTurma) {
                  ORDER BY id_pergunta, ordem, id_opcao FOR UPDATE`,
                 perguntas.map((item) => item.id_pergunta)
             );
+            [itensAssociacao] = await connection.query(
+                `SELECT id_item, id_pergunta, lado, texto, ordem
+                 FROM Q_AssociacaoItens
+                 WHERE id_pergunta IN (${placeholdersPerguntas})
+                 ORDER BY id_pergunta, lado, ordem, id_item FOR UPDATE`,
+                perguntas.map((item) => item.id_pergunta)
+            );
+            [gabaritosAssociacao] = await connection.query(
+                `SELECT id_pergunta, id_item_esquerda, id_item_direita
+                 FROM Q_AssociacaoGabaritos
+                 WHERE id_pergunta IN (${placeholdersPerguntas}) FOR UPDATE`,
+                perguntas.map((item) => item.id_pergunta)
+            );
         }
     }
-    return { modulos, conteudos, questionarios, perguntas, alternativas };
+    return { modulos, conteudos, questionarios, perguntas, alternativas, itensAssociacao, gabaritosAssociacao };
 }
 
 async function copiarEstrutura(connection, origem, idTurmaDestino) {
     const mapaModulos = new Map();
     const mapaQuestionarios = new Map();
     const mapaPerguntas = new Map();
+    const mapaItensAssociacao = new Map();
 
     for (const modulo of origem.modulos) {
         const [result] = await connection.query(
@@ -290,11 +306,11 @@ async function copiarEstrutura(connection, origem, idTurmaDestino) {
         }
         const [result] = await connection.query(
             `INSERT INTO Q_Perguntas
-             (id_questionario, texto_pergunta, tipo_pergunta, ordem, pontos)
-             VALUES (?, ?, ?, ?, ?)`,
+             (id_questionario, texto_pergunta, tipo_pergunta, ordem, pontos, resposta_booleana)
+             VALUES (?, ?, ?, ?, ?, ?)`,
             [
                 novoQuestionario, pergunta.texto_pergunta, pergunta.tipo_pergunta,
-                pergunta.ordem, pergunta.pontos
+                pergunta.ordem, pergunta.pontos, pergunta.resposta_booleana
             ]
         );
         mapaPerguntas.set(Number(pergunta.id_pergunta), result.insertId);
@@ -313,6 +329,33 @@ async function copiarEstrutura(connection, origem, idTurmaDestino) {
             `INSERT INTO Q_Opcoes (id_pergunta, texto_opcao, ordem, correta)
              VALUES (?, ?, ?, ?)`,
             [novaPergunta, alternativa.texto_opcao, alternativa.ordem, alternativa.correta]
+        );
+    }
+
+    for (const item of origem.itensAssociacao) {
+        const novaPergunta = mapaPerguntas.get(Number(item.id_pergunta));
+        if (!novaPergunta) {
+            throw erroDominio('A associação da turma de origem está inconsistente.', 409, 'ESTRUTURA_ORIGEM_INCONSISTENTE');
+        }
+        const novoItem = crypto.randomUUID();
+        await connection.query(
+            `INSERT INTO Q_AssociacaoItens (id_item, id_pergunta, lado, texto, ordem)
+             VALUES (?, ?, ?, ?, ?)`,
+            [novoItem, novaPergunta, item.lado, item.texto, item.ordem]
+        );
+        mapaItensAssociacao.set(item.id_item, novoItem);
+    }
+    for (const gabarito of origem.gabaritosAssociacao) {
+        const novaPergunta = mapaPerguntas.get(Number(gabarito.id_pergunta));
+        const esquerda = mapaItensAssociacao.get(gabarito.id_item_esquerda);
+        const direita = mapaItensAssociacao.get(gabarito.id_item_direita);
+        if (!novaPergunta || !esquerda || !direita) {
+            throw erroDominio('O gabarito de associação da turma de origem está inconsistente.', 409, 'ESTRUTURA_ORIGEM_INCONSISTENTE');
+        }
+        await connection.query(
+            `INSERT INTO Q_AssociacaoGabaritos (id_pergunta, id_item_esquerda, id_item_direita)
+             VALUES (?, ?, ?)`,
+            [novaPergunta, esquerda, direita]
         );
     }
 }

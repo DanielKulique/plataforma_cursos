@@ -213,11 +213,13 @@ CREATE TABLE `Q_Perguntas` (
   `id_pergunta` INT NOT NULL AUTO_INCREMENT,
   `id_questionario` INT NOT NULL,
   `texto_pergunta` VARCHAR(255) NOT NULL,
-  `tipo_pergunta` ENUM('MULTIPLA_ESCOLHA', 'VERDADEIRO_FALSO', 'RESPOSTA_CURTA') NOT NULL,
+  `tipo_pergunta` ENUM('MULTIPLA_ESCOLHA', 'VERDADEIRO_FALSO', 'ASSOCIACAO', 'RESPOSTA_CURTA') NOT NULL,
+  `resposta_booleana` TINYINT(1) NULL,
   `ordem` INT NOT NULL,
   `pontos` DECIMAL(6,2) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_pergunta`),
   UNIQUE KEY `uk_pergunta_questionario_ordem` (`id_questionario`, `ordem`),
+  CONSTRAINT `chk_pergunta_resposta_booleana` CHECK (`resposta_booleana` IS NULL OR (`tipo_pergunta` = 'VERDADEIRO_FALSO' AND `resposta_booleana` IN (0, 1))),
   CONSTRAINT `fk_perguntas_questionario` FOREIGN KEY (`id_questionario`) REFERENCES `Questionarios` (`id_questionario`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -230,6 +232,34 @@ CREATE TABLE `Q_Opcoes` (
   PRIMARY KEY (`id_opcao`),
   UNIQUE KEY `uk_opcao_pergunta_ordem` (`id_pergunta`, `ordem`),
   CONSTRAINT `fk_opcoes_pergunta` FOREIGN KEY (`id_pergunta`) REFERENCES `Q_Perguntas` (`id_pergunta`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `Q_AssociacaoItens` (
+  `id_item` CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `id_pergunta` INT NOT NULL,
+  `lado` ENUM('ESQUERDA', 'DIREITA') NOT NULL,
+  `texto` VARCHAR(255) NOT NULL,
+  `ordem` INT NOT NULL,
+  PRIMARY KEY (`id_item`),
+  UNIQUE KEY `uk_associacao_pergunta_lado_ordem` (`id_pergunta`, `lado`, `ordem`),
+  KEY `idx_associacao_item_pergunta_lado` (`id_pergunta`, `lado`),
+  CONSTRAINT `fk_associacao_item_pergunta`
+    FOREIGN KEY (`id_pergunta`) REFERENCES `Q_Perguntas` (`id_pergunta`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `Q_AssociacaoGabaritos` (
+  `id_pergunta` INT NOT NULL,
+  `id_item_esquerda` CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `id_item_direita` CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  PRIMARY KEY (`id_pergunta`, `id_item_esquerda`),
+  UNIQUE KEY `uk_associacao_gabarito_direita` (`id_pergunta`, `id_item_direita`),
+  KEY `idx_associacao_gabarito_direita` (`id_item_direita`),
+  CONSTRAINT `fk_associacao_gabarito_pergunta`
+    FOREIGN KEY (`id_pergunta`) REFERENCES `Q_Perguntas` (`id_pergunta`) ON DELETE CASCADE,
+  CONSTRAINT `fk_associacao_gabarito_esquerda`
+    FOREIGN KEY (`id_item_esquerda`) REFERENCES `Q_AssociacaoItens` (`id_item`) ON DELETE CASCADE,
+  CONSTRAINT `fk_associacao_gabarito_direita`
+    FOREIGN KEY (`id_item_direita`) REFERENCES `Q_AssociacaoItens` (`id_item`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `Q_Tentativas` (
@@ -267,6 +297,7 @@ CREATE TABLE `Q_Respostas` (
   `id_tentativa` INT NOT NULL,
   `resposta_texto` TEXT NULL,
   `resposta_opcao` INT NULL,
+  `resposta_booleana` TINYINT(1) NULL,
   `data_resposta` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `correta` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id_resposta`),
@@ -274,11 +305,38 @@ CREATE TABLE `Q_Respostas` (
   KEY `idx_respostas_usuario` (`id_usuario`),
   KEY `idx_respostas_questionario` (`id_questionario`),
   KEY `idx_respostas_opcao` (`resposta_opcao`),
+  CONSTRAINT `chk_resposta_booleana` CHECK (`resposta_booleana` IS NULL OR `resposta_booleana` IN (0, 1)),
   CONSTRAINT `fk_respostas_pergunta` FOREIGN KEY (`id_pergunta`) REFERENCES `Q_Perguntas` (`id_pergunta`) ON DELETE CASCADE,
   CONSTRAINT `fk_respostas_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `Usuarios` (`id_usuario`) ON DELETE CASCADE,
   CONSTRAINT `fk_respostas_questionario` FOREIGN KEY (`id_questionario`) REFERENCES `Questionarios` (`id_questionario`) ON DELETE CASCADE,
   CONSTRAINT `fk_respostas_tentativa` FOREIGN KEY (`id_tentativa`) REFERENCES `Q_Tentativas` (`id_tentativa`) ON DELETE CASCADE,
   CONSTRAINT `fk_respostas_opcao` FOREIGN KEY (`resposta_opcao`) REFERENCES `Q_Opcoes` (`id_opcao`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `Q_RespostaOpcoes` (
+  `id_resposta` INT NOT NULL,
+  `id_opcao` INT NOT NULL,
+  PRIMARY KEY (`id_resposta`, `id_opcao`),
+  KEY `idx_resposta_opcao_opcao` (`id_opcao`),
+  CONSTRAINT `fk_resposta_opcao_resposta`
+    FOREIGN KEY (`id_resposta`) REFERENCES `Q_Respostas` (`id_resposta`) ON DELETE CASCADE,
+  CONSTRAINT `fk_resposta_opcao_opcao`
+    FOREIGN KEY (`id_opcao`) REFERENCES `Q_Opcoes` (`id_opcao`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `Q_RespostaAssociacoes` (
+  `id_resposta` INT NOT NULL,
+  `id_item_esquerda` CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `id_item_direita` CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  PRIMARY KEY (`id_resposta`, `id_item_esquerda`),
+  UNIQUE KEY `uk_resposta_associacao_direita` (`id_resposta`, `id_item_direita`),
+  KEY `idx_resposta_associacao_item_direita` (`id_item_direita`),
+  CONSTRAINT `fk_resposta_associacao_resposta`
+    FOREIGN KEY (`id_resposta`) REFERENCES `Q_Respostas` (`id_resposta`) ON DELETE CASCADE,
+  CONSTRAINT `fk_resposta_associacao_item_esquerda`
+    FOREIGN KEY (`id_item_esquerda`) REFERENCES `Q_AssociacaoItens` (`id_item`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_resposta_associacao_item_direita`
+    FOREIGN KEY (`id_item_direita`) REFERENCES `Q_AssociacaoItens` (`id_item`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `Modulos` (

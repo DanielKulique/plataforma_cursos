@@ -83,7 +83,8 @@ async function clearDatabase() {
         // durante a suíte completa, sem reduzir o isolamento entre os testes.
         const tables = [
             'AnalisesContextuais', 'AnalisesPlagio', 'PasswordResetTokens', 'ConteudosProgresso', 'ProgressoAluno', 'Certificados', 'Conteudos', 'Modulos',
-            'Q_Respostas', 'Q_Tentativas', 'Q_Opcoes', 'Q_Perguntas', 'Questionarios',
+            'Q_RespostaAssociacoes', 'Q_RespostaOpcoes', 'Q_Respostas', 'Q_Tentativas',
+            'Q_AssociacaoGabaritos', 'Q_AssociacaoItens', 'Q_Opcoes', 'Q_Perguntas', 'Questionarios',
             'Matriculas', 'ReplicacoesTurma', 'Turmas', 'Cursos', 'ArquivosMateriais', 'EmailVerificacoes', 'Usuarios'
         ];
         

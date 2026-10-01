@@ -8,7 +8,7 @@ const ROOT = path.join(__dirname, '..');
 const SCANNED_ROOTS = ['.github', 'scripts', 'src/config', 'mysql/init'];
 const SCANNED_FILES = [
     '.env', '.env.test', '.env.example', '.env.test.example', '.env.production.example', '.env.staging.example',
-    'compose.yaml', 'compose.staging.yaml', 'compose.local-db.yaml', 'compose.e2e.yaml', 'Dockerfile', 'package.json'
+    'compose.yaml', 'compose.staging.yaml', 'compose.local-db.yaml', 'compose.e2e.yaml', 'compose.integration.yaml', 'Dockerfile', 'package.json'
 ];
 const SKIPPED = new Set([
     'scripts/validate_database_isolation.js',

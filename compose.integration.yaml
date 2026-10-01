@@ -1,0 +1,18 @@
+services:
+  db:
+    image: mysql:8.4
+    command: ["--skip-log-bin"]
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:?DB_NAME must be set by .env.test}
+      MYSQL_USER: ${DB_USER:?DB_USER must be set by .env.test}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set by .env.test}
+      MYSQL_ROOT_PASSWORD: integration-only-root-password
+    ports:
+      - "127.0.0.1:33307:3306"
+    volumes:
+      - ./scripts/integration_mysql_setup.sh:/docker-entrypoint-initdb.d/001-integration-setup.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 2s
+      timeout: 2s
+      retries: 45

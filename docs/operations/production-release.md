@@ -69,11 +69,12 @@ como verificado, sem gerar código, para permitir acesso quando o serviço de e-
 telefone são opcionais; o bootstrap recusa conflito de CPF/e-mail/papel e não promove
 contas silenciosamente.
 
-Enquanto `EMAIL_DELIVERY_ENABLED=false`, o cadastro público responde 503 antes de
-criar usuário ou código, e a recuperação mantém a resposta genérica sem criar token.
-Quando `PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED=false`, o cadastro público
-permanece disponível e cria ALUNO já verificado, sem código ou envio. O padrão é
-`true`; a exceção deve ser explícita no ambiente em que for adotada.
+Com `EMAIL_DELIVERY_ENABLED=false` e
+`PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED=false`, o cadastro público cria
+ALUNO já verificado, sem código nem envio, e permite login imediato. A recuperação
+por e-mail permanece indisponível e não cria token. Se a verificação for exigida
+enquanto a entrega estiver desabilitada, o cadastro responde 503 antes de criar usuário.
+As duas flags precisam ser explícitas na configuração atual de produção.
 Liste contas pendentes sem exibir senha/código e verifique somente o e-mail escolhido:
 
 ```bash

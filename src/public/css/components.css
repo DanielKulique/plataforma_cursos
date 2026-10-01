@@ -2709,6 +2709,102 @@
   display: none;
 }
 
+.academic-dialog .question-type-builder {
+  min-inline-size: 0;
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.academic-dialog .question-type-builder[hidden] {
+  display: none;
+}
+
+.academic-dialog .question-type-builder legend {
+  padding-inline: var(--space-2);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.academic-dialog .question-type-builder .form-hint {
+  margin: 0;
+}
+
+.academic-dialog .question-builder-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.academic-dialog .question-builder-row {
+  min-inline-size: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-3);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.academic-dialog .question-builder-row__title,
+.academic-dialog .question-builder-row > .academic-checkbox,
+.academic-dialog .question-builder-row > .action-button {
+  grid-column: 1 / -1;
+}
+
+.academic-dialog #editor-multipla-escolha .question-builder-row .form-group {
+  grid-column: 1 / -1;
+}
+
+.academic-dialog .question-builder-row .form-group,
+.academic-dialog .question-builder-row input[type="text"] {
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+
+.academic-dialog .question-builder-row > .action-button {
+  justify-self: start;
+}
+
+.academic-dialog .question-boolean-choice {
+  min-block-size: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text);
+}
+
+.academic-dialog .question-boolean-choice input {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  accent-color: var(--color-action);
+}
+
+.academic-page .question-match-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.academic-page .question-match-row {
+  min-inline-size: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.academic-page .question-match-row label {
+  overflow-wrap: anywhere;
+  color: var(--color-text-secondary);
+}
+
+.academic-page .question-match-row select {
+  min-inline-size: 0;
+  inline-size: 100%;
+  min-block-size: 44px;
+}
+
 .academic-dialog .authoring-initial-options legend {
   padding-inline: var(--space-2);
   color: var(--color-text);

@@ -76,7 +76,7 @@ describe('questionário real no frontend do aluno', () => {
         })).rejects.toThrow('O questionário ativo está incompleto.');
     });
 
-    it('usa identificadores reais, uma opção por pergunta, submissão e histórico sem fallback mock', () => {
+    it('usa identificadores reais e controles por tipo, submissão e histórico sem fallback mock', () => {
         const sala = fs.readFileSync(publicPath('js', 'sala-avaliacoes.js'), 'utf8');
         const paginaSala = fs.readFileSync(publicPath('sala-avaliacoes.html'), 'utf8');
         const fluxo = fs.readFileSync(publicPath('js', 'questionario.js'), 'utf8');
@@ -90,7 +90,9 @@ describe('questionário real no frontend do aluno', () => {
         expect(sala).toContain('/api/turmas/${idTurma}/questionarios');
         expect(sala).toContain('id_questionario=${encodeURIComponent(item.id_questionario)}');
         expect(sala).toContain('id_turma=${encodeURIComponent(idTurma)}');
-        expect(fluxo).toContain("input.type = 'radio'");
+        expect(fluxo).toContain("? 'checkbox' : 'radio'");
+        expect(fluxo).toContain("pergunta.tipo_pergunta === 'ASSOCIACAO'");
+        expect(fluxo).toContain("pergunta.formato_resposta === 'BOOLEANO'");
         expect(fluxo).toContain('input.name = `pergunta_${pergunta.id_pergunta}`');
         expect(fluxo).toContain('/submissoes');
         expect(fluxo).toContain('/api/questionarios/historico?id_questionario=');
@@ -99,7 +101,7 @@ describe('questionário real no frontend do aluno', () => {
         );
     });
 
-    it('mantém as mensagens acadêmicas coerentes com o resultado definitivo do Teste Final', () => {
+    it('mantém as mensagens acadêmicas coerentes com Teste Final de tentativa única', () => {
         const sala = fs.readFileSync(publicPath('js', 'sala-avaliacoes.js'), 'utf8');
         const fluxo = fs.readFileSync(publicPath('js', 'questionario.js'), 'utf8');
         const modelo = fs.readFileSync(
@@ -109,12 +111,13 @@ describe('questionário real no frontend do aluno', () => {
 
         expect(sala).toContain('Complete pelo menos ${requisito}% da trilha para liberar o Teste Final.');
         expect(sala).toContain('Seu progresso: ${progresso}%.');
-        expect(fluxo).toContain('questionario.tentativa_finalizada');
-        expect(fluxo).toContain('não há nova tentativa disponível');
-        expect(fluxo).not.toContain('Você pode tentar novamente.');
+        expect(fluxo).toContain('não há nova tentativa disponível.');
+        expect(fluxo).toContain('mostrarResultadoFinal');
+        expect(fluxo).not.toMatch(/reprovad[oa]/i);
         expect(fluxo).toContain("questionario.prova_final ? 'PROVA FINAL · mínimo 75%'");
         expect(fluxo).toContain(": tipo === 'prova' ? 'Prova intermediária' : 'Exercício'");
         expect(modelo).toContain('somente disponibilidade, aula e ordem podem ser ajustadas.');
+        expect(modelo).toContain('PROVA_FINAL_JA_TENTADA');
         expect(modelo).not.toContain('somente disponibilidade e organização.');
     });
 });

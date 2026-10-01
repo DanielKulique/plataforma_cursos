@@ -30,11 +30,15 @@ async function waitUntilReady() {
     const url = process.env.E2E_BASE_URL || 'http://127.0.0.1:3400';
     const deadline = Date.now() + 90_000;
     while (Date.now() < deadline) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 1500);
         try {
-            const response = await fetch(`${url}/readyz`, { signal: AbortSignal.timeout(1500) });
+            const response = await fetch(`${url}/readyz`, { signal: controller.signal });
             if (response.ok) return;
         } catch {
             // Readiness polling is event driven by the application endpoint.
+        } finally {
+            clearTimeout(timeout);
         }
         await delay(500);
     }
@@ -62,4 +66,7 @@ async function main() {
     if (failure) process.exitCode = 1;
 }
 
-main();
+main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+});

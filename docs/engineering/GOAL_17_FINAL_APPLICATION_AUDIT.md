@@ -33,8 +33,9 @@ scripts, jobs de backup, Docker/Compose, Caddy, documentação e workflow GitHub
 | G17-02 | HIGH | CI | O novo runner de integração lia `.env.test` antes de detectar `CI=true`; o arquivo não é versionado e quebraria a CI. | Carregamento do arquivo limitado à execução local. | `CI=true node scripts/run_integration.js --listTests` com `.env.test` temporariamente ausente listou 21 suítes. | CORRIGIDO LOCALMENTE |
 | G17-03 | MEDIUM | Matriz de testes | Gerador marcava rotas `COVERED` por lista fixa sem evidência, omitia quatro rotas diretas, tratava quatro rotas com middleware como não montadas e não justificava linhas `PARTIAL`. | Evidência explícita para rotas cobertas; leitura do último argumento dos mounts com middleware; lacuna por item parcial; inventário 89 rotas. | `npm run test:matrix`; revisão do arquivo gerado, inclusive `/api/analises` e `/api/plagio`. | CORRIGIDO LOCALMENTE |
 | G17-04 | MEDIUM | Configuração/documentação | Exemplo de produção ativava e-mail/verificação, e o runbook descrevia cadastro 503 mesmo com verificação opcional. | Exemplo e documentação alinhados às flags reais `false/false`. | Leitura das flags de produção; E2E de cadastro e login na suíte de browser. | CORRIGIDO LOCALMENTE |
-| G17-07 | MEDIUM | Lint/testes | Após Playwright, `test:stability` varria JavaScript gerado em `playwright-report/` e parava com erros externos ao código da aplicação. | Ignorar `playwright-report/**` e `test-results/**` no ESLint. | `npm run lint` passou com os artefatos E2E presentes; estabilidade repetida em andamento. | CORRIGIDO LOCALMENTE |
-| G17-08 | MEDIUM | Teste de migrations | O teste de dois runners iniciava ambos em banco vazio; sob carga, o primeiro podia gastar mais de 30 s aplicando 001–016, fazendo o segundo expirar e contaminando os testes seguintes. | Preparar o schema canônico antes da disputa; os dois runners competem apenas pela migration pendente 017, que é o comportamento sob teste. | Suíte de migration dirigida 6/6; `test:stability` em andamento. | CORRIGIDO LOCALMENTE |
+| G17-07 | MEDIUM | Lint/testes | Após Playwright, `test:stability` varria JavaScript gerado em `playwright-report/` e parava com erros externos ao código da aplicação. | Ignorar `playwright-report/**` e `test-results/**` no ESLint. | `npm run lint` passou com os artefatos E2E presentes; duas rodadas completas de estabilidade passaram. | CORRIGIDO LOCALMENTE |
+| G17-08 | MEDIUM | Teste de migrations | O teste de dois runners iniciava ambos em banco vazio; sob carga, o primeiro podia gastar mais de 30 s aplicando 001–016, fazendo o segundo expirar e contaminando os testes seguintes. | Preparar o schema canônico antes da disputa; os dois runners competem apenas pela migration pendente 017, que é o comportamento sob teste. | Suíte de migration dirigida 6/6; duas rodadas completas de estabilidade passaram. | CORRIGIDO LOCALMENTE |
+| G17-09 | HIGH | CI E2E | No run 36942474476, o smoke Chromium encerrou com sucesso imediatamente após iniciar o app, sem executar Playwright nem remover o Compose; Firefox falhou por porta 3400 ocupada e WebKit foi pulado. A espera usava `AbortSignal.timeout`, cujo timer não mantém o processo vivo quando a requisição ainda não tem handle ativo. | Timeout de readiness com timer referenciado e tratamento explícito de rejeição do `main`; o `finally` deve remover o Compose após o Playwright. | Repetição local do smoke e nova CI pendentes. | CORRIGIDO LOCALMENTE |
 | G17-05 | DEFERRED | Dependências | `npm audit` identificou um alerta alto em `brace-expansion` usado por lint/testes e dois moderados em `ip-address` e `multer`. | Sem atualização automática; avaliar patches em ciclo próprio. `multer` usa `memoryStorage`, fora do caminho de escrita em disco do aviso. | `npm audit` e `npm audit --omit=dev`; inspeção da árvore de dependências e das rotas de upload. | DOCUMENTADO |
 | G17-06 | BLOCKER | Gates da release | WebKit real, CI da revisão, restore drill após mudança de backup/schema e estado implantado ainda não estão comprovados. | Completar os gates antes de tag/READY. | Pendente. | ABERTO |
 
@@ -46,7 +47,7 @@ scripts, jobs de backup, Docker/Compose, Caddy, documentação e workflow GitHub
 
 ## HIGH
 
-- G17-01 e G17-02 estão corrigidos no worktree isolado; a revisão ainda não foi
+- G17-01, G17-02 e G17-09 estão corrigidos no worktree isolado; a revisão ainda não foi
   promovida à produção.
 
 ## MEDIUM
@@ -151,7 +152,11 @@ scripts, jobs de backup, Docker/Compose, Caddy, documentação e workflow GitHub
 - **WebKit:** tentativa local: 1 teste sem browser passou, 6 testes de browser não
   iniciaram porque falta `libavif16` no host. Não conta como validação; execução real
   do smoke na CI continua obrigatória.
-- **stability:** pendente (`npm run test:stability` executa a suíte crítica duas vezes).
+- **stability:** `npm run test:stability` passou duas rodadas: cada uma com 73 suítes/763
+  testes unitários, 21 suítes/278 testes de integração e validação do build.
+- **CI:** run 36942474476 validou migrations, schema e `test:all`, mas o harness E2E
+  terminou antes do Playwright em Chromium; Firefox falhou por porta ocupada e WebKit
+  não executou. Nova CI obrigatória após a correção G17-09.
 - **documental:** `docs/engineering/validate_current_docs.py` passou com 109 documentos,
   517 links locais e 87 operações HTTP; `git diff --check` passou.
 

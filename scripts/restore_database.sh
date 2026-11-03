@@ -6,7 +6,6 @@ cd "$ROOT"
 COMPOSE_ENV_FILE=${COMPOSE_ENV_FILE:-.env.production}
 COMPOSE=(docker compose --env-file "$COMPOSE_ENV_FILE" -f compose.yaml)
 if [[ -n "${COMPOSE_OVERRIDE_FILE:-}" ]]; then COMPOSE+=(-f "$COMPOSE_OVERRIDE_FILE"); fi
-DB_NAME=${DB_NAME:-$(sed -n 's/^DB_NAME=//p' "$COMPOSE_ENV_FILE" 2>/dev/null | tail -n 1)}
 
 backup_dir=''
 target=''
@@ -37,9 +36,23 @@ if [[ "$mode" == in-place ]]; then
         exit 64
     }
 fi
+if [[ "$mode" == isolated ]]; then
+    source "$ROOT/scripts/lib/restore-isolation.sh"
+    # Refuse standalone isolated calls without the drill's validated, owned model.
+    # In particular, do not start the backup verifier with inherited production mounts.
+    restore_use_snapshot
+    DB_NAME=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["services"]["app"]["environment"]["DB_NAME"])' "$RESTORE_ISOLATION_CONFIG")
+else
+    DB_NAME=${DB_NAME:-$(sed -n 's/^DB_NAME=//p' "$COMPOSE_ENV_FILE" 2>/dev/null | tail -n 1)}
+fi
+
 backup_dir=$(realpath "$backup_dir")
 backup_id=$(basename "$backup_dir")
 [[ "$backup_id" =~ ^backup-[0-9]{8}T[0-9]{6}Z-[0-9a-f-]{36}$ ]] || { echo 'backup_id inválido.' >&2; exit 64; }
+if [[ "$mode" == isolated ]]; then
+    python3 "$ROOT/scripts/lib/restore-isolation.py" backup-path \
+        --project "$COMPOSE_PROJECT_NAME" --snapshot "$RESTORE_ISOLATION_CONFIG" --path "$backup_dir"
+fi
 backup_cli() {
     "${COMPOSE[@]}" run --rm --no-deps -T -v "$backup_dir:/backup/$backup_id:ro" app node scripts/backup_manifest.js "$1" --dir "/backup/$backup_id"
 }
@@ -53,12 +66,16 @@ echo "Mode: $([[ "$apply" == true ]] && echo APPLY || echo DRY_RUN) ($mode)"
 started=$(date +%s)
 backup_cli verify --dir "$backup_dir" >/dev/null
 gzip -t "$backup_dir/database.sql.gz"
-[[ -f "$COMPOSE_ENV_FILE" ]] || { echo "Arquivo de ambiente ausente: $COMPOSE_ENV_FILE" >&2; exit 1; }
 "${COMPOSE[@]}" config --quiet
 [[ "$DB_NAME" =~ ^[A-Za-z0-9_]+$ ]] || { echo 'DB_NAME inseguro.' >&2; exit 1; }
-for required in DB_PASSWORD MYSQL_ROOT_PASSWORD JWT_SECRET; do
-    grep -Eq "^${required}=.+" "$COMPOSE_ENV_FILE" || { echo "Secret externo ausente: $required" >&2; exit 1; }
-done
+if [[ "$mode" == isolated ]]; then
+    python3 -c 'import json,sys; c=json.load(open(sys.argv[1])); a=c["services"]["app"]["environment"]; d=c["services"]["db"]["environment"]; sys.exit(0 if a.get("DB_PASSWORD") and a.get("JWT_SECRET") and d.get("MYSQL_ROOT_PASSWORD") else 1)' "$RESTORE_ISOLATION_CONFIG"
+else
+    [[ -f "$COMPOSE_ENV_FILE" ]] || { echo "Arquivo de ambiente ausente: $COMPOSE_ENV_FILE" >&2; exit 1; }
+    for required in DB_PASSWORD MYSQL_ROOT_PASSWORD JWT_SECRET; do
+        grep -Eq "^${required}=.+" "$COMPOSE_ENV_FILE" || { echo "Secret externo ausente: $required" >&2; exit 1; }
+    done
+fi
 if [[ "$mode" == in-place ]]; then
     "${COMPOSE[@]}" run --rm --no-deps -T app npm run db:identity:verify
 fi
@@ -68,15 +85,16 @@ available_kb=$(df -Pk "$ROOT" | awk 'NR==2 {print $4}')
 manifest_mysql=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["database"].get("mysql_version", ""), end="")' "$backup_dir/manifest.json")
 manifest_database=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["database"].get("name", ""), end="")' "$backup_dir/manifest.json")
 manifest_identity=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["database"].get("environment_identity", ""), end="")' "$backup_dir/manifest.json")
-expected_identity=$(sed -n 's/^DB_ENVIRONMENT_IDENTITY=//p' "$COMPOSE_ENV_FILE" | tail -n 1 | tr -d '\r')
+if [[ "$mode" == isolated ]]; then
+    expected_identity=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["services"]["app"]["environment"]["DB_ENVIRONMENT_IDENTITY"])' "$RESTORE_ISOLATION_CONFIG")
+else
+    expected_identity=$(sed -n 's/^DB_ENVIRONMENT_IDENTITY=//p' "$COMPOSE_ENV_FILE" | tail -n 1 | tr -d '\r')
+fi
 [[ "$manifest_database" == "$DB_NAME" && -n "$expected_identity" && "$manifest_identity" == "$expected_identity" ]] || {
     echo 'Backup pertence a database/identidade diferente do destino.' >&2; exit 1;
 }
 running_mysql=$("${COMPOSE[@]}" exec -T db sh -c 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -Nse "SELECT VERSION()" "$MYSQL_DATABASE"' 2>/dev/null || true)
 [[ -n "$running_mysql" && "${running_mysql%%.*}" == "${manifest_mysql%%.*}" ]] || { echo 'Versão principal do MySQL incompatível ou DB indisponível.' >&2; exit 1; }
-if [[ "$mode" == isolated && "${COMPOSE_PROJECT_NAME:-}" != *restore* && "${COMPOSE_PROJECT_NAME:-}" != *drill* ]]; then
-    echo 'Restore isolado exige COMPOSE_PROJECT_NAME contendo restore ou drill.' >&2; exit 1
-fi
 preflight_seconds=$(( $(date +%s) - started ))
 echo "PREFLIGHT_OK backup_id=$(basename "$backup_dir") format_version=1 mysql=$running_mysql"
 

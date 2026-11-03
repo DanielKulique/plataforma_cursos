@@ -92,13 +92,79 @@ backup baixado. O pacote e o marcador offsite originais não são alterados. Upl
 ser selecionado como COMPLETE.
 
 `./scripts/restore_drill.sh` usa `BACKUP_DRILL_DIR`, `RPO_HOURS`, `RTO_HOURS` e configuração
-offsite. Por padrão, seleciona `compose.restore-drill.yaml`, que desativa email e detector, mesmo se
-o ambiente de backup indicar outro override. `RESTORE_DRILL_ENV_FILE` escolhe o arquivo de ambiente;
-`RESTORE_DRILL_OVERRIDE_FILE` pode escolher outro override, desde que todos os volumes renderizados
-continuem exclusivos ao projeto temporário. O drill baixa e verifica o pacote, restaura banco/storage no projeto isolado,
-executa health check e remove containers, volumes, imagem temporária, cópia baixada e relatórios,
-inclusive em falha. `RESTORE_SMOKE_CREDENTIALS_FILE` externo permite smoke autenticado sem senha em
-argv. Não usa volumes de produção como alvo destrutivo.
+offsite. Requer Python 3, `setsid`, Docker local no contexto `default` com socket Unix e Compose
+com suporte a `!override`/`!reset`. Não aceita `DOCKER_HOST`/`DOCKER_CONTEXT` no ambiente.
+
+Por padrão, seleciona `compose.restore-drill.yaml`, mesmo se o ambiente de backup indicar outro
+override. Esse arquivo remove os binds de init/backup-status, desativa Caddy, email e detector,
+não publica portas e usa rede interna. `RESTORE_DRILL_ENV_FILE` escolhe o arquivo de ambiente.
+O nome do banco/identidade deve corresponder ao snapshot, mas **os recursos Docker são novos**:
+o ambiente pode fornecer credenciais da revisão a recuperar sem selecionar seus volumes.
+
+Antes de build, downloader/verificador ou `up`, o guard valida o JSON resolvido pelo Compose:
+
+- projeto com timestamp e token aleatório; volumes com o nome exato `<projeto>_<chave>`;
+- nenhum volume externo, driver customizado/driver_opts, alias global, bind de serviço ou mount anônimo;
+- rede própria interna; sem rede externa/host, portas públicas, serviços extras ou opções de acesso ao host;
+- DB do app apontando somente ao serviço `db` local; storage nos dois mounts privados esperados;
+- nenhum recurso preexistente reutilizado, mesmo com nome aparentemente compatível.
+
+`RESTORE_DRILL_OVERRIDE_FILE` pode selecionar outro override, mas não contorna essas verificações.
+Usar `compose.production.yaml` como override de drill é recusado preventivamente. Não tente
+resolver uma recusa renomeando recursos permanentes ou mudando seus labels.
+
+A configuração validada fica congelada em um arquivo `0600`, numa pasta nova `0700` em
+`BACKUP_DRILL_DIR`. Drill, download e restore usam esse mesmo arquivo; não renderizam novamente
+os overrides/variáveis originais para executar operações. O arquivo contém configuração sensível:
+não o publique nem o inclua em evidências. A única montagem adicional de backup é somente leitura
+e deve estar dentro da área privada de download dessa execução, sem symlinks para outro diretório.
+
+O drill baixa/verifica o pacote, restaura DB e os dois storages, valida schema/contagens/hashes/
+permissões/reconciliação e executa health. `RESTORE_SMOKE_CREDENTIALS_FILE` externo permite smoke
+autenticado sem senha em argv. `restore_database.sh --mode isolated` exige o contexto validado
+do drill; a simples presença de `restore` no nome do projeto não autoriza operação isolada.
+
+### Cleanup e interrupções do drill
+
+Recursos recebem o label `io.plataforma.restore.run`, além do projeto Compose. O cleanup confere
+todos os proprietários antes de excluir e remove somente IDs/nomes exatos da execução. Não usa
+`down -v --remove-orphans`, `prune` nem seleção por prefixo. A imagem app também precisa do label
+da execução; imagens compartilhadas de MySQL não são removidas.
+
+Sucesso, falha, SIGINT e SIGTERM param primeiro o grupo do comando ativo e tentam remover
+containers/volumes/rede/imagem próprios, cópia baixada e relatórios temporários. A saída registra
+`RESTORE_DRILL_TEMP_CLEANUP PASS` ou `FAIL`. Não redirecione nem publique conteúdo de snapshots
+para obter evidências; registre a saída sanitizada e hashes.
+
+Se o Docker falhar ou aparecer recurso de ownership divergente, o cleanup falha fechado e mantém
+a pasta privada, informada por `retained=...`. Depois de inspecionar a causa, a limpeza pode ser
+repetida com o mesmo guard e snapshot, sem tocar em recursos alheios:
+
+```bash
+python3 scripts/lib/restore-isolation.py cleanup \
+  --project <projeto-da-execucao> --snapshot <pasta-retida>/compose.json
+```
+
+Apague a pasta retida somente após confirmar cleanup e necessidade de preservar diagnóstico.
+SIGKILL, perda do host ou daemon indisponível não permitem garantir cleanup imediato. Não execute
+`docker compose down -v` com o ambiente de produção para tentar limpar um drill.
+
+### Regressões locais com dados fictícios
+
+Os testes de configuração não fazem restore. Os testes Docker, opt-in, criam um MySQL privado,
+schema 016, material/certificado fictícios e sentinela em volume alheio fictício. Azure CLI é
+substituída por um servidor de arquivos local no processo de teste; nenhum backup real é baixado.
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+  -s tests/operations -p test_restore_isolation.py -v
+PYTHONDONTWRITEBYTECODE=1 RUN_RESTORE_DOCKER_TESTS=1 python3 -m unittest discover \
+  -s tests/operations -p test_restore_isolation_docker.py -v
+```
+
+Os testes cobrem restore completo, falha na importação, SIGINT/SIGTERM, rejeição de configuração
+perigosa e integridade SHA-256 da sentinela. Usam apenas o Docker local, sem porta de MySQL publicada,
+sem fallback para MySQL nativo e sem dados/volumes de produção.
 
 ## Restore: primeiro diagnóstico, depois aplicação explícita
 

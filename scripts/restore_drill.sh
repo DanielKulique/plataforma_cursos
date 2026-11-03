@@ -7,61 +7,74 @@ cd "$ROOT"
 umask 077
 COMPOSE_ENV_FILE=${RESTORE_DRILL_ENV_FILE:-${COMPOSE_ENV_FILE:-.env.staging}}
 COMPOSE_OVERRIDE_FILE=${RESTORE_DRILL_OVERRIDE_FILE:-compose.restore-drill.yaml}
+source "$ROOT/scripts/lib/restore-isolation.sh"
+# Do not inherit ambient Compose files, remote daemon contexts or project names.
+unset COMPOSE_FILE COMPOSE_PROFILES
+[[ -z "${DOCKER_HOST:-}" && -z "${DOCKER_CONTEXT:-}" ]] || { echo 'Restore isolado exige Docker local padrão.' >&2; exit 1; }
 timestamp=$(date -u +%Y%m%dT%H%M%SZ)
-project="plataforma-restore-${timestamp,,}"
-COMPOSE_PROJECT_NAME=$project
-export COMPOSE_PROJECT_NAME COMPOSE_ENV_FILE COMPOSE_OVERRIDE_FILE
-COMPOSE=(docker compose --project-name "$project" --env-file "$COMPOSE_ENV_FILE" -f compose.yaml -f "$COMPOSE_OVERRIDE_FILE")
-download_dir="$BACKUP_DRILL_DIR/downloads/$timestamp"
-report_dir="$BACKUP_DRILL_DIR/reports/$timestamp"
+run_token=$(python3 -c 'import secrets; print(secrets.token_hex(8))')
+project="plataforma-restore-${timestamp,,}-$run_token"
+export COMPOSE_PROJECT_NAME="$project" COMPOSE_ENV_FILE COMPOSE_OVERRIDE_FILE
+mkdir -p -- "$BACKUP_DRILL_DIR"
+BACKUP_DRILL_DIR=$(realpath "$BACKUP_DRILL_DIR")
+run_dir=$(mktemp -d "$BACKUP_DRILL_DIR/restore-$run_token.XXXXXX")
+download_dir="$run_dir/downloads"
+report_dir="$run_dir/reports"
+export RESTORE_ISOLATION_CONFIG="$run_dir/compose.json"
 compose_isolated=false
+restore_child_pid=''
 
 cleanup() {
-    local status=$? leftovers
-    trap - EXIT INT TERM
+    local status=$? cleanup_status=0
+    trap - EXIT
+    trap '' INT TERM
     if [[ "$compose_isolated" == true ]]; then
-        "${COMPOSE[@]}" down -v --remove-orphans >/dev/null 2>&1 || true
-        docker image rm "$project-app" >/dev/null 2>&1 || true
+        python3 "$ROOT/scripts/lib/restore-isolation.py" cleanup \
+            --project "$project" --snapshot "$RESTORE_ISOLATION_CONFIG" || cleanup_status=$?
     fi
-    leftovers=$(docker ps -aq --filter "label=com.docker.compose.project=$project" || true; docker volume ls -q --filter "label=com.docker.compose.project=$project" || true; docker network ls -q --filter "label=com.docker.compose.project=$project" || true)
-    if [[ -z "$leftovers" ]] && rm -rf -- "$download_dir" "$report_dir" && [[ ! -e "$download_dir" && ! -e "$report_dir" ]]; then
+    if (( cleanup_status == 0 )); then
+        rm -rf -- "$run_dir"
         echo "RESTORE_DRILL_TEMP_CLEANUP PASS project=$project"
     else
-        echo "RESTORE_DRILL_TEMP_CLEANUP FAIL project=$project" >&2
-        status=1
+        echo "RESTORE_DRILL_TEMP_CLEANUP FAIL project=$project retained=$run_dir" >&2
+        (( status != 0 )) || status=1
     fi
     exit "$status"
 }
 trap cleanup EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
+trap 'restore_signal 130' INT
+trap 'restore_signal 143' TERM
 
-mkdir -p "$download_dir" "$report_dir"
-
-# Nunca permita que um override com nomes fixos reutilize volumes permanentes.
-if ! "${COMPOSE[@]}" config --format json | python3 -c 'import json,sys; project=sys.argv[1]; config=json.load(sys.stdin); names=[volume.get("name", key) for key,volume in config.get("volumes",{}).items()]; sys.exit(0 if names and all(name.startswith(project+"_") for name in names) else 1)' "$project"; then
-    echo 'O projeto de restore não possui volumes exclusivos.' >&2
-    exit 1
-fi
+# Only config/daemon reads precede this gate. Unsafe mounts/names never reach up,
+# downloader/verifier containers, restore, or any Docker resource deletion.
+docker compose --project-name "$project" --env-file "$COMPOSE_ENV_FILE" \
+    -f compose.yaml -f "$COMPOSE_OVERRIDE_FILE" config --format json \
+    | python3 "$ROOT/scripts/lib/restore-isolation.py" prepare \
+        --project "$project" --snapshot "$RESTORE_ISOLATION_CONFIG"
 compose_isolated=true
+restore_use_snapshot
+mkdir -m 700 -- "$download_dir" "$report_dir"
+echo "RESTORE_ISOLATION_VALIDATED project=$project"
 
 started=$(date +%s)
 # O project name isolado também dá um nome próprio à imagem; construa-a sem iniciar serviços.
 build_started=$started
-"${COMPOSE[@]}" build app >/dev/null
+restore_exec_to /dev/null "${COMPOSE[@]}" build app
 build_seconds=$(( $(date +%s) - build_started ))
 download_started=$(date +%s)
-download_output=$(scripts/backup_offsite.sh download latest "$download_dir")
+restore_exec_to "$run_dir/download-output" scripts/backup_offsite.sh download latest "$download_dir"
+download_output=$(cat "$run_dir/download-output")
 backup_dir=$(printf '%s\n' "$download_output" | tail -n 1)
 printf '%s\n' "$download_output" | sed '$d'
 download_seconds=$(( $(date +%s) - download_started ))
-"${COMPOSE[@]}" up -d db >/dev/null
+restore_exec "${COMPOSE[@]}" up -d db >/dev/null
 for attempt in $(seq 1 30); do
-    "${COMPOSE[@]}" exec -T db sh -c 'mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --silent' >/dev/null 2>&1 && break
+    restore_exec_to /dev/null "${COMPOSE[@]}" exec -T db sh -c 'mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --silent' 2>/dev/null && break
     [[ "$attempt" != 30 ]] || { echo 'MySQL isolado não ficou saudável.' >&2; exit 1; }
     sleep 2
 done
-RESTORE_REPORT_DIR="$report_dir" scripts/restore_database.sh \
+export RESTORE_REPORT_DIR="$report_dir"
+restore_exec scripts/restore_database.sh \
     --backup "$backup_dir" --target isolated-offsite-drill --mode isolated --apply
 restore_report="$report_dir/$(basename "$backup_dir")-isolated-offsite-drill.json"
 
@@ -78,7 +91,8 @@ if [[ -n "${RESTORE_SMOKE_CREDENTIALS_FILE:-}" ]]; then
     [[ -n "$smoke_email" && -n "$smoke_password" ]] || { echo 'Credenciais de smoke incompletas.' >&2; exit 1; }
     smoke_mode=AUTHENTICATED
 fi
-printf '%s\n%s\n' "$smoke_email" "$smoke_password" | "${COMPOSE[@]}" exec -T app node -e '
+printf '%s\n%s\n' "$smoke_email" "$smoke_password" > "$run_dir/smoke-input"
+restore_exec "${COMPOSE[@]}" exec -T app node -e '
 let input="";
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", chunk => { input += chunk; });
@@ -99,7 +113,7 @@ process.stdin.on("end", () => {
     }
     console.log(`RESTORE_SMOKE_OK mode=${email ? "AUTHENTICATED" : "HEALTH_ONLY"}`);
   })().catch(error => { console.error(`RESTORE_SMOKE_FAILED: ${error.message}`); process.exitCode = 1; });
-});'
+});' < "$run_dir/smoke-input"
 smoke_seconds=$(( $(date +%s) - smoke_started ))
 total_seconds=$(( $(date +%s) - started ))
 report="$report_dir/$(basename "$backup_dir")-drill-summary.json"

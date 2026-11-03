@@ -1,0 +1,153 @@
+{
+  "goal": 19,
+  "status": "RESTORE_ISOLATION_READY",
+  "date": "2026-11-03",
+  "timezone": "America/Sao_Paulo",
+  "baseline_commit": "1d4111ebc6933f491da68ba990a114ee89aa8709",
+  "branch": "hotfix/restore-isolation-goal19",
+  "worktree": "/mnt/disco/projetoSite/worktrees/plataforma-cursos-goal19",
+  "original_tree": {
+    "path": "/mnt/disco/projetoSite/plataforma_cursos",
+    "head": "b94717963cc29f6fa9cfaf2c170ee3a61ad97a98",
+    "tracked_modified_files": 67,
+    "untracked_files": 31,
+    "verified_files": 725,
+    "files_changed": [],
+    "status_preserved": true,
+    "status_sha256": "5d947d82c27d8124af38d60be99096af18873ec9734337a8a418d0f20e21791d"
+  },
+  "source_sha256": {
+    ".github/workflows/ci.yml": "2763e96478051b2e7223256ab438c2e1a967022ef1d01da4efef148842e186a3",
+    "compose.restore-drill.yaml": "d3f3a0650215f30ee31cf1a33e84c2de85575b64c53be225176bae6908c54b75",
+    "scripts/backup_offsite.sh": "3c2fa43a986949e242340d781936e3cbda9223b21d78927ab028fdd693623a4a",
+    "scripts/restore_database.sh": "554bb1098d49a4dce1255edd6031275df2e10a9aa797f4123050221db65a8ec9",
+    "scripts/restore_drill.sh": "a522f45f6d6b04d6607e519103d1e20f1c76ff3e1c13f30c8b711e1ea6726dbf",
+    "scripts/lib/restore-isolation.py": "1c346876a65ffbc3986b10c93de25c37236d1e15e4539038b739061c9c64dae5",
+    "scripts/lib/restore-isolation.sh": "55ead990b5a301925800df6198278aee5b74abd4f9037e69a3506c9f9d028ef4",
+    "src/__tests__/backup-infrastructure.test.js": "f2f09db7d2f00852739eb44e80b1d4719a68efecea035f0a494f5bad2c1cefaa",
+    "tests/operations/test_restore_isolation.py": "8a009f14a259b97de61ab944f19b2c4fcbf6ba097c11efc969b66fdab5ecd3c3",
+    "tests/operations/test_restore_isolation_docker.py": "26a2f7f1f752d2444565cea74b5898bd94881ef9d16e408b697dba688582db92",
+    "docs/operations/backup-and-restore.md": "351415a8dd5990039bc648bcd9b4221398dffec77872540be73db8c0e0bd282d"
+  },
+  "tests": {
+    "configuration_and_guard": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/operations -p test_restore_isolation.py -v",
+      "passed": 14,
+      "result": "PASS"
+    },
+    "real_docker": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 RUN_RESTORE_DOCKER_TESTS=1 python3 -m unittest discover -s tests/operations -p test_restore_isolation_docker.py -v",
+      "passed": 5,
+      "duration_seconds": 85.901,
+      "result": "PASS",
+      "cases": 7
+    },
+    "jest_backup_restore_permissions": {
+      "command": "npx jest --runInBand --coverage=false --runTestsByPath src/__tests__/backup-core.test.js src/__tests__/backup-infrastructure.test.js src/__tests__/backup-offsite-permissions.test.js",
+      "suites": 3,
+      "passed": 24,
+      "result": "PASS"
+    },
+    "lint": "npm run lint: PASS",
+    "shell_syntax": "bash -n scripts/restore_drill.sh scripts/restore_database.sh scripts/backup_offsite.sh scripts/lib/restore-isolation.sh: PASS",
+    "shellcheck": "not installed; not claimed as executed",
+    "python_syntax": "ast.parse of helper and two test files: PASS",
+    "git_diff_check": "PASS",
+    "documentation_validation": {
+      "documents_checked": 110,
+      "local_links_checked": 520,
+      "http_operations_checked": 87,
+      "errors": [],
+      "scope": "Markdown paths/anchors, required guides/index, static route inventory; no runtime tests"
+    }
+  },
+  "docker_evidence": {
+    "date": "2026-11-03",
+    "fixture": "synthetic MySQL 8.4 schema 016, one material PDF, one certificate PDF",
+    "source_project": "plataforma-restore-20261103t134119z-c2c61c4420056901",
+    "sentinel_volume": "goal19-fictional-permanent-b85b72e8c8d246d2",
+    "sentinel_sha256_before": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+    "results": [
+      {
+        "case": "success",
+        "exit_code": 0,
+        "project": "plataforma-restore-20261103t134153z-c5ae0405a0fdd3bb",
+        "cleanup": "PASS",
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+        "restore_verified": true
+      },
+      {
+        "case": "mysql-failure",
+        "exit_code": 88,
+        "project": "plataforma-restore-20261103t134216z-75614cc4db1c711f",
+        "cleanup": "PASS",
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+        "restore_verified": false
+      },
+      {
+        "case": "sigint",
+        "exit_code": 130,
+        "project": "plataforma-restore-20261103t134233z-21a3e60a7d201adf",
+        "cleanup": "PASS",
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+        "restore_verified": false
+      },
+      {
+        "case": "sigterm",
+        "exit_code": 143,
+        "project": "plataforma-restore-20261103t134238z-951a2d80d4be2ae6",
+        "cleanup": "PASS",
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+        "restore_verified": false
+      },
+      {
+        "case": "unsafe-global",
+        "rejected_before_mutation": true,
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d"
+      },
+      {
+        "case": "unsafe-external",
+        "rejected_before_mutation": true,
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d"
+      },
+      {
+        "case": "unsafe-bind",
+        "rejected_before_mutation": true,
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d"
+      }
+    ]
+  },
+  "versions": {
+    "docker": "29.1.3",
+    "compose": "2.40.3",
+    "node": "v24.20.0",
+    "python": "Python 3.12.3",
+    "mysql": "8.4.11 (disposable containers)"
+  },
+  "boundaries": {
+    "production_access": false,
+    "production_data_or_volumes_used": false,
+    "cloud_access": false,
+    "native_mysql_used": false,
+    "published_mysql_ports": false,
+    "deploy": false,
+    "academic_rule_changes": false,
+    "dependency_updates": false,
+    "remote_ci_executed": false,
+    "academic_suite_repeated": false
+  },
+  "remaining_risks": [
+    "SIGKILL, host failure or unavailable Docker daemon can leave owned resources for guarded cleanup.",
+    "Docker administrators and mutation of reviewed source/snapshot by the owning operator are outside the isolation boundary.",
+    "Hotfix has not been deployed or merged into the original dirty branch; use the reviewed hotfix revision.",
+    "Other P1 findings from Goal 18 are outside this hotfix."
+  ],
+  "commit_resolution": "git log -1 --format=%H -- docs/engineering/GOAL_19_RESTORE_SAFETY.md",
+  "final_review": {
+    "all_sentinel_hashes_identical": true,
+    "new_test_fixtures_removed": true,
+    "academic_source_changed": false,
+    "migrations_changed": false,
+    "compose_production_changed": false
+  }
+}

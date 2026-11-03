@@ -82,56 +82,6 @@ describe('infraestrutura de backup e restore', () => {
         expect(permissions).toContain('find "$root" -type f -exec chmod 600 -- {} +');
     });
 
-    it('restore drill usa volumes próprios e limpa cópia temporária mesmo em falha', () => {
-        const drill = read('scripts/restore_drill.sh');
-        const restore = read('scripts/restore_database.sh');
-        expect(drill).toContain('RESTORE_DRILL_OVERRIDE_FILE:-compose.restore-drill.yaml');
-        expect(drill).toContain('name.startswith(project+"_")');
-        expect(drill).toContain('if [[ "$compose_isolated" == true ]]');
-        expect(drill.indexOf('compose_isolated=true')).toBeGreaterThan(drill.indexOf('config --format json'));
-        expect(drill).toContain('down -v --remove-orphans');
-        expect(drill).toContain('rm -rf -- "$download_dir" "$report_dir"');
-        expect(restore).toContain('"$backup_dir:/backup/$backup_id:ro"');
-    });
-
-    it('restore drill nunca executa down -v se o guard encontrar volume permanente', () => {
-        const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-drill-guard-'));
-        try {
-            const fakeBin = path.join(temporary, 'bin');
-            const drillRoot = path.join(temporary, 'drills');
-            const commandLog = path.join(temporary, 'docker.log');
-            fs.mkdirSync(fakeBin, { mode: 0o700 });
-            const fakeDocker = path.join(fakeBin, 'docker');
-            fs.writeFileSync(fakeDocker, [
-                '#!/bin/bash',
-                'set -e',
-                'case "$1" in',
-                "  compose) if [[ \"$*\" == *\"config --format json\"* ]]; then echo '{\"volumes\":{\"mysql_data\":{\"name\":\"production_mysql84\"}}}'; else echo \"$*\" >> \"$FAKE_DOCKER_LOG\"; fi ;;",
-                '  ps|volume|network) : ;;',
-                '  image) echo "$*" >> "$FAKE_DOCKER_LOG" ;;',
-                'esac'
-            ].join('\n'), { mode: 0o700 });
-            const result = spawnSync('bash', [path.join(root, 'scripts/restore_drill.sh')], {
-                encoding: 'utf8',
-                env: {
-                    ...process.env,
-                    PATH: `${fakeBin}:${process.env.PATH}`,
-                    BACKUP_DRILL_DIR: drillRoot,
-                    FAKE_DOCKER_LOG: commandLog,
-                    RESTORE_DRILL_ENV_FILE: '/unused/env',
-                    RESTORE_DRILL_OVERRIDE_FILE: '/unused/production.yaml'
-                }
-            });
-            expect(result.status).toBe(1);
-            expect(result.stderr).toContain('não possui volumes exclusivos');
-            expect(result.stdout).toContain('RESTORE_DRILL_TEMP_CLEANUP PASS');
-            const dockerCalls = fs.existsSync(commandLog) ? fs.readFileSync(commandLog, 'utf8') : '';
-            expect(dockerCalls).not.toMatch(/down|image rm/);
-        } finally {
-            fs.rmSync(temporary, { recursive: true, force: true });
-        }
-    });
-
     it('remove arquivos temporários se o SHA do pacote offsite falhar', () => {
         const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-offsite-cleanup-'));
         try {

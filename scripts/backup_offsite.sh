@@ -13,11 +13,23 @@ COMPOSE_ENV_FILE=${COMPOSE_ENV_FILE:-.env.production}
 COMPOSE=(docker compose --env-file "$COMPOSE_ENV_FILE" -f compose.yaml)
 if [[ -n "${COMPOSE_OVERRIDE_FILE:-}" ]]; then COMPOSE+=(-f "$COMPOSE_OVERRIDE_FILE"); fi
 
+if [[ -n "${RESTORE_ISOLATION_CONFIG:-}" ]]; then
+    source "$ROOT/scripts/lib/restore-isolation.sh"
+    restore_use_snapshot
+    [[ "${1:-}" == download ]] || { echo 'Restore isolado permite somente download offsite.' >&2; exit 1; }
+    python3 "$ROOT/scripts/lib/restore-isolation.py" download-path \
+        --project "$COMPOSE_PROJECT_NAME" --snapshot "$RESTORE_ISOLATION_CONFIG" --path "${3:-}"
+fi
+
 fail() { echo "BACKUP_OFFSITE_FAILED: $*" >&2; exit 1; }
 az_storage() { az storage "$@" --account-name "$AZURE_STORAGE_ACCOUNT" --auth-mode login; }
 backup_verify() {
     local directory=$1 backup_id
     backup_id=$(basename "$directory")
+    if [[ -n "${RESTORE_ISOLATION_CONFIG:-}" ]]; then
+        python3 "$ROOT/scripts/lib/restore-isolation.py" backup-path \
+            --project "$COMPOSE_PROJECT_NAME" --snapshot "$RESTORE_ISOLATION_CONFIG" --path "$directory"
+    fi
     "${COMPOSE[@]}" run --rm --no-deps -T -v "$directory:/backup/$backup_id:ro" app node scripts/backup_manifest.js verify --dir "/backup/$backup_id" >/dev/null
     printf 'OFFSITE_MANIFEST_GOOD backup_id=%s\n' "$backup_id"
 }

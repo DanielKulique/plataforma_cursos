@@ -1,5 +1,16 @@
 services:
+  db:
+    volumes: !override
+      - mysql_data:/var/lib/mysql
   app:
     environment:
       EMAIL_DELIVERY_ENABLED: 'false'
       DETECTOR_ENABLED: 'false'
+    volumes: !override
+      - material_uploads:/app/storage/materials
+      - certificate_uploads:/app/storage/certificates
+  caddy: !reset null
+
+networks:
+  backend:
+    internal: true

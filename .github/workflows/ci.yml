@@ -111,6 +111,13 @@ jobs:
         run: npm run db:test:seed
       - name: Executar a suíte completa sem retry
         run: npm run test:all
+      - name: Verificar isolamento de restore com configuração resolvida e sentinelas fictícias
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+          RUN_RESTORE_DOCKER_TESTS: '1'
+        run: |
+          python3 -m unittest discover -s tests/operations -p test_restore_isolation.py -v
+          python3 -m unittest discover -s tests/operations -p test_restore_isolation_docker.py -v
       - name: Instalar browsers e dependências do Playwright
         run: npx playwright install --with-deps chromium firefox webkit
       - name: E2E browser smoke em MySQL descartável separado

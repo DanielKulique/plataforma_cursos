@@ -1,0 +1,620 @@
+{
+  "goal": 21,
+  "finding": "F18-02/T18-03",
+  "status": "ASSOCIATION_ANSWER_SECURITY_READY",
+  "date": "2026-11-03",
+  "timezone": "America/Sao_Paulo",
+  "baseline_commit": "d6bb5f34642c45285980baccce12e8a6ec6265aa",
+  "branch": "hotfix/association-answer-security-goal21",
+  "worktree": "/mnt/disco/projetoSite/worktrees/plataforma-cursos-goal21",
+  "worktree_initially_clean": true,
+  "root_cause": "Identity outcome was remapped to the first-two swap after Fisher-Yates. Persistence orders both sides by pair. The resulting public-payload distribution depended on the hidden answer key.",
+  "fix": "Keep every Fisher-Yates result from crypto.randomInt, including identity. Preserve independent stable UUIDv4 item IDs and strict {id_item,texto} item projections.",
+  "two_pair_leak": "Baseline: only reversed order (2 RNG paths -> same output). Fixed: both permutations once, identical full-payload distributions under both hidden keys.",
+  "multi_pair_leak": "Baseline: n! - 1 distinct permutations, canonical identity absent and first-two swap twice as frequent. Fixed: n! equiprobable permutations.",
+  "deterministic_permutation_counts": [
+    {
+      "size": 2,
+      "rng_paths": 2,
+      "before": {
+        "R2,R1": 2
+      },
+      "after": {
+        "R1,R2": 1,
+        "R2,R1": 1
+      }
+    },
+    {
+      "size": 3,
+      "rng_paths": 6,
+      "before": {
+        "R1,R3,R2": 1,
+        "R2,R1,R3": 2,
+        "R2,R3,R1": 1,
+        "R3,R1,R2": 1,
+        "R3,R2,R1": 1
+      },
+      "after": {
+        "R1,R2,R3": 1,
+        "R1,R3,R2": 1,
+        "R2,R1,R3": 1,
+        "R2,R3,R1": 1,
+        "R3,R1,R2": 1,
+        "R3,R2,R1": 1
+      }
+    },
+    {
+      "size": 4,
+      "rng_paths": 24,
+      "before": {
+        "R1,R2,R4,R3": 1,
+        "R1,R3,R2,R4": 1,
+        "R1,R3,R4,R2": 1,
+        "R1,R4,R2,R3": 1,
+        "R1,R4,R3,R2": 1,
+        "R2,R1,R3,R4": 2,
+        "R2,R1,R4,R3": 1,
+        "R2,R3,R1,R4": 1,
+        "R2,R3,R4,R1": 1,
+        "R2,R4,R1,R3": 1,
+        "R2,R4,R3,R1": 1,
+        "R3,R1,R2,R4": 1,
+        "R3,R1,R4,R2": 1,
+        "R3,R2,R1,R4": 1,
+        "R3,R2,R4,R1": 1,
+        "R3,R4,R1,R2": 1,
+        "R3,R4,R2,R1": 1,
+        "R4,R1,R2,R3": 1,
+        "R4,R1,R3,R2": 1,
+        "R4,R2,R1,R3": 1,
+        "R4,R2,R3,R1": 1,
+        "R4,R3,R1,R2": 1,
+        "R4,R3,R2,R1": 1
+      },
+      "after": {
+        "R1,R2,R3,R4": 1,
+        "R1,R2,R4,R3": 1,
+        "R1,R3,R2,R4": 1,
+        "R1,R3,R4,R2": 1,
+        "R1,R4,R2,R3": 1,
+        "R1,R4,R3,R2": 1,
+        "R2,R1,R3,R4": 1,
+        "R2,R1,R4,R3": 1,
+        "R2,R3,R1,R4": 1,
+        "R2,R3,R4,R1": 1,
+        "R2,R4,R1,R3": 1,
+        "R2,R4,R3,R1": 1,
+        "R3,R1,R2,R4": 1,
+        "R3,R1,R4,R2": 1,
+        "R3,R2,R1,R4": 1,
+        "R3,R2,R4,R1": 1,
+        "R3,R4,R1,R2": 1,
+        "R3,R4,R2,R1": 1,
+        "R4,R1,R2,R3": 1,
+        "R4,R1,R3,R2": 1,
+        "R4,R2,R1,R3": 1,
+        "R4,R2,R3,R1": 1,
+        "R4,R3,R1,R2": 1,
+        "R4,R3,R2,R1": 1
+      }
+    }
+  ],
+  "full_payload_noninterference": {
+    "candidate_key_sizes": [
+      2,
+      3
+    ],
+    "all_candidate_keys_enumerated": true,
+    "all_bounded_rng_paths_enumerated": true,
+    "comparison": "Sorted complete serialized payloads including multiplicity, keeping public IDs/texts fixed and making persisted order encode each candidate answer key. Identical distributions after the fix."
+  },
+  "student_payload": {
+    "item_fields": [
+      "id_item",
+      "texto"
+    ],
+    "item_order_exposed": false,
+    "answer_links_exposed": false,
+    "stable_ids": true,
+    "ids_source": "crypto.randomUUID() per item, twice per authored pair; new IDs per replicated item",
+    "student_metadata": "Trail only, no questions or answer key",
+    "teacher_metadata": "Authorized teacher retains original pairs and links"
+  },
+  "historical_compatibility": {
+    "migration": false,
+    "item_remapping": false,
+    "writes_on_presentation": false,
+    "existing_ids_and_nonconsecutive_orders_preserved": true,
+    "persisted_attempt_answer_match_snapshots_unchanged_after_retry_and_wrong_attempt": true
+  },
+  "grading": {
+    "comparison": "Stored left/right links, no visual positions",
+    "all_or_nothing": true,
+    "integration_pair_sizes": [
+      2,
+      3,
+      5
+    ],
+    "correct_points": 2.5,
+    "incorrect_points": 0,
+    "replicated_association_graded": true
+  },
+  "idempotency": {
+    "same_uuid_same_attempt": true,
+    "retry_reused": true,
+    "browser_response_loss_simulated_after_real_server_commit": true,
+    "single_history_row_after_browser_retry": true
+  },
+  "validation": {
+    "baseline_expected_failures": {
+      "success": false,
+      "suites": 1,
+      "passed": 0,
+      "failed": 6,
+      "tests": [
+        {
+          "file": "src/__tests__/association-answer.security.test.js",
+          "status": "failed",
+          "assertions": [
+            {
+              "title": "allows every one of the 2-item permutations exactly once over all bounded RNG paths",
+              "status": "failed"
+            },
+            {
+              "title": "allows every one of the 3-item permutations exactly once over all bounded RNG paths",
+              "status": "failed"
+            },
+            {
+              "title": "allows every one of the 4-item permutations exactly once over all bounded RNG paths",
+              "status": "failed"
+            },
+            {
+              "title": "has the identical complete student-payload distribution for every possible 2-pair answer key",
+              "status": "failed"
+            },
+            {
+              "title": "has the identical complete student-payload distribution for every possible 3-pair answer key",
+              "status": "failed"
+            },
+            {
+              "title": "keeps existing item IDs stable across different presentations for saved drafts and submissions",
+              "status": "failed"
+            }
+          ]
+        }
+      ]
+    },
+    "targeted_jest": {
+      "success": true,
+      "suites": 5,
+      "passed": 44,
+      "failed": 0,
+      "tests": [
+        {
+          "file": "src/__tests__/goal3.models.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "consulta turma, permissões, módulos, conteúdos e escopo",
+              "status": "passed"
+            },
+            {
+              "title": "trata ausências nas consultas de escopo e permissão",
+              "status": "passed"
+            },
+            {
+              "title": "cria, atualiza, remove e lista progresso da turma",
+              "status": "passed"
+            },
+            {
+              "title": "persiste conclusão e percentual na mesma transação",
+              "status": "passed"
+            },
+            {
+              "title": "faz rollback para conteúdo inexistente ou ausência de matrícula",
+              "status": "passed"
+            },
+            {
+              "title": "consulta turma, permissões e escopos",
+              "status": "passed"
+            },
+            {
+              "title": "trata consultas ausentes e cria questionário somente para turma existente",
+              "status": "passed"
+            },
+            {
+              "title": "cria pergunta e opções de forma transacional",
+              "status": "passed"
+            },
+            {
+              "title": "faz rollback quando falha a criação da pergunta",
+              "status": "passed"
+            },
+            {
+              "title": "lista pergunta respondível sem gabarito e trata questionário ausente",
+              "status": "passed"
+            },
+            {
+              "title": "recusa RESPOSTA_CURTA no fluxo do aluno",
+              "status": "passed"
+            },
+            {
+              "title": "atualiza, remove e mantém operações vazias explícitas",
+              "status": "passed"
+            },
+            {
+              "title": "troca ordens ocupadas de perguntas e alternativas na mesma transação",
+              "status": "passed"
+            },
+            {
+              "title": "submete, corrige e persiste uma tentativa completa",
+              "status": "passed"
+            },
+            {
+              "title": "faz rollback para questionário indisponível",
+              "status": "passed"
+            },
+            {
+              "title": "faz rollback para aluno sem matrícula",
+              "status": "passed"
+            },
+            {
+              "title": "rejeita pergunta sem suporte, duplicidade e opção cruzada com rollback",
+              "status": "passed"
+            },
+            {
+              "title": "consulta histórico com e sem filtro e resultados da turma",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/goal3.routes.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "lista módulos e conteúdos reais para aluno matriculado",
+              "status": "passed"
+            },
+            {
+              "title": "nega conteúdo ao aluno sem matrícula",
+              "status": "passed"
+            },
+            {
+              "title": "remove URL insegura de conteúdo legado na saída",
+              "status": "passed"
+            },
+            {
+              "title": "normaliza vídeo legado para o host incorporável permitido",
+              "status": "passed"
+            },
+            {
+              "title": "lista questionário ativo sem expor gabarito",
+              "status": "passed"
+            },
+            {
+              "title": "retorna metadados vazios com 200 para professor responsável",
+              "status": "passed"
+            },
+            {
+              "title": "nega metadados de turma alheia ao professor",
+              "status": "passed"
+            },
+            {
+              "title": "rejeita alternativas com ordem repetida antes de iniciar a criação",
+              "status": "passed"
+            },
+            {
+              "title": "propaga erro de payload do modelo sem criar sucesso parcial",
+              "status": "passed"
+            },
+            {
+              "title": "retorna histórico vazio como coleção válida",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/questionario.frontend.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "torna disponível o questionário retornado pela API para a turma matriculada",
+              "status": "passed"
+            },
+            {
+              "title": "mantém o acesso invisível em HTTP 403 (aluno sem matrícula)",
+              "status": "passed"
+            },
+            {
+              "title": "mantém o acesso invisível em HTTP 404 (questionário inativo ou ausente)",
+              "status": "passed"
+            },
+            {
+              "title": "recusa payload ativo sem pergunta e opções válidas",
+              "status": "passed"
+            },
+            {
+              "title": "usa identificadores reais e controles por tipo, submissão e histórico sem fallback mock",
+              "status": "passed"
+            },
+            {
+              "title": "mantém as mensagens acadêmicas coerentes com Teste Final de tentativa única",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/assessment-authoring.frontend.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "oferece formulários acessíveis para pergunta e alternativa",
+              "status": "passed"
+            },
+            {
+              "title": "reutiliza o CRUD existente para editar, excluir, ordenar e marcar o gabarito",
+              "status": "passed"
+            },
+            {
+              "title": "renderiza estrutura, gabarito e bloqueio por histórico sem esconder a consulta",
+              "status": "passed"
+            },
+            {
+              "title": "mantém a composição legível em telas estreitas",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/association-answer.security.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "allows every one of the 2-item permutations exactly once over all bounded RNG paths",
+              "status": "passed"
+            },
+            {
+              "title": "allows every one of the 3-item permutations exactly once over all bounded RNG paths",
+              "status": "passed"
+            },
+            {
+              "title": "allows every one of the 4-item permutations exactly once over all bounded RNG paths",
+              "status": "passed"
+            },
+            {
+              "title": "has the identical complete student-payload distribution for every possible 2-pair answer key",
+              "status": "passed"
+            },
+            {
+              "title": "has the identical complete student-payload distribution for every possible 3-pair answer key",
+              "status": "passed"
+            },
+            {
+              "title": "keeps existing item IDs stable across different presentations for saved drafts and submissions",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    "integration": {
+      "success": true,
+      "suites": 1,
+      "passed": 11,
+      "failed": 0,
+      "tests": [
+        {
+          "file": "src/__tests__/integration/question-authoring-types.integration.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "aceita 2/1, 4/1, 4/2 e 6/4, corrige por conjunto e persiste IDs selecionados",
+              "status": "passed"
+            },
+            {
+              "title": "rejeita autoria de múltipla escolha inválida sem persistir pergunta",
+              "status": "passed"
+            },
+            {
+              "title": "persiste V/F sem alternativas personalizadas e corrige por booleano",
+              "status": "passed"
+            },
+            {
+              "title": "associa 3 e 5 pares por IDs, sem gabarito no DTO do aluno, e rejeita pares adulterados",
+              "status": "passed"
+            },
+            {
+              "title": "recusa IDs e metadados de vínculo enviados na autoria dos pares",
+              "status": "passed"
+            },
+            {
+              "title": "protege payload de 2 pares, preserva UUIDs/ordem e corrige all-or-nothing com retry idempotente",
+              "status": "passed"
+            },
+            {
+              "title": "protege payload de 3 pares, preserva UUIDs/ordem e corrige all-or-nothing com retry idempotente",
+              "status": "passed"
+            },
+            {
+              "title": "protege payload de 5 pares, preserva UUIDs/ordem e corrige all-or-nothing com retry idempotente",
+              "status": "passed"
+            },
+            {
+              "title": "reverte criação inteira após falha na quarta opção ou no terceiro par",
+              "status": "passed"
+            },
+            {
+              "title": "edita a estrutura por tipo antes de tentativas e bloqueia alterações depois",
+              "status": "passed"
+            },
+            {
+              "title": "replica gabaritos booleanos e associações com novos IDs",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    "e2e": {
+      "stats": {
+        "startTime": "2026-11-03T21:23:52.977Z",
+        "duration": 5848.4490000000005,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "@full teacher authors 2-pair association and mobile learner restores draft and retries submission",
+          "file": "question-authoring-types.spec.js",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "@full teacher authors 3-pair association and mobile learner restores draft and retries submission",
+          "file": "question-authoring-types.spec.js",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "retry": 0
+            }
+          ]
+        }
+      ]
+    },
+    "lint": {
+      "command": "npm run lint",
+      "exit_code": 0
+    },
+    "build": {
+      "command": "npm run build",
+      "exit_code": 0
+    },
+    "diff_check": {
+      "commands": [
+        "git diff --check",
+        "git diff --cached --check"
+      ],
+      "exit_code": 0
+    }
+  },
+  "commands": {
+    "targeted_jest": "npx --no-install jest --runInBand --runTestsByPath src/__tests__/association-answer.security.test.js src/__tests__/goal3.models.test.js src/__tests__/goal3.routes.test.js src/__tests__/assessment-authoring.frontend.test.js src/__tests__/questionario.frontend.test.js --detectOpenHandles",
+    "integration": "npm run test:integration -- --runTestsByPath src/__tests__/integration/question-authoring-types.integration.test.js",
+    "e2e": "npm run test:e2e -- tests/e2e/question-authoring-types.spec.js"
+  },
+  "mobile": {
+    "interaction_viewport": 320,
+    "overflow_widths": [
+      320,
+      360,
+      390,
+      412,
+      768,
+      1440
+    ],
+    "pair_sizes": [
+      2,
+      3
+    ],
+    "saved_draft_survives_reload": true,
+    "screenshots": [
+      "docs/engineering/evidence/goal21-association-mobile-2.png",
+      "docs/engineering/evidence/goal21-association-mobile-3.png"
+    ]
+  },
+  "discardable_environments": {
+    "integration_final_project": "plataforma-cursos-integration-31562",
+    "integration_mysql": "8.4.11",
+    "e2e_final_project": "plataforma-cursos-e2e-28048",
+    "database": "plataforma_cursos_test",
+    "host_ports": [
+      "127.0.0.1:33307",
+      "127.0.0.1:3400"
+    ],
+    "production_compose_used": false,
+    "real_data_used": false,
+    "runtime_containers_networks_volumes_cleaned": true,
+    "interrupted_integration_project": "plataforma-cursos-integration-30018",
+    "interrupted_run": "SIGTERM during preparation; no Jest result credited; terminal process and project ownership verified, own lab cleaned, then complete final run passed."
+  },
+  "preservation": {
+    "/mnt/disco/projetoSite/plataforma_cursos": {
+      "head": "b94717963cc29f6fa9cfaf2c170ee3a61ad97a98",
+      "files": 725,
+      "head_unchanged": true,
+      "status_unchanged": true,
+      "hashes_unchanged": true,
+      "snapshot_sha256": "b3f4e4a56d10c7bd2d6af363fb6a1573933fbacc632f3c557535c0d4405615f0"
+    },
+    "/mnt/disco/projetoSite/worktrees/plataforma-cursos-goal19": {
+      "head": "dcccc29394a92574739c5b4351f240fe5d6e127e",
+      "files": 734,
+      "head_unchanged": true,
+      "status_unchanged": true,
+      "hashes_unchanged": true,
+      "snapshot_sha256": "20c51d1253526fafb9145f4a2c37b7a3021ab945ea8335ce380f8b88d671319f"
+    },
+    "/mnt/disco/projetoSite/worktrees/plataforma-cursos-goal20": {
+      "head": "d6bb5f34642c45285980baccce12e8a6ec6265aa",
+      "files": 738,
+      "head_unchanged": true,
+      "status_unchanged": true,
+      "hashes_unchanged": true,
+      "snapshot_sha256": "fcf3c157eb0028b56346ea037d83954522cca86d986d92d36fdcde79f80ec40c"
+    }
+  },
+  "unchanged_model_functions_sha256": {
+    "persistirConteudoPergunta": "60e342c328cee88cc699c6585205e680cb7edd280afa645998568e88c55080f5",
+    "carregarParesAssociacao": "71cd45790d1cb3886a1ab4640dc4cfc6f6e9bba4a729a0ee873e87016bba4fca",
+    "carregarItensAssociacao": "6b15727423c497fc28fd24cd61cc81963cf85626605b1a6df6f57c33a97586d6",
+    "validarRespostas": "eb60145823326e24c98e4a50bc8ae214de5415bf7189a8fc8fe9485e64461592",
+    "prepararCorrecao": "6e153beb8be5f757aa62c2178069e19d7814af696d3164b262d3a71d1f583c63",
+    "submeter": "5b1427faaa79a480499545212c28d3ccb1d72052a03590084bc7c9e537a438b6"
+  },
+  "unchanged_files_sha256": {
+    "src/api/services/question-types.service.js": "db23133755892241cd93f976bcc75a6c657d2d65a54cfb5a61d2fd3da93ce748",
+    "src/api/services/turma-replication.service.js": "8831a3c9ffd89ebcb256a948e935561c7f83b646d7a55d9d043ddc2089b551e3",
+    "src/api/controllers/questoes.controller.js": "9652945c3b2264cc60bb2d81ef094cf0c4e3c22c50ee51d18808a7ce20d4e6e8",
+    "src/api/routes/questoes.routes.js": "47029e8da8d3260feda9835edc1a9acec074ca1d5134496b730eabd71e69abc1",
+    "src/public/js/questionario.js": "07cce20d707b8c12623bd001ad18e16e8e9fd8dcf86d63316afc82e9db00c57e",
+    "src/api/services/academic-progress.service.js": "ce2712d8c33f616ab4b9abe513df31f39ffbe9034da7a5948977d8a8969e9c7f",
+    "src/api/services/certificate.service.js": "c37497d74e1596b9ea74bbf60c162070abd058840b693a30bcfa8f792c7383c1",
+    "package.json": "d4eebb748e7758744a224d8ab5394d0ef744d16376e2ea5212db20b6a309b158",
+    "package-lock.json": "cef831a725bbf140d4a4dcf17d6f0d3f33b0aae250b40cf13f84b8e78e507990",
+    "index.js": "8281fb5fcfa7b36242c671788f5deb0bce4f55994447f84f2a92aef41bc64df0",
+    "mysql/migrations/016_question_authoring_types.sql": "614d6e34fd762e8dcf3c6f4c1d3bc52979c4c7e36e44a070ff1d0e3c68a965f3"
+  },
+  "changed_source_sha256": {
+    "src/api/models/questoes.models.js": "9129d2e8a48dedf07ac9259098b85d142bcad4b1804fabffe517f7444c4cb780",
+    "src/__tests__/association-answer.security.test.js": "899a5b85fd885b9a47da2815aa7b0987e2ab4bb3c503775ff4b31d0a2d2366a9",
+    "src/__tests__/integration/question-authoring-types.integration.test.js": "d0f7a1c3997976b4190dbf81abc1fef14578a8afb0fa62f15b3f4b569a778921",
+    "tests/e2e/question-authoring-types.spec.js": "f6092e241f9521a1f36bc44c5d97429df1a45355268d877558dff8906ce72a95",
+    "docs/engineering/question-authoring-types.md": "1fd02b082071b081bde1dfd4c8d229ba61ed4364b5d236ef84b385c09232d038",
+    "docs/engineering/GOAL_21_ASSOCIATION_ANSWER_SECURITY.md": "a6ab5f8c841a6432e1f5a556662014b06619b43aee166d8db36fd2b5b9550773",
+    "docs/engineering/evidence/goal21-association-mobile-2.png": "f5237420ffe3f9080bdd8747d02b1256913367fd9c0c54c554823a76087e5edf",
+    "docs/engineering/evidence/goal21-association-mobile-3.png": "bf5f25d2b908bf6ad592942db08b284ca3f6c6cdc46236bc6a8dc1674930993b"
+  },
+  "remaining_risks": [
+    "No guarantee against text explicitly disclosing the answer or authorized teacher access.",
+    "Exposing persisted item order or excluding identity again would reopen the channel.",
+    "Post-submission feedback under existing attempt rules, other Goal 18 findings, manually edited database IDs and deployed images are outside this work."
+  ],
+  "academic_rules_changed": false,
+  "historical_grades_changed": false,
+  "frontend_runtime_changed": false,
+  "dependencies_changed": false,
+  "database_schema_changed": false,
+  "deploy": "NO",
+  "push_performed": false
+}

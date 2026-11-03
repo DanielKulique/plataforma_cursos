@@ -46,9 +46,9 @@ async function consultarAluno() {
     return response.body.questionario.perguntas;
 }
 
-async function submeter(respostas) {
+async function submeter(respostas, submissionId = crypto.randomUUID()) {
     return request(app).post(`/api/questionarios/${ids.questionario}/submissoes`)
-        .set(auth(tokens.aluno)).send({ submission_id: crypto.randomUUID(), respostas });
+        .set(auth(tokens.aluno)).send({ submission_id: submissionId, respostas });
 }
 
 describe('autoria completa de questões por tipo', () => {
@@ -218,8 +218,8 @@ describe('autoria completa de questões por tipo', () => {
         const student = await consultarAluno();
         expect(JSON.stringify(student)).not.toContain('id_item_esquerda');
         expect(JSON.stringify(student)).not.toContain('id_item_direita');
-        expect(student[0].itens_direita.map((item) => item.id_item))
-            .not.toEqual(author[0].pares.map((item) => item.id_item_direita));
+        expect(student[0].itens_direita.map((item) => item.id_item).sort())
+            .toEqual(author[0].pares.map((item) => item.id_item_direita).sort());
         const answers = author.map((question) => ({
             id_pergunta: question.id_pergunta,
             matches: question.pares.map((par) => ({ left_id: par.id_item_esquerda, right_id: par.id_item_direita })).reverse()
@@ -246,6 +246,112 @@ describe('autoria completa de questões por tipo', () => {
              WHERE r.id_tentativa = ?`, [full.body.resultado.id_tentativa]
         );
         expect(persisted).toHaveLength(8);
+    });
+
+    it('recusa IDs e metadados de vínculo enviados na autoria dos pares', async () => {
+        for (const field of ['id_item', 'id_item_esquerda', 'id_item_direita', 'correta']) {
+            const response = await request(app).post(`/api/questionarios/${ids.questionario}/perguntas`)
+                .set(auth(tokens.professor)).send({
+                    tipo_pergunta: 'ASSOCIACAO', texto_pergunta: 'IDs definidos pelo servidor', ordem: 1,
+                    pares: [{ ...pair('Termo', 'Conceito', 1), [field]: crypto.randomUUID() }, pair('Outro', 'Mais um', 2)]
+                });
+            expect(response.status).toBe(400);
+        }
+        const [[count]] = await pool.query('SELECT COUNT(*) AS total FROM Q_AssociacaoItens');
+        expect(Number(count.total)).toBe(0);
+    });
+
+    it.each([2, 3, 5])('protege payload de %i pares, preserva UUIDs/ordem e corrige all-or-nothing com retry idempotente', async (quantity) => {
+        const id = await criarPergunta({
+            tipo_pergunta: 'ASSOCIACAO', texto_pergunta: 'Relacionar conceitos', ordem: 1, pontos: 2.5,
+            // Deliberately submit pairs out of order, with nonconsecutive order values.
+            pares: Array.from({ length: quantity }, (_, i) => pair(`Termo ${i}`, `Conceito ${i}`, i * 10 + 3)).reverse()
+        });
+        const author = (await consultarAutor())[0];
+        const [storedBefore] = await pool.query(
+            'SELECT * FROM Q_AssociacaoItens WHERE id_pergunta = ? ORDER BY id_item', [id]
+        );
+        const [keyBefore] = await pool.query(
+            'SELECT * FROM Q_AssociacaoGabaritos WHERE id_pergunta = ? ORDER BY id_item_esquerda', [id]
+        );
+        expect(storedBefore).toHaveLength(quantity * 2);
+        expect(new Set(storedBefore.map((item) => item.id_item)).size).toBe(quantity * 2);
+        storedBefore.forEach((item) => expect(item.id_item)
+            .toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/));
+        for (const par of author.pares) {
+            expect(keyBefore).toContainEqual({
+                id_pergunta: id, id_item_esquerda: par.id_item_esquerda, id_item_direita: par.id_item_direita
+            });
+            expect(storedBefore.find((item) => item.id_item === par.id_item_direita).ordem).toBe(par.ordem);
+        }
+
+        let identity;
+        let reordered;
+        const rng = jest.spyOn(crypto, 'randomInt');
+        try {
+            rng.mockImplementation((max) => max - 1);
+            identity = (await consultarAluno())[0];
+            expect(identity.itens_direita.map((item) => item.id_item))
+                .toEqual(author.pares.map((par) => par.id_item_direita));
+            rng.mockReturnValue(0);
+            reordered = (await consultarAluno())[0];
+            expect(reordered.itens_direita.map((item) => item.id_item))
+                .not.toEqual(identity.itens_direita.map((item) => item.id_item));
+        } finally { rng.mockRestore(); }
+        for (const dto of [identity, reordered]) {
+            expect(Object.keys(dto).sort()).toEqual([
+                'formato_resposta', 'id_pergunta', 'itens_direita', 'itens_esquerda',
+                'ordem', 'pontos', 'texto_pergunta', 'tipo_pergunta'
+            ]);
+            for (const item of [...dto.itens_esquerda, ...dto.itens_direita]) {
+                expect(Object.keys(item).sort()).toEqual(['id_item', 'texto']);
+                expect(storedBefore.find((row) => row.id_item === item.id_item).texto).toBe(item.texto);
+            }
+        }
+        const studentMetadata = await request(app).get(`/api/turmas/${ids.turma}/questionarios`)
+            .set(auth(tokens.aluno));
+        expect(studentMetadata.status).toBe(200);
+        expect(studentMetadata.body.questionarios[0]).not.toHaveProperty('perguntas');
+        expect(JSON.stringify(studentMetadata.body)).not.toMatch(/id_item|"pares"|resposta_booleana|"correta"/);
+        const [storedAfter] = await pool.query(
+            'SELECT * FROM Q_AssociacaoItens WHERE id_pergunta = ? ORDER BY id_item', [id]
+        );
+        expect(storedAfter).toEqual(storedBefore);
+
+        // A draft from the first presentation remains valid after a different shuffle.
+        const correct = [{ id_pergunta: id, matches: author.pares.map((par) => ({
+            left_id: par.id_item_esquerda, right_id: par.id_item_direita
+        })).reverse() }];
+        const submissionId = crypto.randomUUID();
+        const result = await submeter(correct, submissionId);
+        expect(result.status).toBe(200);
+        expect(result.body.resultado).toMatchObject({ acertos: 1, pontuacao: 2.5, percentual: 100, reutilizada: false });
+        const attemptId = result.body.resultado.id_tentativa;
+        const snapshot = async () => {
+            const [attempt] = await pool.query('SELECT * FROM Q_Tentativas WHERE id_tentativa = ?', [attemptId]);
+            const [answers] = await pool.query('SELECT * FROM Q_Respostas WHERE id_tentativa = ?', [attemptId]);
+            const [matches] = await pool.query(
+                `SELECT a.* FROM Q_RespostaAssociacoes a INNER JOIN Q_Respostas r ON r.id_resposta = a.id_resposta
+                 WHERE r.id_tentativa = ? ORDER BY a.id_item_esquerda`, [attemptId]
+            );
+            return { attempt, answers, matches };
+        };
+        const historical = await snapshot();
+        const retry = await submeter(correct, submissionId);
+        expect(retry.status).toBe(200);
+        expect(retry.body.resultado).toMatchObject({ id_tentativa: attemptId, reutilizada: true, pontuacao: 2.5 });
+        expect(await snapshot()).toEqual(historical);
+        const incorrect = structuredClone(correct);
+        [incorrect[0].matches[0].right_id, incorrect[0].matches[1].right_id] =
+            [incorrect[0].matches[1].right_id, incorrect[0].matches[0].right_id];
+        const wrong = await submeter(incorrect);
+        expect(wrong.status).toBe(200);
+        expect(wrong.body.resultado).toMatchObject({ acertos: 0, pontuacao: 0, percentual: 0 });
+        expect(await snapshot()).toEqual(historical);
+        const [keyAfter] = await pool.query(
+            'SELECT * FROM Q_AssociacaoGabaritos WHERE id_pergunta = ? ORDER BY id_item_esquerda', [id]
+        );
+        expect(keyAfter).toEqual(keyBefore);
     });
 
     it('reverte criação inteira após falha na quarta opção ou no terceiro par', async () => {
@@ -338,6 +444,38 @@ describe('autoria completa de questões por tipo', () => {
         expect(questions[0].resposta_booleana).toBe(0);
         expect(questions[1].pares.map((item) => [item.esquerda, item.direita]))
             .toEqual(original[1].pares.map((item) => [item.esquerda, item.direita]));
-        expect(questions[1].pares[0].id_item_esquerda).not.toBe(original[1].pares[0].id_item_esquerda);
+        const originalIds = original[1].pares.flatMap((par) => [par.id_item_esquerda, par.id_item_direita]);
+        const copiedIds = questions[1].pares.flatMap((par) => [par.id_item_esquerda, par.id_item_direita]);
+        expect(new Set(copiedIds).size).toBe(4);
+        expect(copiedIds.every((id) => !originalIds.includes(id))).toBe(true);
+        await pool.query(
+            "INSERT INTO Matriculas (id_aluno, id_turma, status_aprovacao) VALUES (?, ?, 'CURSANDO')",
+            [users.aluno.id_usuario, copiedClassId]
+        );
+        const copiedQuestionnaire = copied.body.questionarios[0].id_questionario;
+        const rng = jest.spyOn(crypto, 'randomInt');
+        try {
+            for (const draw of [1, 0]) {
+                rng.mockReturnValue(draw);
+                const student = await request(app)
+                    .get(`/api/turmas/${copiedClassId}/questionarios/disponivel?tipo=exercicio&id_questionario=${copiedQuestionnaire}`)
+                    .set(auth(tokens.aluno));
+                expect(student.status).toBe(200);
+                const rights = student.body.questionario.perguntas[1].itens_direita.map((item) => item.id_item);
+                const persisted = questions[1].pares.map((par) => par.id_item_direita);
+                expect(rights).toEqual(draw === 1 ? persisted : persisted.reverse());
+                expect(JSON.stringify(student.body)).not.toMatch(/"pares"|id_item_esquerda|id_item_direita/);
+            }
+        } finally { rng.mockRestore(); }
+        const submitted = await request(app).post(`/api/questionarios/${copiedQuestionnaire}/submissoes`)
+            .set(auth(tokens.aluno)).send({ submission_id: crypto.randomUUID(), respostas: [
+                { id_pergunta: questions[0].id_pergunta, resposta_booleana: false },
+                { id_pergunta: questions[1].id_pergunta, matches: questions[1].pares.map((par) => ({
+                    left_id: par.id_item_esquerda, right_id: par.id_item_direita
+                })) }
+            ] });
+        expect(submitted.status).toBe(200);
+        expect(submitted.body.resultado).toMatchObject({ acertos: 2, pontuacao: 2 });
+        expect(await consultarAutor()).toEqual(original);
     });
 });

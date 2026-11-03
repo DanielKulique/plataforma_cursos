@@ -395,15 +395,13 @@ async function carregarParesAssociacao(conexao, idsPerguntas) {
     return rows;
 }
 
-function embaralharSemPreservarPosicao(items) {
+function embaralharAssociacao(items) {
     const resultado = [...items];
     for (let index = resultado.length - 1; index > 0; index -= 1) {
         const outro = crypto.randomInt(index + 1);
         [resultado[index], resultado[outro]] = [resultado[outro], resultado[index]];
     }
-    if (resultado.length > 1 && resultado.every((item, index) => item.id_item === items[index].id_item)) {
-        [resultado[0], resultado[1]] = [resultado[1], resultado[0]];
-    }
+    // Preserve every Fisher-Yates outcome, including identity: excluding it leaks the key.
     return resultado;
 }
 
@@ -575,7 +573,7 @@ async function carregarQuestionario(connection, idTurma, tipo, idQuestionario, i
                 pergunta.itens_esquerda = itens.filter((item) => item.lado === 'ESQUERDA')
                     .sort((a, b) => Number(a.ordem) - Number(b.ordem))
                     .map(({ id_item, texto }) => ({ id_item, texto }));
-                pergunta.itens_direita = embaralharSemPreservarPosicao(
+                pergunta.itens_direita = embaralharAssociacao(
                     itens.filter((item) => item.lado === 'DIREITA')
                         .map(({ id_item, texto }) => ({ id_item, texto }))
                 );

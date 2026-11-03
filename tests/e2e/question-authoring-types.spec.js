@@ -36,7 +36,8 @@ async function expectResponsive(page, selector) {
     }
 }
 
-test('@full teacher builds all question types in the dialog and learner submits exact answers', async ({ browser }) => {
+for (const pairCount of [2, 3]) {
+test(`@full teacher authors ${pairCount}-pair association and mobile learner restores draft and retries submission`, async ({ browser }) => {
     test.setTimeout(90_000);
     const teacherContext = await browser.newContext();
     const teacher = await teacherContext.newPage();
@@ -44,7 +45,7 @@ test('@full teacher builds all question types in the dialog and learner submits 
     const token = (await (await teacher.request.get('/api/auth/csrf')).json()).csrf_token;
     const created = await teacher.request.post('/api/turmas/1/questionarios', {
         headers: { 'X-CSRF-Token': token },
-        data: { titulo: 'Três tipos E2E', tipo: 'EXERCICIO', ativo: true }
+        data: { titulo: `Tipos E2E com ${pairCount} pares`, tipo: 'EXERCICIO', ativo: true }
     });
     expect(created.status()).toBe(201);
     const id = (await created.json()).questionario.id_questionario;
@@ -76,9 +77,11 @@ test('@full teacher builds all question types in the dialog and learner submits 
     await teacher.locator('#par-direita-0').fill('Número 1');
     await teacher.locator('#par-esquerda-1').fill('Letra B');
     await teacher.locator('#par-direita-1').fill('Número 2');
-    await teacher.locator('#adicionar-par').click();
-    await teacher.locator('#par-esquerda-2').fill('Letra C');
-    await teacher.locator('#par-direita-2').fill('Número 3');
+    if (pairCount === 3) {
+        await teacher.locator('#adicionar-par').click();
+        await teacher.locator('#par-esquerda-2').fill('Letra C');
+        await teacher.locator('#par-direita-2').fill('Número 3');
+    }
     await saveQuestion(teacher);
 
     const author = await (await teacher.request.get('/api/turmas/1/questionarios')).json();
@@ -86,7 +89,7 @@ test('@full teacher builds all question types in the dialog and learner submits 
     expect(questions.map((item) => item.tipo_pergunta)).toEqual(['MULTIPLA_ESCOLHA', 'VERDADEIRO_FALSO', 'ASSOCIACAO']);
     expect(questions[0].opcoes.filter((item) => item.correta)).toHaveLength(2);
     expect(Boolean(questions[1].resposta_booleana)).toBe(true);
-    expect(questions[2].pares).toHaveLength(3);
+    expect(questions[2].pares).toHaveLength(pairCount);
 
     const studentContext = await browser.newContext();
     const student = await studentContext.newPage();
@@ -97,8 +100,12 @@ test('@full teacher builds all question types in the dialog and learner submits 
     expect(delivered.status()).toBe(200);
     const studentQuestions = (await delivered.json()).questionario.perguntas;
     expect(JSON.stringify(studentQuestions)).not.toMatch(/"correta"\s*:|"resposta_booleana"\s*:|"pares"\s*:/i);
-    expect(studentQuestions[2].itens_direita).toHaveLength(3);
+    expect(studentQuestions[2].itens_direita).toHaveLength(pairCount);
+    for (const item of [...studentQuestions[2].itens_esquerda, ...studentQuestions[2].itens_direita]) {
+        expect(Object.keys(item).sort()).toEqual(['id_item', 'texto']);
+    }
     await expectResponsive(student, '#lista-questoes');
+    await student.setViewportSize({ width: 320, height: 900 });
     await student.getByLabel('Correta A').check();
     await student.getByLabel('Correta C').check();
     await student.locator(`input[name="pergunta_${questions[1].id_pergunta}"][value="true"]`).check();
@@ -106,10 +113,46 @@ test('@full teacher builds all question types in the dialog and learner submits 
         await student.getByLabel(new RegExp(pair.esquerda)).selectOption({ label: pair.direita });
     }
     await expect(student.locator('#contador-respostas')).toHaveText('3 de 3 respondidas');
+    const readDraft = () => student.evaluate(() => {
+        const key = Object.keys(sessionStorage).find((key) => key.startsWith('questionario:'));
+        return JSON.parse(sessionStorage.getItem(key));
+    });
+    const beforeReload = await readDraft();
+    const reloaded = student.waitForResponse((item) => item.url().includes('/questionarios/disponivel'));
+    await student.reload();
+    expect((await reloaded).status()).toBe(200);
+    await expect(student.locator('#contador-respostas')).toHaveText('3 de 3 respondidas');
+    expect(await readDraft()).toEqual(beforeReload);
+    for (const pair of questions[2].pares) {
+        await expect(student.getByLabel(new RegExp(pair.esquerda))).toHaveValue(pair.id_item_direita);
+    }
+    await student.screenshot({ path: test.info().outputPath(`association-mobile-${pairCount}.png`), fullPage: true });
+
+    // Commit on the real server, then simulate a lost response. The UI must reuse
+    // the draft UUID when the learner retries, without creating a second attempt.
+    let firstResult;
+    let resolveCommitted;
+    const committed = new Promise((resolve) => { resolveCommitted = resolve; });
+    await student.route('**/api/questionarios/*/submissoes', async (route) => {
+        const result = await route.fetch();
+        expect(result.status()).toBe(200);
+        firstResult = (await result.json()).resultado;
+        resolveCommitted();
+        await route.abort('failed');
+    }, { times: 1 });
+    await student.locator('#btn-finalizar-questionario').click();
+    await committed;
+    await expect(student.locator('#btn-finalizar-questionario')).toBeEnabled();
+    expect((await readDraft()).submissionId).toBe(beforeReload.submissionId);
     const submission = student.waitForResponse((item) => /\/submissoes$/.test(item.url()) && item.request().method() === 'POST');
     await student.locator('#btn-finalizar-questionario').click();
-    expect((await submission).status()).toBe(200);
+    const retried = await submission;
+    expect(retried.status()).toBe(200);
+    expect(retried.request().postDataJSON().submission_id).toBe(beforeReload.submissionId);
+    expect((await retried.json()).resultado).toMatchObject({ reutilizada: true, id_tentativa: firstResult.id_tentativa });
     await expect(student.locator('#resultado-descricao')).toContainText('Você acertou 3 de 3 questões');
     await expect(student.locator('#lista-historico')).toContainText('3/3 acertos');
+    await expect(student.locator('#lista-historico .history-item')).toHaveCount(1);
     await Promise.all([teacherContext.close(), studentContext.close()]);
 });
+}

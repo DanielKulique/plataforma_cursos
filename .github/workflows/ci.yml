@@ -110,7 +110,14 @@ jobs:
       - name: Aplicar seed canônico
         run: npm run db:test:seed
       - name: Executar a suíte completa sem retry
-        run: npm run test:all
+        run: |
+          mkdir -p ci-results
+          npm run lint
+          npm test -- --json --outputFile=ci-results/unit.json
+          npm run test:integration -- --json --outputFile=ci-results/integration.json
+          npm run test:security -- --json --outputFile=ci-results/security.json
+          npm run test:migrations:integration -- --json --outputFile=ci-results/migrations.json
+          npm run build
       - name: Verificar isolamento de restore com configuração resolvida e sentinelas fictícias
         env:
           PYTHONDONTWRITEBYTECODE: '1'
@@ -120,18 +127,25 @@ jobs:
           python3 -m unittest discover -s tests/operations -p test_restore_isolation_docker.py -v
       - name: Instalar browsers e dependências do Playwright
         run: npx playwright install --with-deps chromium firefox webkit
-      - name: E2E browser smoke em MySQL descartável separado
-        run: npm run test:e2e:smoke
-      - name: E2E browser smoke crítico em Firefox
-        run: npm run test:e2e:firefox-critical
-      - name: E2E browser smoke crítico em WebKit
-        run: npm run test:e2e:webkit
-      - name: Preservar evidências Playwright em falha
-        if: failure()
+      - name: E2E completo Chromium sem retry em MySQL descartável separado
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ci-results/chromium-results.json
+        run: npm run test:e2e:all -- --project=chromium --add-reporter=json
+      - name: E2E completo Firefox sem retry
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ci-results/firefox-results.json
+        run: npm run test:e2e:all -- --project=firefox-critical --add-reporter=json
+      - name: E2E completo WebKit sem retry
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ci-results/webkit-results.json
+        run: npm run test:e2e:all -- --project=webkit-critical --add-reporter=json
+      - name: Preservar evidências dos browsers
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-e2e-failure-${{ github.run_id }}
+          name: playwright-e2e-${{ github.sha }}
           path: |
+            ci-results/
             playwright-report/
             test-results/
           if-no-files-found: ignore

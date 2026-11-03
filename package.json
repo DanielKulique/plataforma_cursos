@@ -17,6 +17,7 @@
     "test:migrations": "npm run test:migrations:unit && npm run test:migrations:integration",
     "test:integration:watch": "jest --config=jest.integration.config.js --watch",
     "test:e2e": "node scripts/run_e2e.js full",
+    "test:e2e:all": "node scripts/run_e2e.js all",
     "test:e2e:smoke": "node scripts/run_e2e.js smoke",
     "test:e2e:headed": "node scripts/run_e2e.js headed",
     "test:e2e:ui": "node scripts/run_e2e.js ui",

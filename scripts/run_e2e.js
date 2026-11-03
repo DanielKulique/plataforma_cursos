@@ -9,6 +9,7 @@ const compose = ['compose', '--project-name', project, '--file', composeFile];
 const mode = process.argv[2] || 'full';
 const testArgs = ['playwright', 'test'];
 testArgs.push(...process.argv.slice(3));
+if (mode === 'all') testArgs.push('--grep=.*', '--retries=0', '--forbid-only', '--fail-on-flaky-tests');
 if (mode === 'smoke') testArgs.push('--project=chromium', '--grep', '@smoke');
 if (mode === 'full') testArgs.push('--project=chromium', '--grep', '@smoke|@full');
 if (mode === 'mobile') testArgs.push('--project=chromium', '--grep', '@full');

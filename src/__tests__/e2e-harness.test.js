@@ -36,8 +36,11 @@ describe('E2E disposable environment contract', () => {
         expect(seed).toContain('example.test');
     });
 
-    test('CI installs Playwright Chromium and runs browser smoke', () => {
+    test('CI installs all browsers and runs each complete suite without retry', () => {
         expect(workflow).toContain('playwright install --with-deps chromium');
-        expect(workflow).toContain('npm run test:e2e:smoke');
+        for (const project of ['chromium', 'firefox-critical', 'webkit-critical']) {
+            expect(workflow).toContain(`npm run test:e2e:all -- --project=${project}`);
+        }
+        expect(runner).toContain("'--grep=.*', '--retries=0', '--forbid-only', '--fail-on-flaky-tests'");
     });
 });

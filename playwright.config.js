@@ -25,7 +25,7 @@ module.exports = defineConfig({
     },
     projects: [
         { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-        { name: 'firefox-critical', grep: /@smoke/, use: { ...devices['Desktop Firefox'] } },
-        { name: 'webkit-critical', grep: /@smoke/, use: { ...devices['Desktop Safari'] } }
+        { name: 'firefox-critical', use: { ...devices['Desktop Firefox'] } },
+        { name: 'webkit-critical', use: { ...devices['Desktop Safari'] } }
     ]
 });

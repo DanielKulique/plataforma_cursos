@@ -12,6 +12,7 @@ production-content/materials
 node_modules
 storage
 coverage
+ci-results
 docs
 src/__tests__
 *.log

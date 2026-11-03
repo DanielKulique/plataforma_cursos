@@ -41,9 +41,11 @@ process.exit('${command}' === 'npx' ? Number(process.env.CI_FIXTURE_TEST_EXIT) :
         let reference;
         for (const project of ['chromium', 'firefox-critical', 'webkit-critical']) {
             const report = path.join(directory, `${project}.json`);
+            const childEnvironment = { ...environment, PLAYWRIGHT_JSON_OUTPUT_NAME: report };
+            delete childEnvironment.JEST_WORKER_ID;
             await exec(process.execPath, [path.join(root, 'node_modules/playwright/cli.js'), 'test',
                 '--list', `--project=${project}`, '--reporter=json'], {
-                cwd: root, env: { ...environment, PLAYWRIGHT_JSON_OUTPUT_NAME: report }, timeout: 10000
+                cwd: root, env: childEnvironment, timeout: 10000
             });
             const titles = [];
             function collect(suite) {

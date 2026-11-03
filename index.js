@@ -67,7 +67,7 @@ function createApp(config = runtimeConfig) {
     }));
     const origens = String(process.env.CORS_ORIGIN || '').split(',').map((item) => item.trim()).filter(Boolean);
     app.use(cors({ origin: origens.length ? origens : false }));
-    app.use(express.json({ limit: '256kb' }));
+    app.use(express.json({ limit: '256kb', inflate: false }));
     app.use('/assets/materiais', (req, res) => res.status(404).json({
         mensagem: 'Material acadêmico disponível somente pela rota autenticada do conteúdo.'
     }));

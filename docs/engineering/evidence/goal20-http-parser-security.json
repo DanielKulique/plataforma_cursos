@@ -1,0 +1,413 @@
+{
+  "goal": 20,
+  "finding": "F18-04",
+  "status": "HTTP_PARSER_SECURITY_READY",
+  "date": "2026-11-03",
+  "timezone": "America/Sao_Paulo",
+  "baseline_commit": "dcccc29394a92574739c5b4351f240fe5d6e127e",
+  "branch": "hotfix/http-parser-security-goal20",
+  "worktree": "/mnt/disco/projetoSite/worktrees/plataforma-cursos-goal20",
+  "initial_worktree_clean": true,
+  "versions": {
+    "node_host": "24.20.0",
+    "npm": "11.19.0",
+    "node_container": "20.20.2",
+    "express": "5.2.1",
+    "body-parser": "2.3.0",
+    "raw-body": "3.0.2"
+  },
+  "advisory": {
+    "id": "GHSA-27r3-jxmh-p828",
+    "cve": "CVE-2026-111181",
+    "source": "https://github.com/expressjs/body-parser/security/advisories/GHSA-27r3-jxmh-p828",
+    "affected_installed_line": ">=2.0.0 <2.4.0",
+    "patched_version": "2.4.0",
+    "applicable_before": true,
+    "reason": "Global express.json with default inflate, mounted before auth and routing.",
+    "mitigation": "inflate: false; non-identity JSON encoding rejected with 415 before creating a decompression stream.",
+    "unmitigated_crash_reproduced": false
+  },
+  "parser": {
+    "before": {
+      "limit": "256kb",
+      "inflate": "default true"
+    },
+    "after": {
+      "limit": "256kb",
+      "inflate": false
+    },
+    "limit_bytes": 262144,
+    "runtime_files_changed": [
+      "index.js"
+    ]
+  },
+  "dependencies_changed": false,
+  "validation": {
+    "node24": {
+      "success": true,
+      "suites": 4,
+      "passed": 41,
+      "failed": 0,
+      "results": [
+        {
+          "file": "src/__tests__/auth.controller.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "deve autenticar por cookie HttpOnly sem expor o JWT no corpo",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar erro 401 quando credenciais forem inválidas",
+              "status": "passed"
+            },
+            {
+              "title": "não expõe mensagem técnica de falha inesperada",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar dados do usuário autenticado",
+              "status": "passed"
+            },
+            {
+              "title": "deve responder com os dados autoritativos fornecidos pelo middleware",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar sucesso quando código for válido",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar erro quando código for inválido",
+              "status": "passed"
+            },
+            {
+              "title": "não cria código quando a entrega de e-mail está desabilitada",
+              "status": "passed"
+            },
+            {
+              "title": "não expõe o código quando o envio está em modo debug",
+              "status": "passed"
+            },
+            {
+              "title": "não cria token quando a entrega de e-mail está desabilitada",
+              "status": "passed"
+            },
+            {
+              "title": "mantém a resposta indistinguível entre conta ausente e falha do provedor",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/middlewares.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "deve chamar next() com existência e papel atuais confirmados no banco",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar 401 quando token não for fornecido",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar 401 quando token for inválido",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar 401 quando token não tiver prefixo Bearer",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar 401 quando o token não identificar um usuário",
+              "status": "passed"
+            },
+            {
+              "title": "deve invalidar a sessão quando o usuário não existir mais",
+              "status": "passed"
+            },
+            {
+              "title": "deve responder 500 sem detalhes quando a consulta de sessão falhar",
+              "status": "passed"
+            },
+            {
+              "title": "deve chamar next() quando usuário tiver o role esperado",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar 403 quando usuário não tiver o role esperado",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar 403 quando usuário não estiver autenticado",
+              "status": "passed"
+            },
+            {
+              "title": "deve funcionar para todos os tipos de role",
+              "status": "passed"
+            },
+            {
+              "title": "deve chamar next() quando usuário logado for o mesmo da requisição",
+              "status": "passed"
+            },
+            {
+              "title": "deve chamar next() quando usuário for ADMIN",
+              "status": "passed"
+            },
+            {
+              "title": "deve retornar 403 quando usuário tentar acessar dados de outro usuário",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/http-response.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "preserva mensagem e código de um erro de domínio seguro",
+              "status": "passed"
+            },
+            {
+              "title": "substitui erro interno inesperado por mensagem genérica",
+              "status": "passed"
+            },
+            {
+              "title": "substitui erro interno inesperado por mensagem genérica",
+              "status": "passed"
+            },
+            {
+              "title": "substitui erro interno inesperado por mensagem genérica",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/http-parser.security.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "accepts ordinary UTF-8 JSON and explicit identity encoding",
+              "status": "passed"
+            },
+            {
+              "title": "returns a controlled 400 for invalid/strict JSON {\"email\": and recovers",
+              "status": "passed"
+            },
+            {
+              "title": "returns a controlled 400 for invalid/strict JSON null and recovers",
+              "status": "passed"
+            },
+            {
+              "title": "returns a controlled 400 for invalid/strict JSON 42 and recovers",
+              "status": "passed"
+            },
+            {
+              "title": "keeps the exact 256 KiB boundary and returns 413 above it, then recovers",
+              "status": "passed"
+            },
+            {
+              "title": "rejects valid and malformed gzip bodies with 415, then recovers",
+              "status": "passed"
+            },
+            {
+              "title": "rejects valid and malformed deflate bodies with 415, then recovers",
+              "status": "passed"
+            },
+            {
+              "title": "rejects valid and malformed br bodies with 415, then recovers",
+              "status": "passed"
+            },
+            {
+              "title": "rejects gzip frame plus late trailing bytes on an unmatched route and stays alive",
+              "status": "passed"
+            },
+            {
+              "title": "rejects deflate frame plus late trailing bytes on an unmatched route and stays alive",
+              "status": "passed"
+            },
+            {
+              "title": "rejects br frame plus late trailing bytes on an unmatched route and stays alive",
+              "status": "passed"
+            },
+            {
+              "title": "preserves real authentication and cookie CSRF enforcement after parser errors",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    "node20": {
+      "success": true,
+      "suites": 1,
+      "passed": 12,
+      "failed": 0,
+      "results": [
+        {
+          "file": "src/__tests__/http-parser.security.test.js",
+          "status": "passed",
+          "assertions": [
+            {
+              "title": "accepts ordinary UTF-8 JSON and explicit identity encoding",
+              "status": "passed"
+            },
+            {
+              "title": "returns a controlled 400 for invalid/strict JSON {\"email\": and recovers",
+              "status": "passed"
+            },
+            {
+              "title": "returns a controlled 400 for invalid/strict JSON null and recovers",
+              "status": "passed"
+            },
+            {
+              "title": "returns a controlled 400 for invalid/strict JSON 42 and recovers",
+              "status": "passed"
+            },
+            {
+              "title": "keeps the exact 256 KiB boundary and returns 413 above it, then recovers",
+              "status": "passed"
+            },
+            {
+              "title": "rejects valid and malformed gzip bodies with 415, then recovers",
+              "status": "passed"
+            },
+            {
+              "title": "rejects valid and malformed deflate bodies with 415, then recovers",
+              "status": "passed"
+            },
+            {
+              "title": "rejects valid and malformed br bodies with 415, then recovers",
+              "status": "passed"
+            },
+            {
+              "title": "rejects gzip frame plus late trailing bytes on an unmatched route and stays alive",
+              "status": "passed"
+            },
+            {
+              "title": "rejects deflate frame plus late trailing bytes on an unmatched route and stays alive",
+              "status": "passed"
+            },
+            {
+              "title": "rejects br frame plus late trailing bytes on an unmatched route and stays alive",
+              "status": "passed"
+            },
+            {
+              "title": "preserves real authentication and cookie CSRF enforcement after parser errors",
+              "status": "passed"
+            }
+          ]
+        }
+      ]
+    },
+    "lint": {
+      "command": "npm run lint",
+      "exit_code": 0
+    },
+    "build": {
+      "command": "npm run build",
+      "exit_code": 0,
+      "scope": "Static database isolation and production asset validation"
+    },
+    "diff_check": {
+      "command": "git diff --check; git diff --cached --check",
+      "exit_code": 0
+    },
+    "runtime_dependency_inspection": {
+      "command": "npm ls express body-parser raw-body",
+      "exit_code": 0
+    },
+    "audit": {
+      "command": "npm audit --omit=dev --package-lock-only --json",
+      "exit_code": 1,
+      "body_parser": {
+        "name": "body-parser",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1243074,
+            "name": "body-parser",
+            "dependency": "body-parser",
+            "title": "body-parser vulnerable to Denial of Service via trailing bytes after a compressed request body",
+            "url": "https://github.com/advisories/GHSA-27r3-jxmh-p828",
+            "severity": "high",
+            "cwe": [
+              "CWE-248"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=2.0.0 <2.4.0"
+          }
+        ],
+        "effects": [],
+        "range": "2.0.0 - 2.3.0",
+        "nodes": [
+          "node_modules/body-parser"
+        ],
+        "fixAvailable": true
+      },
+      "interpretation": "Package remains vulnerable by version. Official configuration workaround mitigates the application path; no zero-audit claim."
+    }
+  },
+  "commands": {
+    "parser": "npx --no-install jest --runInBand --runTestsByPath src/__tests__/http-parser.security.test.js --detectOpenHandles",
+    "targeted_node24": "env NODE_ENV=test APP_ENV=test DB_HOST=127.0.0.1 DB_PORT=33307 DB_USER=unused DB_PASSWORD=unused DB_NAME=plataforma_cursos_test DB_ENVIRONMENT_IDENTITY=plataforma_cursos_test JWT_SECRET=parser-fixture-only-secret-with-at-least-32-characters npx --no-install jest --runInBand --runTestsByPath src/__tests__/http-parser.security.test.js src/__tests__/http-response.test.js src/__tests__/auth.controller.test.js src/__tests__/middlewares.test.js --detectOpenHandles",
+    "node20": "docker run --rm --pull=never --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --mount type=bind,source=/mnt/disco/projetoSite/worktrees/plataforma-cursos-goal20,target=/app,readonly --workdir /app --entrypoint sh node:20-bookworm-slim -c 'node --version && node node_modules/jest/bin/jest.js --runInBand --runTestsByPath src/__tests__/http-parser.security.test.js --detectOpenHandles --json'"
+  },
+  "fixture_safety": {
+    "http_destination": "127.0.0.1, ephemeral child-selected port only",
+    "database_module": "Replaced with throwing methods; no pool created",
+    "dotenv": "Not read; synthetic environment only",
+    "auth_model": "Synthetic credentials and user only",
+    "real_components": [
+      "entrypoint",
+      "parser",
+      "auth routes/controllers",
+      "JWT/cookies",
+      "checkAuth",
+      "CSRF",
+      "HTTP error handler"
+    ],
+    "trailing_bytes": "Complete gzip/deflate/br frame, then junk after 50 ms in chunked body on unmatched route",
+    "post_error_verification": "Wait 100 ms, check exitCode/signalCode null, next login returns 200",
+    "uncaught_exception_handler_installed": false,
+    "unhandled_rejections": "strict"
+  },
+  "preservation": {
+    "/mnt/disco/projetoSite/plataforma_cursos": {
+      "head": "b94717963cc29f6fa9cfaf2c170ee3a61ad97a98",
+      "file_count": 725,
+      "head_unchanged": true,
+      "status_unchanged": true,
+      "all_sha256_unchanged": true,
+      "snapshot_sha256": "b3f4e4a56d10c7bd2d6af363fb6a1573933fbacc632f3c557535c0d4405615f0"
+    },
+    "/mnt/disco/projetoSite/worktrees/plataforma-cursos-goal19": {
+      "head": "dcccc29394a92574739c5b4351f240fe5d6e127e",
+      "file_count": 734,
+      "head_unchanged": true,
+      "status_unchanged": true,
+      "all_sha256_unchanged": true,
+      "snapshot_sha256": "20c51d1253526fafb9145f4a2c37b7a3021ab945ea8335ce380f8b88d671319f"
+    }
+  },
+  "source_sha256": {
+    "index.js": "8281fb5fcfa7b36242c671788f5deb0bce4f55994447f84f2a92aef41bc64df0",
+    "src/__tests__/http-parser.security.test.js": "1dc52e06a920a570941aca7481fb877c2c7e902d55dfe74ad3001e1a61a9783a",
+    "src/__tests__/fixtures/http-parser-server.js": "f80e673eb7e1c305a562e7db1ed2b4e8f021f2b520da724fa84ebd8592f9d6c3",
+    "docs/engineering/GOAL_20_HTTP_PARSER_SECURITY.md": "11e837a6144f553b2d4cf811a9049eb719f4c0e6d100acc4eed5f970c04d28fe"
+  },
+  "remaining_risks": [
+    "body-parser@2.3.0 remains in lock; re-enabling inflate or adding a default parser reopens the affected path.",
+    "Undocumented external clients sending compressed JSON will receive 415.",
+    "Other Goal 18 findings/advisories, general resource-exhaustion protection, remote CI and deployed image were not revalidated."
+  ],
+  "production_payloads_sent": false,
+  "database_access": false,
+  "deployment_performed": false,
+  "push_performed": false
+}

@@ -15,6 +15,7 @@ async function login(page, email) {
     const destination = email.startsWith('admin.') ? /admin\.html$/
         : email.startsWith('professor.') ? /professor\.html$/ : /sala-virtual\.html$/;
     await expect(page).toHaveURL(destination);
+    await page.waitForLoadState('load');
 }
 
 test('@full approved learning flow issues a private PDF and a publicly verifiable certificate', async ({ browser }) => {

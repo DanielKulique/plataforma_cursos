@@ -26,6 +26,7 @@ async function login(page) {
     const response = page.waitForResponse((item) => item.url().endsWith('/api/auth/login'));
     await page.getByRole('button', { name: 'Entrar' }).click();
     expect((await response).status()).toBe(200);
+    await page.waitForURL(/sala-virtual\.html$/, { waitUntil: 'load' });
 }
 
 test('@full API errors stay safe and a certificate-list failure leaves the course screen usable', async ({ browser }) => {
@@ -41,7 +42,7 @@ test('@full API errors stay safe and a certificate-list failure leaves the cours
             body: JSON.stringify(errorBody)
         }));
         await login(page);
-        await page.goto('/meus-certificados.html?id_turma=1');
+        await page.goto('/meus-certificados.html?id_turma=1', { waitUntil: 'commit' });
 
         if (status === 401) {
             await expect(page).toHaveURL(/login\.html\?motivo=auth/);

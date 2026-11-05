@@ -17,6 +17,7 @@ async function login(page, email) {
     expect((await responsePromise).status()).toBe(200);
     const destination = email.startsWith('aluno.') ? 'sala-virtual' : email.startsWith('professor.') ? 'professor.html' : 'admin.html';
     await expect(page).toHaveURL(new RegExp(destination));
+    await page.waitForLoadState('load');
 }
 
 async function expectNoHorizontalOverflow(page, path, viewport) {

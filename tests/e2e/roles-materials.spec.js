@@ -14,6 +14,9 @@ async function login(page, email) {
     const loginResponse = page.waitForResponse((response) => response.url().endsWith('/api/auth/login'));
     await page.getByRole('button', { name: 'Entrar' }).click();
     expect((await loginResponse).status()).toBe(200);
+    const destination = email.startsWith('admin.') ? '/admin.html'
+        : email.startsWith('professor.') ? '/professor.html' : '/sala-virtual.html';
+    await page.waitForURL((url) => url.pathname === destination, { waitUntil: 'load' });
 }
 
 async function csrf(page) {

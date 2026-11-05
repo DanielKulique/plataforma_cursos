@@ -15,6 +15,7 @@ async function login(page, email) {
     expect((await response).status()).toBe(200);
     const destination = email.startsWith('admin.') ? 'admin\\.html' : email.startsWith('professor.') ? 'professor\\.html' : 'sala-virtual\\.html';
     await expect(page).toHaveURL(new RegExp(destination + '$'));
+    await page.waitForLoadState('load');
 }
 
 async function csrf(page) {

@@ -24,6 +24,7 @@ test('@smoke login, sessão e área privada funcionam para os três perfis', asy
         const response = await loginResponse;
         expect(response.status(), account.email).toBe(200);
         await expect(page).toHaveURL(new URL(account.route, page.url()).toString());
+        await page.waitForLoadState('load');
 
         const cookies = await context.cookies();
         const sessionCookie = cookies.find((cookie) => cookie.httpOnly);
@@ -62,6 +63,7 @@ test('@full CSRF blocks missing token and permits logout with the session token'
     await page.getByRole('button', { name: 'Entrar' }).click();
     expect((await loginResponse).status()).toBe(200);
     await expect(page).toHaveURL(/sala-virtual\.html$/);
+    await page.waitForLoadState('load');
 
     const rejectedStatus = await page.evaluate(async () => (
         await fetch('/api/auth/logout', { method: 'POST' })

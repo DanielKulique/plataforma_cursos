@@ -46,6 +46,7 @@ test('@smoke a falha na API de certificados não derruba a Sala Virtual', async 
     await page.getByRole('button', { name: 'Entrar' }).click();
     expect((await loginResponse).status()).toBe(200);
 
+    await page.waitForURL(/sala-virtual\.html$/, { waitUntil: 'load' });
     await page.goto('/sala-virtual.html');
     await expect(page.getByText('Turma E2E Aberta')).toBeVisible();
     const failedSecondaryRequest = await page.evaluate(async () => {

@@ -16,6 +16,7 @@ async function login(page, email) {
     const destination = email.startsWith('admin.') ? 'admin\\.html' : email.startsWith('professor.') ? 'professor\\.html' : 'sala-virtual\\.html';
     await expect(page).toHaveURL(new RegExp(destination + '$'));
     await page.waitForLoadState('load');
+    await expect(page.locator('body')).toHaveAttribute('data-session-state', email.split('.')[0]);
 }
 
 async function csrf(page) {

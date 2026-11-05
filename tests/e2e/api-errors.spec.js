@@ -27,6 +27,7 @@ async function login(page) {
     await page.getByRole('button', { name: 'Entrar' }).click();
     expect((await response).status()).toBe(200);
     await page.waitForURL(/sala-virtual\.html$/, { waitUntil: 'load' });
+    await expect(page.locator('body')).toHaveAttribute('data-session-state', 'aluno');
 }
 
 test('@full API errors stay safe and a certificate-list failure leaves the course screen usable', async ({ browser }) => {
@@ -36,16 +37,22 @@ test('@full API errors stay safe and a certificate-list failure leaves the cours
         const uncaught = [];
         page.on('pageerror', (error) => uncaught.push(error.message));
         await page.route('https://**/*', (route) => route.abort());
-        await page.route('**/api/certificados/meus', (route) => route.fulfill({
-            status,
-            contentType: 'application/json',
-            body: JSON.stringify(errorBody)
-        }));
         await login(page);
+        let expired = false;
+        await page.route('**/api/auth/me', (route) => expired
+            ? route.fulfill({ status: 401, contentType: 'application/json', body: '{}' })
+            : route.continue());
+        await page.route('**/api/certificados/meus', (route) => {
+            // A real expired session also fails the login page's session check.
+            // Leaving /auth/me authenticated would bounce straight back to the course.
+            expired = status === 401;
+            return route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(errorBody) });
+        });
         await page.goto('/meus-certificados.html?id_turma=1', { waitUntil: 'commit' });
 
         if (status === 401) {
             await expect(page).toHaveURL(/login\.html\?motivo=auth/);
+            await expect(page.getByLabel('E-mail')).toBeVisible();
         } else {
             await expect(page.getByRole('heading', { name: /Certificado/ })).toBeVisible();
             await expect(page.getByRole('navigation', { name: 'Áreas do curso' })).toBeVisible();

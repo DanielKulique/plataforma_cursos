@@ -25,6 +25,8 @@ test('@smoke login, sessão e área privada funcionam para os três perfis', asy
         expect(response.status(), account.email).toBe(200);
         await expect(page).toHaveURL(new URL(account.route, page.url()).toString());
         await page.waitForLoadState('load');
+        const role = account.email.split('.')[0];
+        await expect(page.locator('body')).toHaveAttribute('data-session-state', role);
 
         const cookies = await context.cookies();
         const sessionCookie = cookies.find((cookie) => cookie.httpOnly);
@@ -33,8 +35,9 @@ test('@smoke login, sessão e área privada funcionam para os três perfis', asy
         const session = await page.request.get('/api/auth/me');
         expect(session.status()).toBe(200);
 
-        const protectedResponse = await page.goto(account.route);
+        const protectedResponse = await page.goto(account.route, { waitUntil: 'commit' });
         expect(protectedResponse.status()).toBe(200);
+        await expect(page.locator('body')).toHaveAttribute('data-session-state', role);
         await context.close();
     }
 });
@@ -64,6 +67,7 @@ test('@full CSRF blocks missing token and permits logout with the session token'
     expect((await loginResponse).status()).toBe(200);
     await expect(page).toHaveURL(/sala-virtual\.html$/);
     await page.waitForLoadState('load');
+    await expect(page.locator('body')).toHaveAttribute('data-session-state', 'aluno');
 
     const rejectedStatus = await page.evaluate(async () => (
         await fetch('/api/auth/logout', { method: 'POST' })

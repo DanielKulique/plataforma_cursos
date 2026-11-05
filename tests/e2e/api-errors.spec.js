@@ -28,10 +28,13 @@ async function login(page) {
     expect((await response).status()).toBe(200);
     await page.waitForURL(/sala-virtual\.html$/, { waitUntil: 'load' });
     await expect(page.locator('body')).toHaveAttribute('data-session-state', 'aluno');
+    // Session UI renders before the course request starts. Finish that request
+    // before navigating away so WebKit does not report an unload as a fetch error.
+    await expect(page.getByText('Turma E2E Aberta')).toBeVisible();
 }
 
 test('@full API errors stay safe and a certificate-list failure leaves the course screen usable', async ({ browser }) => {
-    for (const [status, statusMessage, listMessage] of cases) {
+    for (const [status, statusMessage, listMessage] of cases) await test.step(`HTTP ${status}`, async () => {
         const context = await browser.newContext();
         const page = await context.newPage();
         const uncaught = [];
@@ -65,5 +68,5 @@ test('@full API errors stay safe and a certificate-list failure leaves the cours
         }
         expect(uncaught).toEqual([]);
         await context.close();
-    }
+    });
 });

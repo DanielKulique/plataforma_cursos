@@ -49,12 +49,18 @@ test('@full private learner, teacher and admin pages enforce the role matrix in 
 
     for (const [role, email] of roleCases) {
         const context = await browser.newContext();
-        const page = await context.newPage();
-        await page.route('https://**/*', (route) => route.abort());
-        if (email) await login(page, email);
+        await context.route('https://**/*', (route) => route.abort());
+        if (email) {
+            const loginPage = await context.newPage();
+            await login(loginPage, email);
+            await loginPage.close();
+        }
 
         for (const group of protectedPages) {
-            for (const path of group.paths) {
+            for (const path of group.paths) await test.step(`${role} ${path}`, async () => {
+                // Each matrix cell starts in a fresh document. Reusing the page
+                // races pending course loads and redirects from the previous cell.
+                const page = await context.newPage();
                 // Session checks may redirect before this document finishes loading.
                 // Observe its commit, then await the asserted final destination below.
                 await page.goto(path, { waitUntil: 'commit' });
@@ -68,7 +74,9 @@ test('@full private learner, teacher and admin pages enforce the role matrix in 
                     await expect(page).toHaveURL(/index\.html\?motivo=nao_autorizado/);
                 }
                 await page.waitForLoadState('load');
-            }
+                if (role === 'PUBLIC') await expect(page.getByLabel('E-mail')).toBeVisible();
+                await page.close();
+            });
         }
         await context.close();
     }

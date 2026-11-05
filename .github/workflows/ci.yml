@@ -124,7 +124,11 @@ jobs:
           RUN_RESTORE_DOCKER_TESTS: '1'
         run: |
           python3 -m unittest discover -s tests/operations -p test_restore_isolation.py -v
-          python3 -m unittest discover -s tests/operations -p test_restore_isolation_docker.py -v
+          # The fixture transfers its private extracted tree to the app UID (1000).
+          # Hosted runners use a different UID; only this synthetic drill needs root.
+          sudo env PATH="$PATH" PYTHONDONTWRITEBYTECODE=1 RUN_RESTORE_DOCKER_TESTS=1 \
+            GOAL19_EVIDENCE_FILE="$GITHUB_WORKSPACE/ci-results/restore-isolation.json" \
+            python3 -m unittest discover -s tests/operations -p test_restore_isolation_docker.py -v
       - name: Instalar browsers e dependências do Playwright
         run: npx playwright install --with-deps chromium firefox webkit
       - name: E2E completo Chromium sem retry em MySQL descartável separado

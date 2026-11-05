@@ -33,10 +33,9 @@ async function login(page) {
     await expect(page.getByText('Turma E2E Aberta')).toBeVisible();
 }
 
-test('@full API errors stay safe and a certificate-list failure leaves the course screen usable', async ({ browser }) => {
-    for (const [status, statusMessage, listMessage] of cases) await test.step(`HTTP ${status}`, async () => {
-        const context = await browser.newContext();
-        const page = await context.newPage();
+// Each independent status keeps the normal per-test deadline and automatic context cleanup.
+for (const [status, statusMessage, listMessage] of cases) {
+    test(`@full API HTTP ${status} stays safe and leaves the course screen usable`, async ({ page }) => {
         const uncaught = [];
         page.on('pageerror', (error) => uncaught.push(error.message));
         await page.route('https://**/*', (route) => route.abort());
@@ -67,6 +66,5 @@ test('@full API errors stay safe and a certificate-list failure leaves the cours
             expect(visibleText).not.toMatch(/at \/srv\/private\//);
         }
         expect(uncaught).toEqual([]);
-        await context.close();
     });
-});
+}

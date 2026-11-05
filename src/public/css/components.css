@@ -1655,15 +1655,17 @@
 
 .academic-page .question-fieldset {
   min-inline-size: 0;
-  display: grid;
-  gap: var(--space-4);
+  display: block;
   margin: 0;
   padding: 0;
   border: 0;
 }
 
 .academic-page .question-fieldset legend {
-  max-inline-size: 70ch;
+  /* Keep native fieldset sizing: WebKit's grid fieldsets overflow on narrow screens. */
+  max-inline-size: min(100%, 70ch);
+  margin-block-end: var(--space-4);
+  overflow-wrap: anywhere;
   padding: 0;
   color: var(--color-text);
   font-size: var(--font-size-16);

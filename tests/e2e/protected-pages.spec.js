@@ -37,6 +37,7 @@ async function login(page, email) {
     expect((await response).status()).toBe(200);
     const destination = email.startsWith('aluno.') ? 'sala-virtual' : email.startsWith('professor.') ? 'professor.html' : 'admin.html';
     await expect(page).toHaveURL(new RegExp(destination));
+    await page.waitForLoadState('load');
 }
 
 test('@full private learner, teacher and admin pages enforce the role matrix in browser navigation', async ({ browser }) => {
@@ -53,7 +54,9 @@ test('@full private learner, teacher and admin pages enforce the role matrix in 
 
         for (const group of protectedPages) {
             for (const path of group.paths) {
-                await page.goto(path);
+                // Session checks may redirect before this document finishes loading.
+                // Observe its commit, then await the asserted final destination below.
+                await page.goto(path, { waitUntil: 'commit' });
                 const allowed = group.roles.includes(role);
                 if (role === 'PUBLIC') {
                     await expect(page).toHaveURL(/login\.html\?motivo=auth/);
@@ -63,6 +66,7 @@ test('@full private learner, teacher and admin pages enforce the role matrix in 
                 } else {
                     await expect(page).toHaveURL(/index\.html\?motivo=nao_autorizado/);
                 }
+                await page.waitForLoadState('load');
             }
         }
         await context.close();

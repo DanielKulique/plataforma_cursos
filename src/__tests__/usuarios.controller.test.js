@@ -141,6 +141,17 @@ describe('Usuarios Controller', () => {
     });
 
     describe('GET /api/usuarios', () => {
+        it('encaminha busca e papel ao banco preservando o contrato paginado', async () => {
+            usuariosModel.buscarTodosUsuarios.mockResolvedValue({ items: [], total: 0 });
+            const response = await request(app).get('/api/usuarios?q=Maria&tipo=PROFESSOR&page=2&limit=25');
+            expect(response.status).toBe(200);
+            expect(usuariosModel.buscarTodosUsuarios).toHaveBeenCalledWith({ q: 'Maria', tipo: 'PROFESSOR', page: 2, limit: 25, offset: 25 });
+            expect(response.body).toEqual({ items: [], total: 0, page: 2, limit: 25 });
+        });
+        it('recusa papel inválido antes de consultar o model', async () => {
+            expect((await request(app).get('/api/usuarios?tipo=INVALIDO')).status).toBe(400);
+            expect(usuariosModel.buscarTodosUsuarios).not.toHaveBeenCalled();
+        });
         it('deve retornar lista de usuários com sucesso', async () => {
             const usuariosMock = [
                 {

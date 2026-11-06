@@ -18,8 +18,8 @@ if (mode === 'webkit') testArgs.push('--project=webkit-critical', '--grep', '@sm
 if (mode === 'headed') testArgs.push('--headed');
 if (mode === 'ui') testArgs.push('--ui');
 
-function run(command, args, { allowFailure = false } = {}) {
-    const result = spawnSync(command, args, { stdio: 'inherit', env: process.env });
+function run(command, args, { allowFailure = false, env = process.env } = {}) {
+    const result = spawnSync(command, args, { stdio: 'inherit', env });
     if (result.error) throw result.error;
     if (!allowFailure && result.status !== 0) {
         throw new Error(`${command} ${args.join(' ')} terminou com código ${result.status}.`);
@@ -56,7 +56,7 @@ async function main() {
         run('docker', [...compose, 'run', '--rm', 'migrate', 'node', 'scripts/seed_e2e_database.js']);
         run('docker', [...compose, 'up', '--detach', 'app']);
         await waitUntilReady();
-        run('npx', testArgs);
+        run('npx', testArgs, { env: { ...process.env, E2E_COMPOSE_PROJECT: project } });
     } catch (error) {
         failure = error;
         console.error(error.message);

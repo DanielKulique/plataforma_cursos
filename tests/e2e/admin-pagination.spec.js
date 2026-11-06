@@ -175,7 +175,12 @@ test('@full admin pagination loading errors empty states and mobile controls', a
             const bounds = await child.boundingBox();
             expect(bounds.y + bounds.height).toBeLessThanOrEqual(navBounds.y + navBounds.height + 1);
         }
-        for (const button of await nav.getByRole('button').all()) expect((await button.boundingBox()).height).toBeGreaterThanOrEqual(44);
+        for (const button of await nav.getByRole('button').all()) {
+            await expect(button).toHaveCSS('min-block-size', '44px');
+            // Firefox can report 43.99993896484375 for a CSS minimum of 44px.
+            // Allow at most 0.01px of measurement rounding, keeping the CSS requirement.
+            expect((await button.boundingBox()).height).toBeGreaterThanOrEqual(44 - 0.01);
+        }
         await page.screenshot({ path: testInfo.outputPath(`admin-${width}.png`) });
     }
     await page.setViewportSize({ width: 320, height: 900 });

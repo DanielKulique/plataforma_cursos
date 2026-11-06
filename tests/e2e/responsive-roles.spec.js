@@ -9,7 +9,15 @@ const viewports = [
 ];
 
 async function login(page, email) {
-    await page.goto('/login.html');
+    // Module submit handlers are ready at DOMContentLoaded; login needs the form,
+    // not the global load signal for images/fonts. Assert readiness explicitly.
+    const response = await page.goto('/login.html', { waitUntil: 'domcontentloaded' });
+    expect(response?.status()).toBe(200);
+    await expect(page.locator('#form-login')).toBeVisible();
+    await expect(page.locator('#form-login')).toHaveAttribute('aria-busy', 'false');
+    await expect(page.getByLabel('E-mail')).toBeEditable();
+    await expect(page.getByLabel('Senha')).toBeEditable();
+    await expect(page.getByRole('button', { name: 'Entrar', exact: true })).toBeEnabled();
     await page.getByLabel('E-mail').fill(email);
     await page.getByLabel('Senha').fill(password);
     const responsePromise = page.waitForResponse((response) => response.url().endsWith('/api/auth/login'));

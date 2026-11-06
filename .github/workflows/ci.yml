@@ -94,8 +94,6 @@ jobs:
       MOTOR_IA_INTERNAL_API_TOKEN: ci-ephemeral-internal-token
       MOTOR_IA_API_URL: http://127.0.0.1:8000
       DETECTOR_ENABLED: 'true'
-      # Fresh per attempt: never reuse browser binaries from another version/run.
-      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/playwright-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -204,6 +202,10 @@ jobs:
         run: docker build --build-arg APP_RELEASE_SHA="$GITHUB_SHA" --tag plataforma-cursos:ci . 2>&1 | tee ci-results/docker-build.log
       - name: Validar recuperação de certificados na imagem com dados sintéticos
         run: python3 -u tests/operations/test_certificate_recovery_runtime.py --image plataforma-cursos:ci --allow-lab-apply 2>&1 | tee ci-results/certificate-recovery-runtime.log
+      - name: Configurar diretório isolado do Playwright
+        shell: bash
+        run: |
+          echo "PLAYWRIGHT_BROWSERS_PATH=$RUNNER_TEMP/playwright-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_ENV"
       - name: Instalar browsers e dependências do Playwright
         timeout-minutes: 10
         shell: bash

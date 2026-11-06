@@ -1,3 +1,4 @@
+const { containsPattern } = require('../../utils/list-filters');
 const db = require('../../config/database');
 
 const STATUS_TURMA = ['ABERTA', 'FECHADA', 'ENCERRADA'];
@@ -167,10 +168,24 @@ async function buscarTurmaPorId(id) {
 }
 
 async function buscarTodasTurmas(pagination) {
-    const [[count]] = await db.query('SELECT COUNT(*) AS total FROM Turmas');
+    const clauses = [];
+    const values = [];
+    if (pagination.q) {
+        clauses.push("(t.nome_turma LIKE ? ESCAPE '!' OR c.nome_curso LIKE ? ESCAPE '!' OR u.nome_completo LIKE ? ESCAPE '!')");
+        values.push(...Array(3).fill(containsPattern(pagination.q)));
+    }
+    if (pagination.status) {
+        clauses.push('t.status = ?');
+        values.push(pagination.status);
+    }
+    const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
+    const [[count]] = await db.query(
+        `SELECT COUNT(*) AS total FROM Turmas t
+         INNER JOIN Cursos c ON c.id_curso = t.id_curso
+         INNER JOIN Usuarios u ON u.id_usuario = t.id_professor${where}`, values);
     const [rows] = await db.query(
-        `${SELECT_TURMA_ENRIQUECIDA} ORDER BY t.data_inicio DESC, t.id_turma DESC LIMIT ? OFFSET ?`,
-        [pagination.limit, pagination.offset]
+        `${SELECT_TURMA_ENRIQUECIDA}${where} ORDER BY t.data_inicio DESC, t.id_turma DESC LIMIT ? OFFSET ?`,
+        [...values, pagination.limit, pagination.offset]
     );
     return { items: rows, total: Number(count.total) };
 }

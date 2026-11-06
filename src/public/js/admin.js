@@ -9,6 +9,10 @@ const state = {
     usuarios: [],
     cursos: [],
     turmas: [],
+    pagination: {
+        usuarios: { page: 1, limit: 25, total: 0 },
+        turmas: { page: 1, limit: 25, total: 0 }
+    },
     filters: {
         usuarios: { query: '', tipo: '' },
         cursos: { query: '' },
@@ -135,7 +139,8 @@ function inputControl({
     min,
     pattern,
     placeholder,
-    options
+    options,
+    professorLookup = false
 }, dialogId) {
     const wrapper = el('div', { className: 'admin-field' });
     const controlId = `${dialogId}-${name}`;
@@ -196,7 +201,107 @@ function inputControl({
     });
 
     wrapper.append(caption, control, fieldError);
+    if (professorLookup) addProfessorLookup(wrapper, control, dialogId);
     return { wrapper, control, fieldError };
+}
+
+function paginationControls(meta, label, onPage) {
+    const pages = Math.max(1, Math.ceil(meta.total / meta.limit));
+    const nav = el('nav', { className: 'admin-pagination' });
+    nav.setAttribute('aria-label', `Paginação de ${label}`);
+    const status = el('span', { text: `Página ${meta.page} de ${pages} · ${meta.total} ${meta.total === 1 ? 'registro' : 'registros'}` });
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    status.tabIndex = -1;
+    const previous = actionButton('Anterior', 'btn btn-ghost btn-sm', () => onPage(meta.page - 1), {
+        ariaLabel: `Página anterior de ${label}`
+    });
+    const next = actionButton('Próxima', 'btn btn-ghost btn-sm', () => onPage(meta.page + 1), {
+        ariaLabel: `Próxima página de ${label}`
+    });
+    previous.disabled = meta.page <= 1;
+    next.disabled = meta.page >= pages;
+    nav.append(previous, status, next);
+    return nav;
+}
+
+function listPagination(section, label) {
+    return paginationControls(state.pagination[section], label, (page) => {
+        state.pagination[section].page = page;
+        loadActive({ focus: true });
+    });
+}
+
+function changeFilter(section, values) {
+    Object.assign(state.filters[section], values);
+    state.pagination[section].page = 1;
+    loadActive({ focus: true });
+}
+
+function addProfessorLookup(wrapper, control, dialogId) {
+    const search = el('input');
+    search.type = 'search';
+    search.id = `${dialogId}-professor-search`;
+    search.maxLength = 200;
+    const label = el('label', { text: 'Buscar professores' });
+    label.htmlFor = search.id;
+    const message = el('p');
+    message.setAttribute('aria-live', 'polite');
+    const paging = el('div');
+    let sequence = 0;
+    let query = '';
+    let page = 1;
+    const retry = actionButton('Tentar novamente professores', 'btn btn-ghost btn-sm', () => load(true));
+    retry.hidden = true;
+    const submit = actionButton('Buscar professores', 'btn btn-ghost btn-sm', () => {
+        query = search.value.trim();
+        page = 1;
+        load(true);
+    });
+    search.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        submit.click();
+    });
+    const lookup = el('div', { className: 'admin-field' });
+    lookup.append(label, search, submit, message, paging, retry);
+    wrapper.appendChild(lookup);
+
+    async function load(focus = false) {
+        const current = ++sequence;
+        lookup.setAttribute('aria-busy', 'true');
+        message.setAttribute('role', 'status');
+        message.textContent = 'Carregando professores...';
+        retry.hidden = true;
+        paging.querySelectorAll('button').forEach(button => { button.disabled = true; });
+        try {
+            const result = await api(`/api/admin/usuarios?${new URLSearchParams({ tipo: 'PROFESSOR', q: query, page, limit: 25 })}`);
+            if (current !== sequence || !control.isConnected) return;
+            const selected = control.value;
+            const selectedLabel = control.selectedOptions[0]?.textContent;
+            const options = result.items.map(user => ({ value: String(user.id_usuario), label: user.nome_completo }));
+            if (selected && !options.some(option => option.value === selected)) options.unshift({ value: selected, label: selectedLabel });
+            control.replaceChildren();
+            for (const option of [{ value: '', label: 'Selecione um professor' }, ...options]) {
+                const node = el('option', { text: option.label });
+                node.value = option.value;
+                control.appendChild(node);
+            }
+            control.value = selected;
+            page = result.page;
+            message.textContent = result.total ? '' : 'Nenhum professor encontrado.';
+            paging.replaceChildren(paginationControls(result, 'professores', (next) => { page = next; load(true); }));
+            if (focus) paging.querySelector('[role="status"]').focus();
+        } catch (error) {
+            if (current !== sequence || !control.isConnected) return;
+            message.setAttribute('role', 'alert');
+            message.textContent = `Não foi possível carregar professores: ${error.message}`;
+            retry.hidden = false;
+        } finally {
+            if (current === sequence) lookup.setAttribute('aria-busy', 'false');
+        }
+    }
+    load();
 }
 
 function setFormBusy({ form, submit, cancel, close, busy, submitLabel }) {
@@ -364,6 +469,7 @@ function toolbar({
     const search = el('input');
     search.id = searchId;
     search.type = 'search';
+    search.maxLength = 200;
     search.placeholder = `Buscar em ${sectionLabel}`;
     search.value = query;
     searchGroup.append(searchLabel, search);
@@ -372,7 +478,6 @@ function toolbar({
         event.preventDefault();
         onQuery(search.value);
     });
-    search.addEventListener('search', () => onQuery(search.value));
 
     if (filterOptions) {
         const filterGroup = el('div', { className: 'admin-toolbar__field' });
@@ -393,6 +498,7 @@ function toolbar({
     }
 
     const actions = el('div', { className: 'admin-toolbar__actions' });
+    actions.appendChild(el('button', { className: 'btn btn-ghost btn-sm', text: 'Buscar', type: 'submit' }));
     const clear = actionButton('Limpar filtros', 'btn btn-ghost btn-sm', onClear);
     clear.disabled = !query && !filter;
     actions.appendChild(clear);
@@ -542,13 +648,7 @@ async function deleteUser(usuario) {
 
 function renderUsers() {
     const filter = state.filters.usuarios;
-    const term = filter.query.trim().toLocaleLowerCase('pt-BR');
-    const users = state.usuarios.filter((usuario) => {
-        const matchesQuery = !term
-            || usuario.nome_completo.toLocaleLowerCase('pt-BR').includes(term)
-            || usuario.email.toLocaleLowerCase('pt-BR').includes(term);
-        return matchesQuery && (!filter.tipo || usuario.tipo === filter.tipo);
-    });
+    const users = state.usuarios;
 
     const passwordButton = actionButton(
         'Trocar minha senha',
@@ -558,14 +658,10 @@ function renderUsers() {
     const bar = toolbar({
         sectionLabel: 'usuários',
         query: filter.query,
-        onQuery: (value) => { filter.query = value; renderUsers(); },
+        onQuery: (value) => changeFilter('usuarios', { query: value }),
         filter: filter.tipo,
-        onFilter: (value) => { filter.tipo = value; renderUsers(); },
-        onClear: () => {
-            filter.query = '';
-            filter.tipo = '';
-            renderUsers();
-        },
+        onFilter: (value) => changeFilter('usuarios', { tipo: value }),
+        onClear: () => changeFilter('usuarios', { query: '', tipo: '' }),
         filterOptions: [
             { value: '', label: 'Todos os papéis' },
             { value: 'ALUNO', label: 'Alunos' },
@@ -578,7 +674,7 @@ function renderUsers() {
     });
 
     const body = users.length === 0
-        ? (state.usuarios.length === 0
+        ? (!filter.query && !filter.tipo
             ? emptyState('Nenhum usuário cadastrado', 'Cadastre o primeiro usuário administrativo.')
             : emptyState('Nenhum resultado', 'Nenhum usuário corresponde à busca ou ao papel selecionado.'))
         : makeTable({
@@ -600,7 +696,7 @@ function renderUsers() {
             ])
         });
     content.setAttribute('aria-busy', 'false');
-    content.replaceChildren(bar, body);
+    content.replaceChildren(bar, listPagination('usuarios', 'usuários'), body);
 }
 
 function courseFields(curso = null) {
@@ -710,7 +806,6 @@ function formatDate(value) {
 }
 
 function classFields(turma = null) {
-    const professores = state.usuarios.filter((usuario) => usuario.tipo === 'PROFESSOR');
     return [
         { label: 'Nome da turma', name: 'nome_turma', value: turma?.nome_turma, required: true, maxLength: 100 },
         {
@@ -721,10 +816,10 @@ function classFields(turma = null) {
             ]
         },
         {
-            label: 'Professor', name: 'id_professor', value: turma?.id_professor, required: true,
+            label: 'Professor', name: 'id_professor', value: turma?.id_professor, required: true, professorLookup: true,
             options: [
                 { value: '', label: 'Selecione um professor' },
-                ...professores.map((usuario) => ({ value: usuario.id_usuario, label: usuario.nome_completo }))
+                ...(turma ? [{ value: turma.id_professor, label: turma.nome_professor }] : [])
             ]
         },
         { label: 'Data inicial', name: 'data_inicio', type: 'date', value: dateValue(turma?.data_inicio), required: true },
@@ -750,7 +845,6 @@ function classPayload(values) {
 }
 
 function replicationFields(turma) {
-    const professores = state.usuarios.filter((usuario) => usuario.tipo === 'PROFESSOR');
     return [
         {
             label: 'Nome da nova turma',
@@ -760,10 +854,9 @@ function replicationFields(turma) {
             placeholder: `${turma.nome_turma} — próxima edição`
         },
         {
-            label: 'Professor responsável', name: 'id_professor', required: true,
+            label: 'Professor responsável', name: 'id_professor', required: true, professorLookup: true,
             options: [
                 { value: '', label: 'Selecione um professor' },
-                ...professores.map((usuario) => ({ value: usuario.id_usuario, label: usuario.nome_completo }))
             ]
         },
         { label: 'Data inicial', name: 'data_inicio', type: 'date', value: dateValue(turma.data_inicio), required: true },
@@ -949,22 +1042,14 @@ async function deleteClass(turma) {
 
 function renderClasses() {
     const filter = state.filters.turmas;
-    const term = filter.query.trim().toLocaleLowerCase('pt-BR');
-    const classes = state.turmas.filter((turma) => {
-        const haystack = `${turma.nome_turma} ${turma.nome_curso} ${turma.nome_professor}`.toLocaleLowerCase('pt-BR');
-        return (!term || haystack.includes(term)) && (!filter.status || turma.status === filter.status);
-    });
+    const classes = state.turmas;
     const bar = toolbar({
         sectionLabel: 'turmas',
         query: filter.query,
-        onQuery: (value) => { filter.query = value; renderClasses(); },
+        onQuery: (value) => changeFilter('turmas', { query: value }),
         filter: filter.status,
-        onFilter: (value) => { filter.status = value; renderClasses(); },
-        onClear: () => {
-            filter.query = '';
-            filter.status = '';
-            renderClasses();
-        },
+        onFilter: (value) => changeFilter('turmas', { status: value }),
+        onClear: () => changeFilter('turmas', { query: '', status: '' }),
         filterOptions: [
             { value: '', label: 'Todos os status' },
             { value: 'ABERTA', label: 'Inscrições abertas' },
@@ -975,7 +1060,7 @@ function renderClasses() {
         onAdd: openCreateClass
     });
     const body = classes.length === 0
-        ? (state.turmas.length === 0
+        ? (!filter.query && !filter.status
             ? emptyState('Nenhuma turma cadastrada', 'Cadastre a primeira turma após criar curso e professor.')
             : emptyState('Nenhum resultado', 'Nenhuma turma corresponde à busca ou ao status selecionado.'))
         : makeTable({
@@ -1013,37 +1098,49 @@ function renderClasses() {
             ])
         });
     content.setAttribute('aria-busy', 'false');
-    content.replaceChildren(bar, body);
+    content.replaceChildren(bar, listPagination('turmas', 'turmas'), body);
 }
 
-async function loadActive() {
+async function loadActive({ focus = false } = {}) {
     const currentLoad = ++loadSequence;
+    const section = state.active;
     state.loading = true;
     root.setAttribute('aria-busy', 'true');
     renderLoading(state.active);
     try {
-        if (state.active === 'usuarios') {
-            const usuarios = await api('/api/admin/usuarios?limit=100');
+        if (section === 'usuarios') {
+            const filter = state.filters.usuarios;
+            const usuarios = await api(`/api/admin/usuarios?${new URLSearchParams({ page: state.pagination.usuarios.page,
+                limit: 25, q: filter.query, tipo: filter.tipo })}`);
             if (currentLoad !== loadSequence) return;
+            state.pagination.usuarios = { page: usuarios.page, limit: usuarios.limit, total: usuarios.total };
             state.usuarios = usuarios.items;
-            renderUsers();
-        } else if (state.active === 'cursos') {
+        } else if (section === 'cursos') {
             const cursos = await api('/api/cursos');
             if (currentLoad !== loadSequence) return;
             state.cursos = cursos;
-            renderCourses();
         } else {
-            const [turmas, cursos, usuarios] = await Promise.all([
-                api('/api/turmas?limit=100'),
-                api('/api/cursos'),
-                api('/api/admin/usuarios?limit=100')
+            const filter = state.filters.turmas;
+            const [turmas, cursos] = await Promise.all([
+                api(`/api/turmas?${new URLSearchParams({ page: state.pagination.turmas.page,
+                    limit: 25, q: filter.query, status: filter.status })}`),
+                api('/api/cursos')
             ]);
             if (currentLoad !== loadSequence) return;
             state.turmas = turmas.items;
+            state.pagination.turmas = { page: turmas.page, limit: turmas.limit, total: turmas.total };
             state.cursos = cursos;
-            state.usuarios = usuarios.items;
-            renderClasses();
         }
+        const meta = state.pagination[section];
+        const lastPage = meta ? Math.max(1, Math.ceil(meta.total / meta.limit)) : 1;
+        if (meta && meta.page > lastPage) {
+            meta.page = lastPage;
+            return await loadActive({ focus });
+        }
+        if (section === 'usuarios') renderUsers();
+        else if (section === 'cursos') renderCourses();
+        else renderClasses();
+        if (focus) content.querySelector('.admin-pagination [role="status"]')?.focus();
     } catch (error) {
         if (currentLoad !== loadSequence) return;
         renderError(error);

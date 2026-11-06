@@ -1,3 +1,4 @@
+const { containsPattern } = require('../../utils/list-filters');
 const bcrypt = require('bcrypt');
 const db = require('../../config/database');
 const {
@@ -135,11 +136,22 @@ async function buscarUsuarioPorId(id) {
 }
 
 async function buscarTodosUsuarios(pagination) {
-    const [[count]] = await db.query('SELECT COUNT(*) AS total FROM Usuarios');
+    const clauses = [];
+    const values = [];
+    if (pagination.q) {
+        clauses.push("(nome_completo LIKE ? ESCAPE '!' OR email LIKE ? ESCAPE '!')");
+        values.push(containsPattern(pagination.q), containsPattern(pagination.q));
+    }
+    if (pagination.tipo) {
+        clauses.push('tipo = ?');
+        values.push(pagination.tipo);
+    }
+    const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
+    const [[count]] = await db.query(`SELECT COUNT(*) AS total FROM Usuarios${where}`, values);
     const [rows] = await db.query(
         `SELECT id_usuario, nome_completo, cpf, email, telefone, tipo, data_cadastro
-         FROM Usuarios ORDER BY nome_completo, id_usuario LIMIT ? OFFSET ?`,
-        [pagination.limit, pagination.offset]
+         FROM Usuarios${where} ORDER BY nome_completo, id_usuario LIMIT ? OFFSET ?`,
+        [...values, pagination.limit, pagination.offset]
     );
     return { items: rows, total: Number(count.total) };
 }

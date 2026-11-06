@@ -4,6 +4,7 @@ const { validationResult } = require('express-validator');
 const logger = require('../../utils/logger');
 const { sendHttpError } = require('../../utils/http-response');
 const { paginated, parsePagination } = require('../../utils/pagination');
+const { parseListFilters } = require('../../utils/list-filters');
 
 function responderValidacao(req, res) {
     const errors = validationResult(req);
@@ -57,7 +58,8 @@ async function buscarTurmaPorId(req, res) {
 async function buscarTodasTurmas(req, res) {
     try {
         const pagination = parsePagination(req.query);
-        const turmas = await turmaModel.buscarTodasTurmas(pagination);
+        const filters = parseListFilters(req.query, { status: ['ABERTA', 'FECHADA', 'ENCERRADA'] });
+        const turmas = await turmaModel.buscarTodasTurmas({ ...pagination, ...filters });
         return res.status(200).json(paginated(turmas.items, turmas.total, pagination));
     } catch (error) {
         logger.error('turma.lista.falhou', { requestId: req.id, error });

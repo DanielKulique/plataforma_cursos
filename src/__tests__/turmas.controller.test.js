@@ -26,6 +26,16 @@ describe('Turmas Controller', () => {
     });
 
     describe('GET /api/turmas', () => {
+        it('encaminha busca e status ao banco preservando o contrato paginado', async () => {
+            turmasModel.buscarTodasTurmas.mockResolvedValue({ items: [], total: 0 });
+            const response = await request(app).get('/api/turmas?q=Professor&status=ENCERRADA&page=2&limit=25');
+            expect(response.status).toBe(200);
+            expect(turmasModel.buscarTodasTurmas).toHaveBeenCalledWith({ q: 'Professor', status: 'ENCERRADA', page: 2, limit: 25, offset: 25 });
+        });
+        it('recusa status inválido antes de consultar o model', async () => {
+            expect((await request(app).get('/api/turmas?status=INVALIDO')).status).toBe(400);
+            expect(turmasModel.buscarTodasTurmas).not.toHaveBeenCalled();
+        });
         it('deve retornar lista de turmas com sucesso', async () => {
             const turmasMock = [
                 {

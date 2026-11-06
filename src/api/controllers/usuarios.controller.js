@@ -9,6 +9,7 @@ const {
 } = require('../../services/email.service');
 const { sendHttpError } = require('../../utils/http-response');
 const { paginated, parsePagination } = require('../../utils/pagination');
+const { parseListFilters } = require('../../utils/list-filters');
 
 function responderValidacao(req, res) {
     const errors = validationResult(req);
@@ -199,7 +200,8 @@ async function buscarUsuarioPorId(req, res) {
 async function buscarTodosUsuarios(req, res) {
     try {
         const pagination = parsePagination(req.query);
-        const usuarios = await usuariosModel.buscarTodosUsuarios(pagination);
+        const filters = parseListFilters(req.query, { tipo: ['ALUNO', 'PROFESSOR', 'ADMIN'] });
+        const usuarios = await usuariosModel.buscarTodosUsuarios({ ...pagination, ...filters });
         logger.info('usuario.lista.consultada', { requestId: req.id, total: usuarios.total });
         return res.status(200).json(paginated(usuarios.items, usuarios.total, pagination));
     } catch (error) {

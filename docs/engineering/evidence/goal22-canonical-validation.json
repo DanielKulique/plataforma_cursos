@@ -1,0 +1,198 @@
+{
+  "validated_commit": "e54f1e962450e9547769b6dffc9893c32ab0c29f",
+  "run_id": 42131044745,
+  "run_url": "https://github.com/DanielKulique/plataforma_cursos/actions/runs/42131044745",
+  "conclusion": "success",
+  "created_at": "2026-11-05T23:39:25Z",
+  "completed_at": "2026-11-05T23:58:00Z",
+  "mandatory_steps": {
+    "Aguardar MySQL": "success",
+    "Habilitar triggers no MySQL efêmero": "success",
+    "Verificar sintaxe JavaScript": "success",
+    "Verificar isolamento estático do banco": "success",
+    "Validar parser, checksums e contrato estrutural de migrations": "success",
+    "Migrar banco efêmero totalmente vazio": "success",
+    "Verificar ledger e checksums": "success",
+    "Validar schema final completo": "success",
+    "Provar identidade do MySQL efêmero": "success",
+    "Aplicar seed canônico": "success",
+    "Executar a suíte completa sem retry": "success",
+    "Verificar isolamento de restore com configuração resolvida e sentinelas fictícias": "success",
+    "Instalar browsers e dependências do Playwright": "success",
+    "E2E completo Chromium sem retry em MySQL descartável separado": "success",
+    "E2E completo Firefox sem retry": "success",
+    "E2E completo WebKit sem retry": "success",
+    "Preservar evidências dos browsers": "success",
+    "Construir a imagem de produção": "success",
+    "Run npm ci": "success"
+  },
+  "jest": {
+    "unit": {
+      "suites": 76,
+      "passed": 784,
+      "failed": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "integration": {
+      "suites": 21,
+      "passed": 282,
+      "failed": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "security": {
+      "suites": 8,
+      "passed": 95,
+      "failed": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "migrations": {
+      "suites": 1,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  },
+  "browsers": {
+    "chromium": {
+      "files": 13,
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "retries": 0,
+      "duration_ms": 122345.922
+    },
+    "firefox": {
+      "files": 13,
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "retries": 0,
+      "duration_ms": 194468.08800000002
+    },
+    "webkit": {
+      "files": 13,
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "retries": 0,
+      "duration_ms": 294374.112
+    }
+  },
+  "raw_artifact_sha256": {
+    "unit.json": "fdb90ba226de31339c32b5d5c6f173348d08073f5137a1b855cc1b787d9fd89a",
+    "integration.json": "4fb818263bf97dbcfb1462d4bd4f2818ba72035614d2474e7b0c6c9cf87848c5",
+    "security.json": "3fe8a349b22230846e037cdea43f6cf46003a83d00dc4ddc93ea26b386073654",
+    "migrations.json": "714ddcf30e6ceeb01ed56afe0345effc2e7fbe2798ec624b54f4b6ebe0a70684",
+    "chromium-results.json": "141c7072fb447232a579e0b8a3c5960c15698f91692d5dfab6098cb5d0bbba41",
+    "firefox-results.json": "35fc2859be26030b2fbb039dea330490762be1c87ee478251573db312afe443f",
+    "webkit-results.json": "c4ebaeb6a9c9ad7713bc6f8267dca3f52b09e032586b75f428b0af9a35b4f20b",
+    "restore-isolation.json": "089658ab62f740eb4149eb9c80a34d5f29c64de4630370186d351755bb940e6b"
+  },
+  "restore": {
+    "config_tests": 14,
+    "docker_tests": 5,
+    "scenarios": [
+      {
+        "case": "success",
+        "exit_code": 0,
+        "project": "plataforma-restore-20261105t234412z-b6504b26f91cb054",
+        "cleanup": "PASS",
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+        "restore_verified": true
+      },
+      {
+        "case": "mysql-failure",
+        "exit_code": 88,
+        "project": "plataforma-restore-20261105t234436z-e40c1d662851dc9c",
+        "cleanup": "PASS",
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+        "restore_verified": false
+      },
+      {
+        "case": "sigint",
+        "exit_code": 130,
+        "project": "plataforma-restore-20261105t234453z-17805eea33c3d466",
+        "cleanup": "PASS",
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+        "restore_verified": false
+      },
+      {
+        "case": "sigterm",
+        "exit_code": 143,
+        "project": "plataforma-restore-20261105t234458z-8c35564ad1374934",
+        "cleanup": "PASS",
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+        "restore_verified": false
+      },
+      {
+        "case": "unsafe-global",
+        "rejected_before_mutation": true,
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d"
+      },
+      {
+        "case": "unsafe-external",
+        "rejected_before_mutation": true,
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d"
+      },
+      {
+        "case": "unsafe-bind",
+        "rejected_before_mutation": true,
+        "sentinel_sha256_after": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d"
+      }
+    ],
+    "sentinel_sha256_before": "eb11a817d7aaa53edc99a23e37466ed12da06806c5882b2d0896a226796dea8d",
+    "timestamp_note": "The inherited fixture date field is static; run created_at/completed_at and project timestamps identify this execution."
+  },
+  "log_sha256": "66ed827cdeea343b1bf5642eedffd771d1508e38a7cdb92b614262b4c0004fa2",
+  "scope": "Full code validation before the documentation-only release commit; the annotated RC tag records the additional full CI for its exact commit.",
+  "release_seal": {
+    "tag": "goal22-rc.1",
+    "commit_resolution": "git rev-parse refs/tags/goal22-rc.1^{commit}",
+    "exact_release_ci": "Recorded in the annotated tag only after that full run succeeds."
+  },
+  "included_goals": {
+    "19": "dcccc29394a92574739c5b4351f240fe5d6e127e",
+    "20": "d6bb5f34642c45285980baccce12e8a6ec6265aa",
+    "21": "8d78b1ba8ccde3962091bb6f73cb348d75257cf1"
+  },
+  "preservation": {
+    "original_head": "b94717963cc29f6fa9cfaf2c170ee3a61ad97a98",
+    "original_status_entries": 98,
+    "original_files_hashed": 725,
+    "aggregate_sha256": "b3f4e4a56d10c7bd2d6af363fb6a1573933fbacc632f3c557535c0d4405615f0",
+    "original_audit_sha256": "d295940ea85a93c765fa7cab44973a8efa4d0bb121f1ae646633751bc3cbd441",
+    "goals_19_to_21_clean_and_ancestors": true
+  },
+  "migration_schema": {
+    "version": 16,
+    "applied": 16,
+    "pending": 0,
+    "drift": false,
+    "tables": 25,
+    "columns": 188,
+    "indexes": 91,
+    "primary_keys": 25,
+    "unique_indexes": 29,
+    "foreign_keys": 44,
+    "checks": 14,
+    "constraints": 112,
+    "second_execution": "NO-OP",
+    "concurrent_runners": "PASS"
+  },
+  "migration_unit": {
+    "suites": 2,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0
+  },
+  "deploy": "NO",
+  "p0_remaining": 0,
+  "p1_remaining": 0
+}

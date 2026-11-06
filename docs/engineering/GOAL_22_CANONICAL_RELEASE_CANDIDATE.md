@@ -1,8 +1,47 @@
 # Goal 22 — Canonical baseline, full CI & release candidate
 
-**STATUS: CANONICAL_RELEASE_CANDIDATE_READY** — estado da RC selada pela tag anotada
-`goal22-rc.1`, válida somente após CI completa no commit apontado por ela.
-Não há autorização de deploy ou merge na main.
+**STATUS: CANONICAL_RELEASE_CANDIDATE_READY somente com a tag anotada
+`goal22-rc.1` apontando para este commit e os dois jobs controlados aprovados;
+sem essa comprovação, PARTIAL.**
+
+## Finalização controlada
+
+A baseline preservada é `80f1224a7ec7521cc9cdd47f58efe64d9a037ae7`.
+O diagnóstico anterior e seus limites estão registrados abaixo, sem reabrir a auditoria.
+A autorização de finalização limita esta rodada a um teste remoto direcionado e,
+somente após sua aprovação, uma única suíte completa no mesmo SHA.
+
+| Campo | Registro definitivo |
+| --- | --- |
+| FINAL_SHA | Commit resolvido por `git rev-parse 'refs/tags/goal22-rc.1^{commit}'`; SHA integral na anotação da tag |
+| TARGETED_WEBKIT_CI | Job `webkit-responsive`, um teste, 13 telas × 6 larguras, zero retries/skips/flaky |
+| FULL_CI | Job `testes`, dependente da aprovação do direcionado, uma execução completa |
+| CHROMIUM / FIREFOX / WEBKIT | 32 casos por browser, zero falhas/skips/flaky/retries exigidos no job completo |
+| RC_TAG | `goal22-rc.1`, criada somente após ambos os jobs e seus artefatos serem conferidos |
+| REMAINING_FAILURE | Nenhuma somente se os gates acima passarem; qualquer falha encerra a rodada como PARTIAL |
+| DEPLOY | NO |
+
+O commit isolado contém o ajuste local já validado, sua documentação e o suporte
+mínimo de CI/evidências. O teste conserva as 78 combinações e os três asserts de
+layout, substitui a espera genérica por papel exato, aguarda os dados e carrega
+cada tela uma vez antes das seis medidas por resize. O timeout de 120 s permanece;
+não há retries. O trace passou de `off` para `retain-on-failure` e screenshots de
+falha permanecem ativos.
+
+O job direcionado usa o runner e o Compose E2E existentes, com MySQL/storage
+próprios, credenciais sintéticas e cleanup. Seu JSON exige exatamente um teste
+aprovado, 13 telas únicas, distribuição 7 aluno / 5 professor / 1 admin e as seis
+larguras originais em cada tela. Falha nesse job impede o job completo. O runner
+coleta os logs de app/db do próprio projeto antes de limpar uma execução que falhou;
+stdout, JSON, trace e screenshots ficam no artefato `goal22-targeted-webkit-<SHA>`.
+A CI completa mantém o artefato `playwright-e2e-<SHA>`.
+
+A dependência usa [`jobs.<job_id>.needs`](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds).
+Fora desta branch, a suíte completa anterior continua disponível. O push da tag
+`goal22-rc.*` é excluído do trigger para não iniciar uma segunda CI completa.
+Não há reexecução automática nem nova rodada de correções após falha controlada.
+A anotação da tag registra o SHA integral, URL do workflow e resultados finais;
+isso permite incluir o relatório no próprio commit testado sem SHA autorreferente.
 
 ## Baseline e commits incluídos
 
@@ -16,24 +55,40 @@ A branch `release/goal22-canonical-rc` foi criada em worktree limpa a partir do
 Goal 21. Os três commits já eram ancestrais; nenhum foi duplicado ou reaplicado.
 Worktree: `/mnt/disco/projetoSite/worktrees/plataforma-cursos-goal22`.
 
-RC_COMMIT: `refs/tags/goal22-rc.1^{commit}` — o SHA integral fica registrado na
-anotação imutável da tag, junto ao link da CI que testou exatamente esse commit.
-RC_TAG: `goal22-rc.1`.
+RC_COMMIT: SHA resolvido pela tag `goal22-rc.1^{commit}`, após os gates de finalização.
+RC_TAG: `goal22-rc.1` somente após CI verde; até lá, **NONE**.
+Não havia convenção RC anterior; existia apenas a tag anotada de arquivo
+`ic-research-final-2026-08-22`.
 
-Este relatório faz parte do próprio commit da RC. Para evitar um SHA autorreferente,
-a identidade final é resolvida pela tag; o commit da documentação passa novamente
-pela CI completa antes de receber essa tag. Verificação reproduzível:
+## Diagnóstico anterior limitado da CI 42133617667
 
-```sh
-git fetch origin tag goal22-rc.1
-git rev-parse 'refs/tags/goal22-rc.1^{commit}'
-git show --no-patch goal22-rc.1
-git ls-remote origin 'refs/tags/goal22-rc.1^{}'
-```
-
-Não havia convenção RC anterior: existia somente a tag anotada de arquivo
-`ic-research-final-2026-08-22`. Adotou-se `goal22-rc.1`, também anotada, sem mover
-ou sobrescrever tags. O histórico incluído é o da tabela acima.
+- **Fato confirmado:** no SHA preservado, Chromium e Firefox passaram 32/32;
+  WebKit passou 31/32 e falhou em `responsive-roles.spec.js`, na chamada
+  `page.goto('/admin.html')`, com “WebKit encountered an internal error”. O job
+  terminou com falha e o build da imagem foi ignorado.
+- **Artefatos examinados:** JSON do WebKit, log do job `127616111388`, snapshot
+  `error-context.md` e os três screenshots preservados. A captura do administrador
+  mostra o papel ADMIN renderizado e o painel com “Load failed”. As outras duas
+  capturas mostram as telas anteriores de aluno e professor.
+- **Limite da prova:** o teste configurava `trace: 'off'`; não há trace/HAR nem
+  logs da aplicação/rede que identifiquem a requisição interrompida ou um status
+  HTTP do erro. O runner removeu os containers sem coletar seus logs. Não se pode
+  concluir se o erro interno é defeito do motor WebKit, concorrência do teste ou
+  falha da aplicação. Recargas consecutivas do teste são a hipótese principal,
+  não uma causa raiz comprovada. Nenhum defeito de backend, autenticação ou CSS
+  foi comprovado nesta investigação.
+- **Único ajuste funcional local, já existente:** `responsive-roles.spec.js`
+  abre cada tela em página independente, aguarda papel/dados e mede as mesmas
+  seis larguras por resize. Conserva as 78 combinações e todos os limites de
+  overflow/recorte, sem aumentar timeout/retries. Placeholders de erro de diálogos
+  fechados não contam como erro visível da tela ativa.
+- **Validação aproveitada:** a execução local iniciada antes da limitação terminou
+  com 32/32 WebKit. O caso afetado passou em **10.009 ms**, retry **0**, com os
+  13 passos de tela e seis medidas por passo aprovados. Isso valida o ajuste
+  localmente; não prova a causa da falha remota nem torna verde a CI preservada.
+- **Encerramento daquela etapa:** nenhum novo teste, workflow, commit, push ou tag
+  foi iniciado durante o diagnóstico limitado. A pendência é obter evidência causal de
+  navegação/rede no ambiente remoto, em trabalho posterior explicitamente autorizado.
 
 SHA, histórico, diffs e ancestralidade foram conferidos. Não houve reset, stash,
 merge da árvore original ou merge automático na main. A árvore original mantém
@@ -91,19 +146,32 @@ mesmo limite por caso. Nenhuma asserção foi retirada. O inventário completo p
 de 24 para 32 testes por browser; não são oito fluxos novos nem perda de cobertura.
 A CI `42130457972` foi cancelada por substituição do candidato.
 
+A primeira execução completa aprovada foi `42131044745`, no SHA `e54f1e9`.
+A CI `42133617667` do commit seguinte (somente documentação) expôs outro erro de navegação
+no teste responsivo WebKit: 31 passaram, um falhou e zero casos foram ignorados.
+A falha foi em `page.goto('/admin.html')`,
+com “WebKit encountered an internal error”; o build da imagem foi ignorado. Esse
+run **não é aprovação**. O teste recarregava a página após login e a cada largura.
+Agora cada tela abre uma vez em página independente, aguarda papel e dados prontos
+e mede as mesmas seis larguras por resize. Permanecem as 78 combinações de tela e
+viewport, com os mesmos limites de overflow/recorte; também se rejeitam estados de
+erro de carregamento. Não há retries nem aumento de timeout.
+
 Parser, associação, helpers de restore, JavaScript de produto, dependências/lock,
 schema, migrations, correção, aprovação e certificados mantêm os bytes da entrega
 do Goal 21. A única mudança visual é a correção comprovada do fieldset no WebKit.
 
 ## Validação e evidências
 
-CI: **PASS**. A execução completa
+CI histórica: **FAIL** na baseline preservada, antes da finalização controlada. A execução
+[42133617667](https://github.com/DanielKulique/plataforma_cursos/actions/runs/42133617667)
+falhou no WebKit; não houve reexecução durante o diagnóstico limitado.
+
+O run histórico
 [42131044745](https://github.com/DanielKulique/plataforma_cursos/actions/runs/42131044745)
-validou `e54f1e962450e9547769b6dffc9893c32ab0c29f`, com o único job `testes` aprovado
-e todas as etapas obrigatórias executadas. Ela terminou em 05/11/2026, 23:58 UTC.
-O commit que acrescenta somente este relatório, o ledger e a evidência sanitizada
-é validado por outra execução completa; sua URL e SHA integral constam na anotação
-da tag RC. O primeiro resultado não substitui o gate no SHA final.
+aprovou completamente `e54f1e962450e9547769b6dffc9893c32ab0c29f`, mas não substitui
+a validação do HEAD preservado nem do ajuste local. **A tabela abaixo e os hashes
+da evidência sanitizada pertencem somente àquela aprovação histórica.**
 
 [Evidência sanitizada](evidence/goal22-canonical-validation.json) registra resultados,
 SHA-256 dos oito JSONs brutos, hash do log, schema e preservação da árvore original.
@@ -212,7 +280,9 @@ backfill real, reconciliador real ou restore de dados reais.
 ## Riscos e critério de fechamento
 
 P0_REMAINING: **0** para esta RC.
-P1_REMAINING: **0** para esta RC.
+P1_REMAINING: **0 somente após os dois jobs da rodada controlada aprovados e tag
+conferida**; até lá, F18-03/CI continua como um gate pendente. A correção do runner
+sem `.env.test` permanece incorporada.
 
 F18-01 a F18-04 e os P2/deferred foram comparados com a auditoria original preservada:
 [estado canônico dos achados](PROJECT_REVIEW_AND_NEXT_STEPS.md). Os P2 não foram tratados como
@@ -221,7 +291,9 @@ melhorias independentes neste Goal. Não se declara segurança geral a partir de
 KNOWN_LIMITATIONS: o WebKit local usa libavif/libgav1/libyuv extraídas em pasta
 ignorada e uma cópia isolada do browser, sem instalar bibliotecas no sistema ou
 modificar o cache compartilhado;
-a prova de release exige os três browsers na CI. O pacote
+a prova de release exige os três browsers na CI. A falha remota atual não tem
+causa raiz comprovada; o resultado local isolado não permite declarar READY.
+A finalização exige a validação controlada remota descrita no início. O pacote
 body-parser continua sinalizado por versão, com mitigação `inflate: false`.
 O `npm audit --omit=dev --json` coletado em 05/11/2026 registra cinco pacotes
 com alertas (dois moderados, dois altos e um crítico): body-parser, proxy-addr,
@@ -236,4 +308,5 @@ NEXT_RECOMMENDED_GOAL: planejamento e ensaio isolado da migração de infraestru
 com critérios de corte, backup, restauração e rollback.
 
 **DEPLOY: NO.** Sem deploy, publicação de imagem, merge na main ou operação em
-dados/volumes de produção. A tag só é criada após a CI completa no SHA candidato.
+dados/volumes de produção. A tag RC somente é publicada após os gates desta rodada;
+a falha histórica da baseline não é reclassificada como aprovação.

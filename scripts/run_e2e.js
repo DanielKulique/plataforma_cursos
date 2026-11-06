@@ -60,6 +60,12 @@ async function main() {
     } catch (error) {
         failure = error;
         console.error(error.message);
+        try {
+            // Preserve this disposable stack's server/database evidence before cleanup.
+            run('docker', [...compose, 'logs', '--no-color', '--timestamps', 'app', 'db'], { allowFailure: true });
+        } catch (logError) {
+            console.error(`Falha ao coletar logs E2E: ${logError.message}`);
+        }
     } finally {
         const downStatus = run('docker', [...compose, 'down', '--volumes', '--remove-orphans'], { allowFailure: true });
         if (downStatus !== 0 && !failure) failure = new Error('Falha ao remover recursos E2E descartáveis.');

@@ -151,12 +151,7 @@
     "timestamp_note": "The inherited fixture date field is static; run created_at/completed_at and project timestamps identify this execution."
   },
   "log_sha256": "66ed827cdeea343b1bf5642eedffd771d1508e38a7cdb92b614262b4c0004fa2",
-  "scope": "Full code validation before the documentation-only release commit; the annotated RC tag records the additional full CI for its exact commit.",
-  "release_seal": {
-    "tag": "goal22-rc.1",
-    "commit_resolution": "git rev-parse refs/tags/goal22-rc.1^{commit}",
-    "exact_release_ci": "Recorded in the annotated tag only after that full run succeeds."
-  },
+  "scope": "Historical results retained unchanged. Finalization requires a targeted WebKit job followed by one full CI on the same final SHA. The annotated RC tag, created only after success, records the definitive SHA and workflow evidence.",
   "included_goals": {
     "19": "dcccc29394a92574739c5b4351f240fe5d6e127e",
     "20": "d6bb5f34642c45285980baccce12e8a6ec6265aa",
@@ -193,6 +188,67 @@
     "skipped": 0
   },
   "deploy": "NO",
-  "p0_remaining": 0,
-  "p1_remaining": 0
+  "historical_p0_remaining": 0,
+  "historical_p1_remaining": 0,
+  "bounded_diagnosis": {
+    "new_test_runs": 0,
+    "new_ci_runs": 0,
+    "local_patch_committed": false,
+    "reused_existing_local_run": {
+      "json_sha256": "5e83439bd668400e6043445c7a486156c95ced4d4a0b112c9eca103eeab60e79",
+      "stats": {
+        "startTime": "2026-11-06T00:24:02.603Z",
+        "duration": 122769.29400000001,
+        "expected": 32,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "affected_test": {
+        "test": "@full responsive learner, professor and admin screens fit six viewports",
+        "status": "passed",
+        "duration_ms": 10009,
+        "retry": 0,
+        "screens": 13,
+        "viewports_per_screen": 6,
+        "combinations": 78
+      }
+    },
+    "remote_trace_available": false,
+    "application_network_logs_available": false,
+    "evidence_limit": "Screenshot and navigation error do not prove engine, test or application root cause.",
+    "scope": "Prior bounded investigation only, before the explicit finalization authorization."
+  },
+  "prior_release_state": {
+    "status": "GOAL_22_PARTIAL",
+    "preserved_head": "80f1224a7ec7521cc9cdd47f58efe64d9a037ae7",
+    "tag": null,
+    "latest_ci_run": 42133617667,
+    "latest_ci_conclusion": "failure",
+    "root_cause": "UNPROVEN",
+    "hypothesis": "Test navigation/reload race specific to WebKit; engine/application attribution is unproven.",
+    "p1_release_gate_pending": "F18-03/CI"
+  },
+  "release_seal": {
+    "tag": "goal22-rc.1",
+    "status_policy": "READY only after targeted and full jobs succeed on this tag commit; otherwise PARTIAL",
+    "commit_resolution": "git rev-parse refs/tags/goal22-rc.1^{commit}",
+    "definitive_ci": "Recorded in the annotated tag after both jobs and artifacts are verified",
+    "targeted_job": "webkit-responsive",
+    "full_job": "testes",
+    "max_full_ci_executions_this_round": 1,
+    "deploy": "NO"
+  },
+  "finalization_change": {
+    "baseline": "80f1224a7ec7521cc9cdd47f58efe64d9a037ae7",
+    "layout_assertions_preserved": 3,
+    "screen_viewport_combinations_preserved": 78,
+    "timeout_ms_unchanged": 120000,
+    "retries": 0,
+    "trace": "retain-on-failure",
+    "failure_logs": "own disposable app/db logs collected before cleanup",
+    "targeted_first": true,
+    "full_ci_only_after_targeted_success": true,
+    "rc_tag_does_not_trigger_duplicate_full_ci": true
+  }
 }

@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.use({ trace: 'off' });
+test.use({ trace: 'retain-on-failure' });
 
 const password = 'E2e-only-password-42!';
 const viewports = [
@@ -22,8 +22,6 @@ async function login(page, email) {
 }
 
 async function expectNoHorizontalOverflow(page, path, viewport) {
-    await page.goto(path);
-    await expect(page.locator('body')).not.toHaveAttribute('data-session-state', 'loading');
     const width = await page.evaluate(() => {
         const main = document.querySelector('main');
         const bounds = main?.getBoundingClientRect();
@@ -63,13 +61,28 @@ test('@full responsive learner, professor and admin screens fit six viewports', 
     ];
     for (const scenario of scenarios) {
         const context = await browser.newContext({ baseURL, viewport: viewports[0] });
-        const page = await context.newPage();
-        await page.route('https://**/*', (route) => route.abort());
-        await login(page, scenario.email);
-        for (const viewport of viewports) {
-            await page.setViewportSize(viewport);
-            for (const path of scenario.pages) await expectNoHorizontalOverflow(page, path, viewport);
-        }
+        await context.route('https://**/*', (route) => route.abort());
+        const loginPage = await context.newPage();
+        await login(loginPage, scenario.email);
+        await loginPage.close();
+        for (const path of scenario.pages) await test.step(`${scenario.email.split('.')[0]} ${path}`, async () => {
+            // Load each screen once, then resize it. Repeated navigation interrupts
+            // pending page loads in WebKit and does not add responsive coverage.
+            const page = await context.newPage();
+            await page.goto(path);
+            await expect(page.locator('body')).toHaveAttribute('data-session-state', scenario.email.split('.')[0]);
+            await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
+            if (path.startsWith('/sala-aula.html')) await expect(page.locator('#nome-curso')).toHaveText('Turma E2E Aberta');
+            if (path.startsWith('/professor-turma.html')) await expect(page.locator('#turma-title')).toHaveText('Turma E2E Aberta');
+            if (path.startsWith('/sala-progresso.html')) await expect(page.locator('#metrica-conteudos')).toContainText('concluídos');
+            // Closed editor dialogs contain empty error placeholders by design.
+            await expect(page.locator('main .ui-state.is-error:visible, main .ui-message.is-error:visible')).toHaveCount(0);
+            for (const viewport of viewports) await test.step(`${viewport.width}px`, async () => {
+                await page.setViewportSize(viewport);
+                await expectNoHorizontalOverflow(page, path, viewport);
+            });
+            await page.close();
+        });
         await context.close();
     }
 });

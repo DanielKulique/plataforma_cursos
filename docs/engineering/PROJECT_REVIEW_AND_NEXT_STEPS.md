@@ -17,16 +17,24 @@ O estado da árvore original e o estado do código desta RC são distintos.
 | F18-03 | P1 | A base já contém o ramo CI que não lê `.env.test` e o readiness referenciado/catch do runner E2E; Goal 22 acrescenta execução completa dos três browsers sem retry e regressões de subprocessos | Checkout limpo sem `.env.test`, contagens positivas, falhas com exit não zero, cleanup e CI remota no SHA exato |
 | F18-04 | P1 | Goal 20 `d6bb5f34642c45285980baccce12e8a6ec6265aa`: `express.json({ limit: '256kb', inflate: false })` | Processo descartável, 415 para compressão, limites exatos, recuperação após erro, autenticação e CSRF |
 
-Esses quatro achados são os únicos P0/P1 da auditoria original. Estão **FECHADOS
-para a RC selada `goal22-rc.1`**, com as provas de comportamento do
-[relatório do Goal 22](GOAL_22_CANONICAL_RELEASE_CANDIDATE.md) e CI completa no SHA
-registrado na anotação da tag. O código foi aprovado primeiro no run
-[42131044745](https://github.com/DanielKulique/plataforma_cursos/actions/runs/42131044745);
-o commit final de documentação recebe outra CI completa antes da tag.
-P0_REMAINING: **0**. P1_REMAINING: **0**, neste escopo. Resultados de outros SHAs
-e casos não executados não contam como aprovação. O alerta npm de body-parser
-continua existindo por versão; a configuração mitiga o caminho descrito, sem
-declarar o pacote atualizado ou a aplicação livre de outras vulnerabilidades.
+Esses quatro achados são os únicos P0/P1 da auditoria original. As correções de
+F18-01, F18-02 e F18-04 estão incorporadas e têm as provas históricas registradas no
+[relatório do Goal 22](GOAL_22_CANONICAL_RELEASE_CANDIDATE.md). F18-03 inclui o gate
+final de CI. A finalização controlada exige primeiro o job WebKit direcionado e
+então uma única suíte completa no mesmo SHA; qualquer falha encerra a rodada.
+
+Para a RC **selada** pela tag anotada `goal22-rc.1`, com ambos os jobs e os artefatos
+conferidos, os quatro achados estão fechados: P0_REMAINING: **0** e P1_REMAINING:
+**0**. Sem essa comprovação, F18-03 continua pendente e o estado é PARTIAL.
+O SHA e o run definitivos estão na anotação da tag; o run histórico `42131044745`
+não substitui esse gate. A falha posterior `42133617667` permanece documentada.
+
+A investigação anterior não comprovou causa raiz do erro interno WebKit. O ajuste
+local elimina recargas redundantes do teste sem alterar as 78 combinações ou os
+asserts de layout, e adiciona evidência de falha. Não há correção de backend,
+autenticação, regras acadêmicas, certificados ou CSS nesta finalização.
+O alerta npm de body-parser continua por versão, com mitigação configurada;
+não se declara a aplicação livre de outras vulnerabilidades.
 
 ## P2 e tarefas posteriores
 

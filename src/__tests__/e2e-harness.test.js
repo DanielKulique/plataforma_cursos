@@ -37,7 +37,10 @@ describe('E2E disposable environment contract', () => {
     });
 
     test('CI installs all browsers and runs each complete suite without retry', () => {
-        expect(workflow).toContain('playwright install --with-deps chromium');
+        expect(workflow).toMatch(/name: Instalar browsers e dependências do Playwright\s+timeout-minutes: 10/);
+        expect(workflow).toContain('5m env DEBIAN_FRONTEND=noninteractive');
+        expect(workflow).toContain('./node_modules/playwright/cli.js install-deps chromium firefox webkit');
+        expect(workflow).toContain('4m ./node_modules/.bin/playwright install chromium firefox webkit');
         for (const project of ['chromium', 'firefox-critical', 'webkit-critical']) {
             expect(workflow).toContain(`npm run test:e2e:all -- --project=${project}`);
         }

@@ -69,7 +69,7 @@ jobs:
     needs: webkit-responsive
     # Outside the canonical release branch the existing full CI remains unchanged.
     if: ${{ !cancelled() && (needs.webkit-responsive.result == 'success' || needs.webkit-responsive.result == 'skipped') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       mysql:
         image: mysql:8.4
@@ -94,6 +94,8 @@ jobs:
       MOTOR_IA_INTERNAL_API_TOKEN: ci-ephemeral-internal-token
       MOTOR_IA_API_URL: http://127.0.0.1:8000
       DETECTOR_ENABLED: 'true'
+      # Fresh per attempt: never reuse browser binaries from another version/run.
+      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/playwright-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -203,7 +205,57 @@ jobs:
       - name: Validar recuperação de certificados na imagem com dados sintéticos
         run: python3 -u tests/operations/test_certificate_recovery_runtime.py --image plataforma-cursos:ci --allow-lab-apply 2>&1 | tee ci-results/certificate-recovery-runtime.log
       - name: Instalar browsers e dependências do Playwright
-        run: npx playwright install --with-deps chromium firefox webkit
+        timeout-minutes: 10
+        shell: bash
+        env:
+          DEBUG: pw:install
+        run: |
+          set -Eeuo pipefail
+          mkdir -p ci-results
+          exec > >(tee ci-results/playwright-install.log) 2>&1
+          trap 'status=$?; date -u; echo "Playwright installation exit=$status"; ps -eo pid,ppid,stat,etime,comm; exit "$status"' EXIT
+          date -u
+          cat /etc/os-release
+          node --version
+          ./node_modules/.bin/playwright --version
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const lock = require('./package-lock.json');
+          const version = require('@playwright/test/package.json').version;
+          for (const name of ['@playwright/test', 'playwright', 'playwright-core']) {
+            assert.equal(require(`${name}/package.json`).version, version);
+            assert.equal(lock.packages[`node_modules/${name}`].version, version);
+          }
+          const manifest = JSON.parse(fs.readFileSync(path.join(path.dirname(require.resolve('playwright-core/package.json')), 'browsers.json')));
+          console.log(JSON.stringify({ version, browsers: manifest.browsers.filter(b => ['chromium', 'firefox', 'webkit'].includes(b.name)), freshPath: process.env.PLAYWRIGHT_BROWSERS_PATH }));
+          NODE
+          echo '::group::APT dependencies (maximum 5 minutes)'
+          # The previous runner stalled acquiring indexes from the Azure mirror.
+          for source in /etc/apt/apt-mirrors.txt /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
+            if [[ -f "$source" ]]; then
+              sudo -n sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' "$source"
+              echo "APT source: $source"
+              cat "$source"
+            fi
+          done
+          printf '%s\n' 'Acquire::Retries "0";' 'Acquire::http::Timeout "30";' 'Acquire::https::Timeout "30";' 'APT::Update::Error-Mode "any";' | sudo -n tee /etc/apt/apt.conf.d/99-playwright-ci
+          sudo -n timeout --signal=TERM --kill-after=10s 5m env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a "$(command -v node)" ./node_modules/playwright/cli.js install-deps chromium firefox webkit
+          echo '::endgroup::'
+          echo '::group::Browser downloads (maximum 4 minutes)'
+          ./node_modules/.bin/playwright install --dry-run chromium firefox webkit
+          timeout --signal=TERM --kill-after=10s 4m ./node_modules/.bin/playwright install chromium firefox webkit
+          node <<'NODE'
+          const fs = require('node:fs');
+          const playwright = require('playwright');
+          for (const name of ['chromium', 'firefox', 'webkit']) {
+            const executable = playwright[name].executablePath();
+            fs.accessSync(executable, fs.constants.X_OK);
+            console.log(`${name}: executable verified at ${executable}`);
+          }
+          NODE
+          echo '::endgroup::'
       - name: E2E completo Chromium sem retry em MySQL descartável separado
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: ci-results/chromium-results.json

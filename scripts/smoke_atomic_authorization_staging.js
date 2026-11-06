@@ -1,4 +1,6 @@
 'use strict';
+
+require('./lib/disposable-smoke').assertDisposableSmoke();
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -8,7 +10,6 @@ const { firefox } = require(process.env.PLAYWRIGHT_MODULE_PATH || 'playwright');
 
 async function main() {
     const base = process.env.STAGING_BASE_URL;
-    assert(base && /^https:\/\//.test(base), 'STAGING_BASE_URL HTTPS obrigatório.');
     const chunks = [];
     for await (const chunk of process.stdin) chunks.push(chunk);
     const credentials = dotenv.parse(Buffer.concat(chunks));

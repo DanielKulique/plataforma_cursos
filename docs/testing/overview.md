@@ -49,15 +49,30 @@ autoria concorrente, PDFs, snapshots/reemissão, storage e compensação, backup
 readiness/pool e resiliência do frontend. Testes de integração exercitam restrições MySQL e locks;
 unitários não comprovam esses comportamentos sozinhos.
 
-Smokes de staging em `scripts/smoke_*_staging.js` exigem configuração e credenciais próprias;
-alguns criam, alteram, emitem ou revogam dados. Leia o script e use cenários fictícios controlados.
-Eles não fazem parte da validação documental e não devem ser executados por simples leitura deste guia.
+Os scripts legados `scripts/smoke*_staging.js` agora recusam produção e staging persistente
+antes de importar módulos de banco/browser. Só aceitam o laboratório Docker descartável,
+`NODE_ENV=APP_ENV=test`, identidade `plataforma_cursos_test`, autorização explícita de escrita
+e destinos HTTP internos de teste. Nunca execute esses scripts com dados ou certificados reais.
+
+```bash
+python3 tests/operations/run_academic_smokes.py --allow-lab-writes
+```
+
+O runner cria projeto, rede interna, MySQL 8.4, app e fixtures sintéticas e remove os recursos
+ao terminar. Valida gate de 80% exclusivamente dos conteúdos, Simulado opcional, prova única
+por aluno/turma, fronteira 74,99/75, certificado automático sem 100% e preservação da prova
+após rematrícula. O cadastro é exercitado nas quatro combinações das flags
+`EMAIL_DELIVERY_ENABLED` e `PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED`; o laboratório
+não usa chave de provedor nem envia e-mail externo. Os outros smokes com nome staging
+continuam especializados em suas fixtures, porém usam o mesmo bloqueio de ambiente.
 
 ## CI e limite conhecido
 
 O [workflow atual](../../.github/workflows/ci.yml) usa MySQL 8.4 efêmero com identidade e flags
 próprias, valida migrations/schema, roda a suíte completa, instala Chromium/Firefox/WebKit com
-as dependências Linux, executa o smoke nos três projetos em etapas separadas e constrói a imagem.
+as dependências Linux, executa as suítes completas nos três projetos em etapas separadas e
+constrói a imagem. Também valida documentação, smokes acadêmicos descartáveis e o reconciliador
+real dentro da imagem com autorização limitada ao laboratório.
 A identidade CI não é alternativa para integração local. A configuração do workflow não substitui
 evidência de uma execução concluída; WebKit só conta como validado quando a etapa real passa.
 

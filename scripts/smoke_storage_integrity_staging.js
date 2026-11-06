@@ -1,5 +1,7 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
@@ -18,15 +20,12 @@ async function samplePdf(text) {
 }
 
 async function main() {
-    assert.equal(process.env.APP_ENV, 'staging');
-    assert(/staging|demo/i.test(process.env.DB_NAME));
     const mode = process.argv[2];
     assert(['prepare', 'verify', 'cleanup'].includes(mode));
     const chunks = [];
     for await (const chunk of process.stdin) chunks.push(chunk);
     const credentials = require('dotenv').parse(Buffer.concat(chunks));
     const base = process.env.APP_BASE_URL.replace(/\/$/, '');
-    assert(base.startsWith('https://'));
     const authorization = `Basic ${Buffer.from(`${credentials.BASIC_AUTH_USER}:${credentials.BASIC_AUTH_PASSWORD}`).toString('base64')}`;
     async function call(route, session, method = 'GET', body, expected = 200) {
         const headers = { Authorization: authorization };

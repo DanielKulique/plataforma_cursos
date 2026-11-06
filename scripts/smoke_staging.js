@@ -1,7 +1,11 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
+
 const crypto = require('crypto');
 const { PDFDocument } = require('pdf-lib');
+const db = require('../src/config/database');
 
 async function samplePdf(text) {
     const document = await PDFDocument.create();
@@ -46,7 +50,6 @@ async function main() {
         ? parseEnv(await readStdin())
         : process.env;
     const baseUrl = String(process.env.STAGING_BASE_URL || '').replace(/\/$/, '');
-    assert(baseUrl.startsWith('https://'), 'STAGING_BASE_URL deve usar HTTPS.');
 
     const basic = Buffer.from(
         `${credentials.BASIC_AUTH_USER}:${credentials.BASIC_AUTH_PASSWORD}`
@@ -81,7 +84,7 @@ async function main() {
         const setCookie = response.headers.get('set-cookie') || '';
         assert(/plataforma_session=/.test(setCookie), 'cookie de sessão ausente');
         assert(/HttpOnly/i.test(setCookie), 'cookie sem HttpOnly');
-        assert(/Secure/i.test(setCookie), 'cookie sem Secure');
+        assert(!/;\s*Secure(?:;|$)/i.test(setCookie), 'laboratório HTTP deve usar cookie de teste');
         assert(/SameSite=Lax/i.test(setCookie), 'cookie sem SameSite=Lax');
         const cookie = setCookie.split(';', 1)[0];
         return {
@@ -586,10 +589,12 @@ async function main() {
         { headers: student.headers }
     ));
     assert(exam.questionario?.tipo === 'PROVA', 'prova indisponível');
-    const examAnswers = exam.questionario.perguntas.map((question) => ({
-        id_pergunta: question.id_pergunta,
-        id_opcao: question.opcoes[0].id_opcao
-    }));
+    const examAnswers = [];
+    for (const question of exam.questionario.perguntas) {
+        const [[correct]] = await db.query('SELECT id_opcao FROM Q_Opcoes WHERE id_pergunta=? AND correta=1 ORDER BY ordem LIMIT 1', [question.id_pergunta]);
+        assert(correct, 'Fixture de prova deve oferecer uma opção correta.');
+        examAnswers.push({ id_pergunta: question.id_pergunta, id_opcao: correct.id_opcao });
+    }
     await request(`/api/questionarios/${exam.questionario.id_questionario}/submissoes`, {
         method: 'POST',
         headers: {
@@ -670,27 +675,18 @@ async function main() {
     );
     assert(enrollment?.id_matricula, 'aluno matriculado não encontrado pelo professor');
     await request(`/api/turmas/${classId}/progresso`, { headers: professor.headers });
-    await request(`/api/matriculas/${enrollment.id_matricula}`, {
-        method: 'PATCH',
-        headers: {
-            ...professor.headers,
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': professor.csrf
-        },
-        body: JSON.stringify({ nota_final: 9.5, status_aprovacao: 'APROVADO' })
-    });
     const gradedEnrollment = await json(await request(
         `/api/matriculas/${enrollment.id_matricula}`,
         { headers: professor.headers }
     ));
     assert(gradedEnrollment.status_aprovacao === 'APROVADO'
-        && Number(gradedEnrollment.nota_final) === 9.5, 'nota/aprovação não persistidas');
-    results.push('turma, aluno, progresso e aprovação do professor');
+        && gradedEnrollment.nota_final === null, 'aprovação automática não persistiu');
+    results.push('turma, aluno, progresso e aprovação automática pela prova final');
 
     const capabilities = await json(await request('/api/capabilities', { headers: admin.headers }));
     assert(capabilities && typeof capabilities === 'object', 'capabilities inválidas');
     const users = await json(await request('/api/admin/usuarios', { headers: admin.headers }));
-    assert(Array.isArray(users) && users.length >= 4, 'lista administrativa incompleta');
+    assert(Array.isArray(users.items) && users.total >= 4, 'lista administrativa incompleta');
     await request('/api/admin/usuarios', { headers: student.headers }, 403);
     await request('/api/admin/usuarios', { headers: professor.headers }, 403);
     await request('/api/health', { headers: admin.headers });
@@ -719,7 +715,7 @@ async function main() {
         (item) => Number(item.id_matricula) === Number(enrollment.id_matricula)
     );
     assert(reopenedEnrollment?.status_aprovacao === 'APROVADO'
-        && Number(reopenedEnrollment.nota_final) === 9.5,
+        && reopenedEnrollment.nota_final === null,
     'aprovação/nota não persistiram após novo login');
     results.push('logout/login e estado acadêmico persistido');
 
@@ -730,4 +726,4 @@ async function main() {
 main().catch((error) => {
     console.error(`SMOKE_FAIL ${error.message}`);
     process.exitCode = 1;
-});
+}).finally(() => db.end());

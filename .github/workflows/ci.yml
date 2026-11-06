@@ -194,6 +194,14 @@ jobs:
           sudo env PATH="$PATH" PYTHONDONTWRITEBYTECODE=1 RUN_RESTORE_DOCKER_TESTS=1 \
             GOAL19_EVIDENCE_FILE="$GITHUB_WORKSPACE/ci-results/restore-isolation.json" \
             python3 -m unittest discover -s tests/operations -p test_restore_isolation_docker.py -v
+      - name: Validar documentação atual
+        run: python3 docs/engineering/validate_current_docs.py
+      - name: Smokes acadêmicos em laboratório Docker descartável
+        run: python3 -u tests/operations/run_academic_smokes.py --allow-lab-writes 2>&1 | tee ci-results/academic-smokes.log
+      - name: Construir a imagem de produção
+        run: docker build --build-arg APP_RELEASE_SHA="$GITHUB_SHA" --tag plataforma-cursos:ci . 2>&1 | tee ci-results/docker-build.log
+      - name: Validar recuperação de certificados na imagem com dados sintéticos
+        run: python3 -u tests/operations/test_certificate_recovery_runtime.py --image plataforma-cursos:ci --allow-lab-apply 2>&1 | tee ci-results/certificate-recovery-runtime.log
       - name: Instalar browsers e dependências do Playwright
         run: npx playwright install --with-deps chromium firefox webkit
       - name: E2E completo Chromium sem retry em MySQL descartável separado
@@ -218,5 +226,3 @@ jobs:
             playwright-report/
             test-results/
           if-no-files-found: ignore
-      - name: Construir a imagem de produção
-        run: docker build --tag plataforma-cursos:ci .

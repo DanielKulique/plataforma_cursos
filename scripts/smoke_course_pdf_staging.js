@@ -1,5 +1,7 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
@@ -10,8 +12,6 @@ const { obterDiretorioMateriais, obterLimitePdfBytes } = require('../src/config/
 const { obterDiretorioCertificados } = require('../src/config/certificate-storage');
 
 async function main() {
-    assert.equal(process.env.APP_ENV, 'staging');
-    assert.match(process.env.DB_NAME, /staging|demo/i);
     const chunks = [];
     for await (const chunk of process.stdin) chunks.push(chunk);
     const credentials = require('dotenv').parse(Buffer.concat(chunks));

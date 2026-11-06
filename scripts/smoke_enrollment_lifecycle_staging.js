@@ -1,5 +1,7 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const dotenv = require('dotenv');
@@ -7,13 +9,10 @@ const db = require('../src/config/database');
 const { buscarRequisitos } = require('../src/api/services/academic-progress.service');
 
 async function main() {
-    assert.equal(process.env.APP_ENV, 'staging');
-    assert(/staging|demo/i.test(process.env.DB_NAME), 'Banco de staging obrigatório.');
     const chunks = [];
     for await (const chunk of process.stdin) chunks.push(chunk);
     const credentials = dotenv.parse(Buffer.concat(chunks));
     const base = String(process.env.STAGING_BASE_URL || process.env.APP_BASE_URL).replace(/\/$/, '');
-    assert(base.startsWith('https://'));
     const basic = `Basic ${Buffer.from(`${credentials.BASIC_AUTH_USER}:${credentials.BASIC_AUTH_PASSWORD}`).toString('base64')}`;
 
     async function call(route, session, method = 'GET', body, expected = 200) {
@@ -46,6 +45,7 @@ async function main() {
 
     let cursoId;
     let turmaId;
+    let certificateBaseline;
     try {
         const professor = await login(credentials.PROFESSOR_EMAIL, credentials.DEMO_PASSWORD, 'PROFESSOR');
         const aluno = await login(credentials.ALUNO_EMAIL, credentials.DEMO_PASSWORD, 'ALUNO');
@@ -68,7 +68,7 @@ async function main() {
         assert.equal(primeira.matricula.ciclo_atual, 1);
 
         const conteudos = [];
-        for (let ordem = 1; ordem <= 4; ordem += 1) {
+        for (let ordem = 1; ordem <= 5; ordem += 1) {
             await call(`/api/turmas/${turmaId}/conteudos`, professor, 'POST', {
                 titulo: `Conteúdo ${ordem}`, tipo: 'TEXTO', corpo: 'Smoke de rematrícula', ordem
             }, 201);
@@ -111,7 +111,7 @@ async function main() {
             }, expected)).json();
         }
 
-        for (const idConteudo of conteudos.slice(0, 3)) await concluir(idConteudo);
+        for (const idConteudo of conteudos.slice(0, 4)) await concluir(idConteudo);
         const chaveExercicio = crypto.randomUUID();
         await submeter(exercicio, chaveExercicio);
         let requisitos = await buscarRequisitos(db, aluno.user.id_usuario, turmaId);
@@ -125,8 +125,14 @@ async function main() {
         );
         assert.equal(historicoAntes.length, 2);
         assert(historicoAntes.every((item) => item.ciclo_matricula === 1));
+        [certificateBaseline] = await db.query('SELECT * FROM Certificados WHERE id_turma=?', [turmaId]);
+        assert.equal(certificateBaseline.length, 1);
         console.log('CICLO 1 OK: 80%, exercício e prova registrados no ciclo 1.');
 
+        await call(`/api/certificados/${certificateBaseline[0].id_certificado}/revogar`, admin, 'POST',
+            { motivo: 'Revogação autorizada no laboratório descartável de rematrícula' });
+        [certificateBaseline] = await db.query('SELECT * FROM Certificados WHERE id_turma=?', [turmaId]);
+        assert.equal(certificateBaseline[0].status, 'REVOGADO');
         await call(`/api/matriculas/${matriculaId}`, aluno, 'DELETE');
         for (const actor of [professor, admin]) {
             const bypass = await (await call(`/api/matriculas/${matriculaId}`, actor, 'PATCH',
@@ -143,12 +149,12 @@ async function main() {
              FROM Matriculas WHERE id_matricula = ?`, [matriculaId]
         );
         assert.equal(matricula.ciclo_atual, 2);
-        assert.equal(matricula.status_aprovacao, 'CURSANDO');
+        assert.equal(matricula.status_aprovacao, 'APROVADO');
         assert.equal(matricula.nota_final, null);
         assert.equal(matricula.progresso_percentual, 0);
         requisitos = await buscarRequisitos(db, aluno.user.id_usuario, turmaId);
         assert.equal(requisitos.exercicios_realizados, 0);
-        assert.equal(requisitos.prova_final_aprovada, false);
+        assert.equal(requisitos.prova_final_aprovada, true);
         assert.equal(requisitos.prova_liberada, false);
         await submeter(prova, crypto.randomUUID(), 409);
 
@@ -163,9 +169,10 @@ async function main() {
         assert.equal(requisitos.ciclo_atual, 2);
         assert.equal(requisitos.conteudos_concluidos, 1);
         assert.equal(requisitos.exercicios_realizados, 1);
-        assert.equal(requisitos.prova_final_aprovada, false);
+        assert.equal(requisitos.prova_final_aprovada, true);
         assert.equal(requisitos.prova_liberada, false);
 
+        assert.deepEqual((await db.query('SELECT * FROM Certificados WHERE id_turma=?', [turmaId]))[0], certificateBaseline);
         const [historicoDepois] = await db.query(
             `SELECT id_tentativa,ciclo_matricula,percentual,finalizada_em
              FROM Q_Tentativas WHERE id_usuario = ? AND id_turma = ? ORDER BY id_tentativa`,
@@ -173,13 +180,17 @@ async function main() {
         );
         assert.deepEqual(historicoDepois.slice(0, 2), historicoAntes);
         assert.equal(historicoDepois[2].ciclo_matricula, 2);
-        console.log('CICLO 2 OK: PATCH bloqueado, concorrência 200/409, estado reiniciado e histórico isolado/preservado.');
+        console.log('CICLO 2 OK: conteúdo/exercícios reiniciados; aprovação, tentativa final e certificado preservados; nova prova bloqueada.');
         console.log(JSON.stringify({
             status: 'ENROLLMENT_LIFECYCLE_SMOKE_OK', matriculaId, cicloAtual: 2,
             tentativasPorCiclo: { ciclo1: 2, ciclo2: 1 }
         }));
     } finally {
         if (turmaId) {
+            const storage = require('../src/api/services/certificate-storage.service');
+            const [certificates] = await db.query('SELECT storage_name FROM Certificados WHERE id_turma=?', [turmaId]);
+            for (const certificate of certificates) await storage.removerArquivo(certificate.storage_name);
+            await db.query('DELETE FROM Certificados WHERE id_turma=?', [turmaId]);
             await db.query(
                 `DELETE progresso FROM ConteudosProgresso progresso
                  INNER JOIN Conteudos conteudo ON conteudo.id_conteudo = progresso.id_conteudo
@@ -193,6 +204,6 @@ async function main() {
 }
 
 main().catch((error) => {
-    console.error(`ENROLLMENT_LIFECYCLE_SMOKE_FAILED: ${error.code || error.message}`);
+    console.error(`ENROLLMENT_LIFECYCLE_SMOKE_FAILED: ${error.stack || error.message}`);
     process.exitCode = 1;
 }).finally(() => db.end());

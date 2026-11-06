@@ -29,7 +29,7 @@ Os fluxos E2E também cobrem escrita administrativa por perfil, replicação com
 
 A tela de certificados usa respostas interceptadas para os status HTTP 400, 401, 403, 404, 409, 422, 429, 500 e 503. O teste verifica mensagens seguras, ausência de erro não tratado e manutenção do contexto do curso quando a lista secundária falha. A matriz de papéis navega por telas privadas de aluno, professor e administrador.
 
-O smoke de seis etapas valida landing, login, Sala Virtual, aula com YouTube, avaliações e progresso. O WebKit e o Firefox executam esse smoke na CI; o conjunto completo roda em Chromium. Os viewports incluem 320, 360, 390, 412, 768 e 1440 px, com verificação da largura global do documento nas telas críticas.
+O smoke de seis etapas valida landing, login, Sala Virtual, aula com YouTube, avaliações e progresso. A CI executa o conjunto completo em Chromium, Firefox e WebKit, sem retries. Os viewports incluem 320, 360, 390, 412, 768 e 1440 px, com verificação da largura global do documento nas telas críticas.
 
 ## Relatórios e depuração
 

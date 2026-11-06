@@ -6,7 +6,7 @@ correções avançam com um arquivo novo. O servidor HTTP nunca altera tabelas a
 ## Arquivos, ledger e checksum
 
 Arquivos em `mysql/migrations/` usam `NNN_nome.sql`, sequência numérica única sem lacunas.
-A revisão atual contém 001–013. O runner cria `schema_migrations`, com `version`, `filename`,
+A revisão atual contém 001–016. O runner cria `schema_migrations`, com `version`, `filename`,
 `checksum_sha256`, `applied_at` e `execution_ms`. SHA-256 cobre todos os bytes do arquivo.
 Não há migration 000 nem comando down.
 
@@ -48,7 +48,7 @@ npm run db:schema:validate
 ```
 
 O contrato deve estar integralmente compatível; a opção não contorna drift. O runner registra
-checksums 001–011 sem reexecutá-las e aplica 012/013 pendentes na mesma chamada. Não use baseline
+checksums 001–011 sem reexecutá-las e aplica 012–016 pendentes na mesma chamada. Não use baseline
 em banco que já possui registros no ledger. Não assuma que qualquer banco antigo aceita adoção:
 diagnostique divergências e a revisão de origem antes de promover.
 

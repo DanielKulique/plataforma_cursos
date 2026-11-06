@@ -1,21 +1,18 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
 const crypto = require('node:crypto');
 const dotenv = require('dotenv');
 const db = require('../src/config/database');
 const storage = require('../src/api/services/certificate-storage.service');
-const { obterDiretorioCertificados } = require('../src/config/certificate-storage');
 
 async function main() {
-    assert.equal(process.env.APP_ENV, 'staging');
-    assert(/staging|demo/i.test(process.env.DB_NAME), 'Banco de staging obrigatório.');
     const chunks = [];
     for await (const chunk of process.stdin) chunks.push(chunk);
     const credentials = dotenv.parse(Buffer.concat(chunks));
     const base = String(process.env.STAGING_BASE_URL || process.env.APP_BASE_URL).replace(/\/$/, '');
-    assert(base.startsWith('https://'));
     const authorization = `Basic ${Buffer.from(`${credentials.BASIC_AUTH_USER}:${credentials.BASIC_AUTH_PASSWORD}`).toString('base64')}`;
     async function call(route, session, method = 'GET', body, expected = 200) {
         const headers = { Authorization: authorization };
@@ -58,7 +55,7 @@ async function main() {
             await call(`/api/conteudos/${id}/progresso`, aluno, 'PUT', { status: 'CONCLUIDO' });
         }
         const materiais = [];
-        for (let ordem = 1; ordem <= 8; ordem++) materiais.push(await adicionar(ordem));
+        for (let ordem = 1; ordem <= 10; ordem++) materiais.push(await adicionar(ordem));
         async function avaliacao(tipo, provaFinal = false) {
             const result = await (await call(`/api/turmas/${turmaId}/questionarios`, professor, 'POST', {
                 titulo: `${tipo} ${crypto.randomUUID()}`, tipo, prova_final: provaFinal, descricao: 'Smoke acadêmico'
@@ -92,46 +89,47 @@ async function main() {
         await call('/api/matriculas', outroAluno, 'POST', { id_turma: turmaId }, 201);
         await submeter(exercicioA, 3, outroAluno);
         await submeter(prova, 3, outroAluno, 409);
-        for (const id of materiais.slice(0, 5)) await concluir(id);
+        for (const id of materiais.slice(0, 7)) await concluir(id);
         await submeter(exercicioA, 0); await submeter(exercicioA, 1); await submeter(exercicioB, 0);
         const meta = await (await call(`/api/turmas/${turmaId}/questionarios`, aluno)).json();
         assert.equal(meta.questionarios[0].requisitos.trilha_realizada, 7);
         assert.equal(meta.questionarios[0].requisitos.total_trilha, 10);
         await call(`/api/turmas/${turmaId}/questionarios/disponivel?tipo=PROVA&id_questionario=${prova.id}`, aluno, 'GET', undefined, 409);
         await submeter(prova, 3, aluno, 409);
-        console.log('CASO A OK: 7/10 bloqueia leitura/submissão; exercícios repetidos e outro aluno não interferem.');
-        await concluir(materiais[5]);
+        console.log('CASO A OK: 7/10 conteúdos bloqueiam; Simulado e exercícios são opcionais e não contam no gate.');
+        await concluir(materiais[7]);
         await call(`/api/turmas/${turmaId}/questionarios/disponivel?tipo=PROVA&id_questionario=${prova.id}`, aluno);
         console.log('CASO B OK: 8/10 libera prova final.');
         assert.equal((await submeter(prova, 1)).resultado.percentual, 74.99);
         assert.equal((await situacao()).status_aprovacao, 'CURSANDO');
-        console.log('CASO C OK: 74.99 mantém CURSANDO, sem reprovação, com retry.');
-        assert.equal((await submeter(prova, 2)).resultado.percentual, 75);
-        assert.equal((await situacao()).status_aprovacao, 'CURSANDO');
-        console.log('CASO D OK: 75 satisfaz prova; conteúdos pendentes impedem aprovação.');
-        for (const id of materiais.slice(6)) await concluir(id);
-        assert.equal((await situacao()).status_aprovacao, 'APROVADO');
-        assert.equal((await situacao()).nota_final, null);
-        console.log('CASO E OK: último conteúdo aprova automaticamente, sem nota/clique do professor.');
-        const novo = await adicionar(9);
-        const storageDir = obterDiretorioCertificados();
-        const filesBefore = fs.readdirSync(storageDir).sort();
-        const bloqueado = await (await call(`/api/certificados/matriculas/${matriculaId}/emitir`, professor, 'POST', undefined, 409)).json();
-        assert.equal(bloqueado.code, 'CONTEUDOS_PENDENTES');
-        const [[count]] = await db.query('SELECT COUNT(*) AS total FROM Certificados WHERE id_turma = ?', [turmaId]);
-        assert.equal(count.total, 0);
-        assert.deepEqual(fs.readdirSync(storageDir).sort(), filesBefore);
-        await concluir(novo);
+        await submeter(prova, 2, aluno, 409);
+        console.log('CASO C OK: 74.99 não aprova e consome a tentativa finalizada única.');
+        for (const id of materiais.slice(0, 8)) {
+            await call(`/api/conteudos/${id}/progresso`, outroAluno, 'PUT', { status: 'CONCLUIDO' });
+        }
+        assert.equal((await submeter(prova, 2, outroAluno)).resultado.percentual, 75);
+        const [[aprovado]] = await db.query('SELECT id_matricula,status_aprovacao,nota_final,progresso_percentual FROM Matriculas WHERE id_aluno=? AND id_turma=?', [outroAluno.user.id_usuario, turmaId]);
+        assert.equal(aprovado.status_aprovacao, 'APROVADO');
+        assert.equal(aprovado.nota_final, null);
+        assert.equal(aprovado.progresso_percentual, 80);
+        const [[certificado]] = await db.query('SELECT id_certificado,codigo_publico FROM Certificados WHERE id_aluno=? AND id_turma=?', [outroAluno.user.id_usuario, turmaId]);
+        assert(certificado, 'Certificado automático ausente com 80% e prova 75%.');
+        await submeter(prova, 3, outroAluno, 409);
+        const snapshotBefore = await db.query('SELECT * FROM Certificados WHERE id_certificado=?', [certificado.id_certificado]);
+        await adicionar(11);
         await call(`/api/turmas/${turmaId}`, admin, 'PATCH', { status: 'ENCERRADA' });
-        const emitido = await (await call(`/api/certificados/matriculas/${matriculaId}/emitir`, professor, 'POST', undefined, 201)).json();
-        const download = await call(`/api/certificados/${emitido.certificado.id_certificado}/pdf?download=1`, aluno);
+        const emitido = await (await call(`/api/certificados/matriculas/${aprovado.id_matricula}/emitir`, professor, 'POST', undefined, 200)).json();
+        assert.equal(emitido.reutilizado, true);
+        assert.deepEqual((await db.query('SELECT * FROM Certificados WHERE id_certificado=?', [certificado.id_certificado]))[0], snapshotBefore[0]);
+        console.log('CASOS D/E/F OK: 75 aprova e emite sem 100%; certificado existente preservado após mudar a estrutura.');
+        const download = await call(`/api/certificados/${emitido.certificado.id_certificado}/pdf?download=1`, outroAluno);
         const bytes = Buffer.from(await download.arrayBuffer());
         assert.equal(bytes.subarray(0, 5).toString(), '%PDF-');
         const [[registro]] = await db.query('SELECT sha256 FROM Certificados WHERE id_certificado = ?', [emitido.certificado.id_certificado]);
         assert.equal(storage.calcularSha256(bytes), registro.sha256);
         const publico = await (await call(`/api/public/certificados/${emitido.certificado.codigo_publico}`)).json();
         assert.equal(publico.resultado, 'VALIDO');
-        console.log('CASO F OK: certificado revalida estrutura, emite em ENCERRADA; download/hash/validação pública preservados.');
+        console.log('DOWNLOAD OK: PDF, hash e validação pública preservados.');
     } finally {
         if (turmaId) {
             const [certificados] = await db.query('SELECT storage_name FROM Certificados WHERE id_turma = ?', [turmaId]);

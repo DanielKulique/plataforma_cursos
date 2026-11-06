@@ -1,5 +1,7 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
@@ -9,13 +11,10 @@ const storage = require('../src/api/services/certificate-storage.service');
 const { assertCertificateLegacyIntegrity } = require('./certificate_migration_preflight');
 
 async function main() {
-    assert.equal(process.env.APP_ENV, 'staging');
-    assert(/staging|demo/i.test(process.env.DB_NAME));
     const chunks = [];
     for await (const chunk of process.stdin) chunks.push(chunk);
     const credentials = dotenv.parse(Buffer.concat(chunks));
     const base = String(process.env.STAGING_BASE_URL || process.env.APP_BASE_URL).replace(/\/$/, '');
-    assert(base.startsWith('https://'));
     const authorization = `Basic ${Buffer.from(`${credentials.BASIC_AUTH_USER}:${credentials.BASIC_AUTH_PASSWORD}`).toString('base64')}`;
     async function call(route, session, method = 'GET', body, expected = 200) {
         const headers = { Authorization: authorization };
@@ -72,7 +71,7 @@ async function main() {
         await call(`/api/questionarios/${prova.id_questionario}/submissoes`, aluno, 'POST', {
             submission_id: crypto.randomUUID(), respostas: [{ id_pergunta: pergunta.id_pergunta, id_opcao: opcao.id_opcao }]
         });
-        const v1 = (await (await call(`/api/certificados/matriculas/${matricula.id_matricula}/emitir`, professor, 'POST', undefined, 201)).json()).certificado;
+        const v1 = (await (await call(`/api/certificados/matriculas/${matricula.id_matricula}/emitir`, professor, 'POST', undefined, 200)).json()).certificado;
         assert.equal(v1.versao, 1); assert.equal(v1.status, 'ATIVO');
         assert.equal((await (await call(`/api/public/certificados/${v1.codigo_publico}`)).json()).resultado, 'VALIDO');
         console.log('A/B OK: emissão inicial v1 e código autêntico.');

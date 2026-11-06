@@ -1,5 +1,7 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -15,7 +17,6 @@ async function readCredentials() {
 async function main() {
     const credentials = await readCredentials();
     const baseURL = String(process.env.STAGING_BASE_URL || '').replace(/\/$/, '');
-    assert.match(baseURL, /^https:\/\//, 'STAGING_BASE_URL HTTPS obrigatório.');
     for (const name of [
         'BASIC_AUTH_USER', 'BASIC_AUTH_PASSWORD', 'ADMIN_EMAIL', 'ADMIN_PASSWORD',
         'PROFESSOR_EMAIL', 'ALUNO_EMAIL', 'DEMO_PASSWORD'

@@ -1,5 +1,7 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
 const db = require('../src/config/database');
 
 function parseEnv(text) {
@@ -25,12 +27,10 @@ function assert(condition, message) {
 }
 
 async function main() {
-    assert(process.env.APP_ENV === 'staging', 'Smoke permitido somente com APP_ENV=staging.');
     const credentials = process.env.SMOKE_CREDENTIALS_STDIN === '1'
         ? parseEnv(await readStdin())
         : process.env;
     const baseUrl = String(process.env.STAGING_BASE_URL || process.env.APP_BASE_URL || '').replace(/\/$/, '');
-    assert(baseUrl.startsWith('https://'), 'STAGING_BASE_URL/APP_BASE_URL deve usar HTTPS.');
     assert(credentials.BASIC_AUTH_USER && credentials.BASIC_AUTH_PASSWORD, 'Basic Auth ausente.');
 
     const basic = Buffer.from(
@@ -65,7 +65,16 @@ async function main() {
         }, expected);
     }
 
+    const deliveryEnabled = String(process.env.EMAIL_DELIVERY_ENABLED || 'true').toLowerCase() !== 'false';
+    const required = String(process.env.PUBLIC_REGISTRATION_EMAIL_VERIFICATION_REQUIRED || 'true').toLowerCase() !== 'false';
     try {
+        if (required && !deliveryEnabled) {
+            await post('/api/usuarios', { nome_completo: 'Blocked lab signup', cpf, email, senha }, 503);
+            const [[row]] = await db.query('SELECT (SELECT COUNT(*) FROM Usuarios WHERE email=?) + (SELECT COUNT(*) FROM EmailVerificacoes WHERE email=?) AS n', [email, email]);
+            assert(Number(row.n) === 0, 'cadastro indisponível escreveu dados');
+            console.log('IDENTITY_EMAIL_STAGING_OK required=true delivery=false: 503 sem escrita');
+            return;
+        }
         const cadastroResponse = await post('/api/usuarios', {
             nome_completo: 'Identity Smoke Staging',
             cpf,
@@ -73,19 +82,19 @@ async function main() {
             senha
         }, 201);
         const cadastro = await cadastroResponse.json();
-        assert(cadastro.verificacao?.estado === 'PENDENTE', 'cadastro não retornou estado PENDENTE');
-        const deliveryEnabled = String(process.env.EMAIL_DELIVERY_ENABLED || 'true').toLowerCase() !== 'false';
+        assert(cadastro.verificacao?.estado === (required ? 'PENDENTE' : 'VERIFICADO'), 'estado de cadastro não corresponde às flags');
         if (!deliveryEnabled) {
             assert(cadastro.verificacao.email_enviado === false, 'staging sem provedor afirmou envio');
         }
-        results.push(`cadastro atômico pendente; entrega=${cadastro.verificacao.email_enviado ? 'confirmada' : 'indisponível'}`);
+        results.push(`cadastro atômico ${cadastro.verificacao.estado}; entrega=${cadastro.verificacao.email_enviado ? 'confirmada' : 'indisponível'}`);
 
         const [verificacoes] = await db.query(
             'SELECT codigo, verificado, expira_em FROM EmailVerificacoes WHERE email = ? LIMIT 1',
             [email]
         );
         assert(verificacoes.length === 1, 'EmailVerificacoes não foi criado');
-        assert(Number(verificacoes[0].verificado) === 0, 'novo cadastro não começou pendente');
+        assert(Number(verificacoes[0].verificado) === (required ? 0 : 1), 'marcador de verificação incorreto');
+        if (required) {
         assert(/^\d{6}$/.test(String(verificacoes[0].codigo)), 'código persistido inválido');
 
         await post('/api/auth/login', { email, senha }, 403);
@@ -97,6 +106,11 @@ async function main() {
         ]);
         assert(confirmacoes.every((response) => response.status === 200), 'confirmação concorrente divergiu');
         results.push('confirmação concorrente consistente');
+        } else {
+            assert(verificacoes[0].codigo === null && verificacoes[0].expira_em === null, 'cadastro sem verificação gerou código/expiração');
+            assert(cadastro.verificacao.email_enviado === false, 'cadastro sem verificação afirmou envio');
+            results.push('cadastro VERIFICADO conforme flag; login imediato');
+        }
 
         const login = await post('/api/auth/login', { email, senha }, 200);
         assert((login.headers.get('set-cookie') || '').includes('plataforma_session='), 'login não emitiu cookie');

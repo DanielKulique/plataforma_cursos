@@ -1,6 +1,8 @@
 # Estado canônico dos achados do Goal 18
 
-Atualização do Goal 22 em 05/11/2026, America/Sao_Paulo.
+Consolidação operacional do Goal 24 em 06/11/2026, America/Sao_Paulo.
+Os gates locais e a política de uma única CI final estão no
+[relatório do Goal 24](GOAL_24_OPERATIONAL_STABILIZATION.md).
 
 Esta é a revisão dos achados para a linha canônica iniciada em
 `8d78b1ba8ccde3962091bb6f73cb348d75257cf1`. A auditoria original foi consultada,
@@ -45,10 +47,10 @@ histórico da auditoria não é prova do estado de produção atual.
 
 | Achado | Próxima tarefa |
 | --- | --- |
-| F18-05 | Corrigir paginação completa dos seletores administrativos acima de 100 registros |
-| F18-06 | Atualizar smokes e guias operacionais que ainda descrevem regras acadêmicas antigas |
+| F18-05 | Goal 24.2 integrado: paginação/busca server-side, professor 101 selecionável; 125 usuários/turmas e 121 professores em laboratório |
+| F18-06 | Goal 24: smokes acadêmicos atuais, cadastro conforme flags, bloqueio de produção e guias/migrations 001–016; resultado da CI final no relatório |
 | F18-07 | Substituir inferências de cobertura por evidências de comportamento na matriz de testes |
-| F18-08 | A baseline atual já inclui o reconciliador no Dockerfile; confirmar distribuição/uso operacional da imagem em trabalho próprio, sem executar backfill aqui |
+| F18-08 | Goal 24.1 integrado: reconciliador comprovado na imagem com dry-run sem escrita, APPLY sintético idempotente e preservação de certificados; sem backfill ou deploy |
 | F18-09 | Manter acompanhamento da navegação Firefox; falhas ou flakies reais devem ser investigados, nunca ocultados com retries. Os resultados desta RC ficam registrados separadamente |
 | F18-10 | Preparar autenticação/transporte offsite portável para a infraestrutura futura |
 | F18-11 | Definir alertas externos e medir capacidade/recursos com evidência |

@@ -1,11 +1,14 @@
 'use strict';
 
+require('./lib/disposable-smoke').assertDisposableSmoke();
+
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
 const { PDFDocument } = require('pdf-lib');
+const db = require('../src/config/database');
 
 async function main() {
     let credentials = process.env;
@@ -15,7 +18,6 @@ async function main() {
         credentials = dotenv.parse(Buffer.concat(chunks));
     }
     const base = String(process.env.STAGING_BASE_URL || '').replace(/\/$/, '');
-    assert(base.startsWith('https://'), 'STAGING_BASE_URL deve usar HTTPS.');
     const mode = process.env.CERTIFICATE_SMOKE_MODE || 'issue';
     assert(['issue', 'verify', 'revoke'].includes(mode), 'Modo de smoke inválido.');
     const authorization = `Basic ${Buffer.from(
@@ -82,27 +84,21 @@ async function main() {
             turma = room.turmas.find((item) => item.nome_turma === 'Turma Demo Staging');
         }
         assert(turma, 'Turma de demonstração não encontrada.');
-        if (studentEmail === credentials.UNENROLLED_EMAIL) {
-            const structure = await (await call(
-                `/api/turmas/${turma.id_turma}/conteudos`,
-                { session: student }
-            )).json();
-            for (const content of structure.conteudos || []) {
-                await call(`/api/conteudos/${content.id_conteudo}/progresso`, {
-                    session: student,
-                    method: 'PUT',
-                    body: { status: 'CONCLUIDO' }
-                });
-            }
-        }
         let roster = await (await call(`/api/matriculas/turma/${turma.id_turma}`, { session: professor })).json();
         let enrollment = roster.matriculas.find((item) => Number(item.id_aluno) === Number(student.user.id_usuario));
         if (enrollment?.status_aprovacao !== 'APROVADO' && studentEmail === credentials.UNENROLLED_EMAIL) {
-            await call(`/api/matriculas/${enrollment.id_matricula}`, {
-                session: professor,
-                method: 'PATCH',
-                body: { nota_final: 10, status_aprovacao: 'APROVADO' }
-            });
+            const structure = await (await call(`/api/turmas/${turma.id_turma}/conteudos`, { session: student })).json();
+            for (const content of structure.conteudos.slice(0, Math.ceil(structure.conteudos.length * 0.8))) {
+                await call(`/api/conteudos/${content.id_conteudo}/progresso`, { session: student, method: 'PUT', body: { status: 'CONCLUIDO' } });
+            }
+            const exam = (await (await call(`/api/turmas/${turma.id_turma}/questionarios/disponivel?tipo=PROVA`, { session: student })).json()).questionario;
+            const respostas = [];
+            for (const question of exam.perguntas) {
+                const [[option]] = await db.query('SELECT id_opcao FROM Q_Opcoes WHERE id_pergunta=? AND correta=1 ORDER BY ordem LIMIT 1', [question.id_pergunta]);
+                assert(option, 'Fixture de prova sem opção correta.');
+                respostas.push({ id_pergunta: question.id_pergunta, id_opcao: option.id_opcao });
+            }
+            await call(`/api/questionarios/${exam.id_questionario}/submissoes`, { session: student, method: 'POST', body: { submission_id: crypto.randomUUID(), respostas } });
             roster = await (await call(`/api/matriculas/turma/${turma.id_turma}`, { session: professor })).json();
             enrollment = roster.matriculas.find((item) => Number(item.id_aluno) === Number(student.user.id_usuario));
         }
@@ -148,7 +144,7 @@ async function main() {
     await call(`/certificados/validar/${certificate.codigo_publico}`);
     const publicResult = await (await call(`/api/public/certificados/${certificate.codigo_publico}`)).json();
     assert.deepEqual(Object.keys(publicResult.certificado).sort(),
-        ['codigo', 'aluno', 'curso', 'turma', 'carga_horaria', 'emitido_em'].sort());
+        ['codigo', 'versao', 'aluno', 'curso', 'turma', 'carga_horaria', 'emitido_em'].sort());
     assert.equal(publicResult.resultado, certificate.status === 'REVOGADO' ? 'REVOGADO' : 'VALIDO');
     assert.equal((await upload(bytes)).resultado, certificate.status === 'REVOGADO' ? 'REVOGADO' : 'AUTENTICO');
     assert.equal((await upload(Buffer.concat([bytes, Buffer.from('\n% alteração de teste')]))).resultado, 'NAO_VALIDADO');
@@ -173,4 +169,4 @@ async function main() {
 main().catch((error) => {
     console.error(`CERTIFICATE_SMOKE_FAILED: ${error.message}`);
     process.exitCode = 1;
-});
+}).finally(() => db.end());

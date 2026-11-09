@@ -32,3 +32,5 @@ python3 docs/engineering/validate_current_docs.py
 ```
 
 Nenhum teste pesado, deploy, backup/restore, detector ou MySQL nativo é iniciado por esse comando.
+
+- [Goal 25 — correções funcionais e validação de fechamento](GOAL_25_FINAL_APPLICATION_FIXES.md).

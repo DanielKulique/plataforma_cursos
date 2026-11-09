@@ -21,7 +21,10 @@ let emailCadastrado = '';
 function exibirMensagem(texto, tipo = 'info') {
     if (!mensagemCadastro) return;
 
-    mensagemCadastro.textContent = texto;
+    const safeText = String(texto ?? '');
+    mensagemCadastro.textContent = /HTTP|JSON|backend|stack|TypeError|SyntaxError|failed to fetch|networkerror|unexpected token/i.test(safeText)
+        ? 'Não foi possível concluir a operação. Confira sua conexão e tente novamente.' : safeText;
+    mensagemCadastro.hidden = !mensagemCadastro.textContent;
     mensagemCadastro.classList.remove('is-error', 'is-success', 'is-info');
     mensagemCadastro.classList.add(`is-${tipo}`);
 

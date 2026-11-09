@@ -37,7 +37,8 @@ form?.addEventListener('submit', async (event) => {
         form.reset();
         form.querySelectorAll('input, button').forEach((element) => { element.disabled = true; });
     } catch (error) {
-        message.textContent = error.message;
+        message.textContent = /HTTP|JSON|backend|stack|TypeError|SyntaxError|failed to fetch|networkerror|unexpected token/i.test(error.message)
+            ? 'Não foi possível concluir a operação. Confira sua conexão e tente novamente.' : error.message;
         message.setAttribute('role', 'alert');
         button.disabled = false;
     } finally {

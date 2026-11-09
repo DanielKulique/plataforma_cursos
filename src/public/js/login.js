@@ -8,7 +8,10 @@ let submitting = false;
 function exibirMensagem(texto, tipo = 'info') {
     if (!mensagem) return;
 
-    mensagem.textContent = texto;
+    const safeText = String(texto ?? '');
+    mensagem.textContent = /HTTP|JSON|backend|stack|TypeError|SyntaxError|failed to fetch|networkerror|unexpected token/i.test(safeText)
+        ? 'Não foi possível concluir a operação. Confira sua conexão e tente novamente.' : safeText;
+    mensagem.hidden = !mensagem.textContent;
     mensagem.classList.remove('is-info', 'is-success', 'is-error');
     mensagem.classList.add(`is-${tipo}`);
 

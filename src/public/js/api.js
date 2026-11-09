@@ -122,7 +122,7 @@ function createHttpError(status, payload) {
     const messageIsSafe = typeof candidate === 'string'
         && candidate.length <= 240
         && ![...candidate].some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127)
-        && !/(?:stack(?:\s+trace)?|traceback|password|secret|token|database|mysql|postgres|\binternal\b|\bselect\b|\bupdate\b|\bdelete\b|\binsert\b|\bER_[A-Z_]+\b|\bECONN[A-Z_]+\b|\/(?:srv|app|var|home)\/)/i.test(candidate);
+        && !/(?:\bHTTP\b|\bJSON\b|\bbackend\b|stack(?:\s+trace)?|traceback|password|secret|token|database|mysql|postgres|\binternal\b|\bselect\b|\bupdate\b|\bdelete\b|\binsert\b|\bER_[A-Z_]+\b|\bECONN[A-Z_]+\b|\/(?:srv|app|var|home)\/)/i.test(candidate);
     const message = status >= 500 || !messageIsSafe || candidate === 'Erro na requisição'
         ? fallback
         : candidate;

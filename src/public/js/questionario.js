@@ -1,5 +1,7 @@
 import { authenticatedFetch } from './auth.js';
 import { initSessionUI } from './session-ui.js';
+import { questionnaireRoute } from './questionnaire-route.js';
+import { userMessage } from './user-message.js';
 import {
     createAcademicState,
     preferredScrollBehavior,
@@ -8,10 +10,9 @@ import {
 } from './academic-ui.js';
 
 const $ = (id) => document.getElementById(id);
-const params = new URLSearchParams(location.search);
-const idTurma = Number(params.get('id_turma'));
-const idQuestionario = params.get('id_questionario');
-const tipo = String(params.get('tipo') || 'exercicio').toLowerCase();
+let idTurma;
+let idQuestionario;
+let tipo;
 let questionario = null;
 let enviando = false;
 let usuarioId = null;
@@ -236,7 +237,7 @@ async function carregar() {
     $('questionario-description').textContent = questionario.descricao || 'Responda todas as questões.';
     $('contexto-questionario').textContent = questionario.id_modulo ? `Aula ${questionario.numero_aula} — ${questionario.titulo_aula} · ${questionario.titulo}` : questionario.prova_final ? `Prova final · ${questionario.titulo}` : questionario.titulo;
     if (questionario.id_modulo) document.querySelectorAll('a[href*="sala-aula.html"]') .forEach((link) => { link.href = `/sala-aula.html?id_turma=${idTurma}#aula-${questionario.id_modulo}`; });
-    $('subtitulo-questionario').textContent = 'As respostas serão corrigidas e persistidas pelo servidor.';
+    $('subtitulo-questionario').textContent = 'Suas respostas serão corrigidas e o resultado ficará salvo.';
     $('link-refazer').hidden = Boolean(questionario.prova_final);
     if (questionario.tentativa_finalizada) {
         mostrarResultadoFinal(questionario.resultado_final);
@@ -248,6 +249,8 @@ async function carregar() {
 }
 
 function mostrarResultadoFinal(resultado) {
+    $('lista-questoes').replaceChildren();
+    setAcademicBusy($('lista-questoes'), false);
     $('form-questionario').hidden = true;
     $('resultado-questionario').hidden = false;
     $('resultado-titulo').textContent = `Resultado final: ${Number(resultado?.percentual || 0).toFixed(2)}%`;
@@ -258,7 +261,7 @@ function mostrarResultadoFinal(resultado) {
             : 'APROVADO. A emissão do certificado está pendente; ele ficará disponível na área do aluno.';
         $('link-certificados').hidden = false;
     } else {
-        $('resultado-descricao').textContent = 'Não aprovado no Teste Final. A tentativa foi finalizada e não há nova tentativa disponível.';
+        $('resultado-descricao').textContent = 'Reprovado no Teste Final. A tentativa foi finalizada e não há nova tentativa disponível.';
         $('link-certificados').hidden = true;
     }
 }
@@ -321,7 +324,7 @@ $('form-questionario').addEventListener('submit', async (event) => {
             behavior: preferredScrollBehavior()
         });
     } catch (error) {
-        mensagem(error.message, true);
+        mensagem(userMessage(error), true);
         enviando = false;
         setAcademicBusy($('form-questionario'), false);
         submitButton.setAttribute('aria-busy', 'false');
@@ -330,8 +333,6 @@ $('form-questionario').addEventListener('submit', async (event) => {
     }
 });
 
-$('link-voltar-sala').href = `/sala-aula.html?id_turma=${idTurma}`;
-$('link-voltar-sala-resultado').href = `/sala-aula.html?id_turma=${idTurma}`;
 $('link-refazer').href = location.href;
 
 window.addEventListener('load', async () => {
@@ -340,18 +341,29 @@ window.addEventListener('load', async () => {
     try {
         usuarioId = session.user.id_usuario;
         $('status-usuario').textContent = session.user.nome_completo;
+        ({ idTurma, idQuestionario, tipo } = questionnaireRoute(location.search));
+        $('link-voltar-sala').href = `/sala-aula.html?id_turma=${idTurma}`;
+        $('link-voltar-sala-resultado').href = `/sala-aula.html?id_turma=${idTurma}`;
         mensagem('Carregando questionário e histórico…');
         setAcademicBusy($('lista-questoes'), true);
         setAcademicBusy($('lista-historico'), true);
         await carregar();
-        mensagem('Questionário pronto.');
+        mensagem('');
     } catch (error) {
-        mensagem(error.message, true);
-        $('lista-questoes').replaceChildren(createAcademicState(error.message, 'error'));
-        $('lista-historico').replaceChildren(createAcademicState(
-            'O histórico não pôde ser carregado porque o questionário está indisponível.',
-            'error'
-        ));
+        questionario = null;
+        mensagem(userMessage(error, 'Não foi possível abrir esta avaliação. Volte à Sala Virtual e tente novamente.'), true);
+        $('questionario-title').textContent = 'Avaliação indisponível';
+        $('questionario-description').textContent = 'Volte à Sala Virtual para escolher uma avaliação disponível na sua turma.';
+        $('subtitulo-questionario').textContent = 'Não há avaliação disponível neste endereço.';
+        $('total-questoes-info').textContent = '';
+        $('form-questionario').hidden = true;
+        $('form-questionario').querySelectorAll('input,select,button').forEach(control => { control.disabled = true; });
+        $('lista-questoes').replaceChildren();
+        $('lista-historico').replaceChildren(createAcademicState('Histórico indisponível para este endereço.', 'empty'));
+        $('contador-respostas').textContent = '';
+        $('link-refazer').hidden = true;
+        $('link-voltar-sala').href = '/sala-virtual.html';
+        $('link-voltar-sala').textContent = 'Voltar à Sala Virtual';
         setAcademicBusy($('lista-questoes'), false);
         setAcademicBusy($('lista-historico'), false);
     }

@@ -1,3 +1,4 @@
+import { statusLabel } from './academic-area.js';
 import { clearToken } from './auth.js';
 import { getMinhaSala } from './api.js';
 import { initSessionUI } from './session-ui.js';
@@ -105,11 +106,15 @@ function renderizarTurmas(turmas = []) {
 
         const meta = criarElemento('div', 'card-item__meta-grid');
         meta.append(
-            criarLinhaMeta('Turma', turma.nome_turma || 'Turma sem nome')
+            criarLinhaMeta('Turma', turma.nome_turma || 'Turma sem nome'),
+            criarLinhaMeta('Situação', statusLabel(turma.status_aprovacao)),
+            criarLinhaMeta('Teste Final', turma.prova_final_percentual == null ? 'Não finalizado' : `${turma.prova_final_percentual}% · sem nova tentativa disponível`)
         );
 
         const description = criarElemento('p', 'card-item__description');
-        const nextStep = Number(turma.progresso_percentual) >= 100
+        const nextStep = turma.prova_final_percentual != null
+            ? 'Teste Final concluído. Consulte o resultado em Meu progresso.'
+            : Number(turma.progresso_percentual) >= 100
             ? 'Trilha concluída. Consulte seu progresso e certificado.'
             : Number(turma.progresso_percentual) > 0
                 ? 'Próximo passo: retomar suas aulas.'

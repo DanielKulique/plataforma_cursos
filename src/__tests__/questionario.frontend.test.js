@@ -113,7 +113,7 @@ describe('questionário real no frontend do aluno', () => {
         expect(sala).toContain('Seu progresso: ${progresso}%.');
         expect(fluxo).toContain('não há nova tentativa disponível.');
         expect(fluxo).toContain('mostrarResultadoFinal');
-        expect(fluxo).not.toMatch(/reprovad[oa]/i);
+        expect(fluxo).toContain('Reprovado no Teste Final.');
         expect(fluxo).toContain("questionario.prova_final ? 'PROVA FINAL · mínimo 75%'");
         expect(fluxo).toContain(": tipo === 'prova' ? 'Prova intermediária' : 'Exercício'");
         expect(modelo).toContain('somente disponibilidade, aula e ordem podem ser ajustadas.');

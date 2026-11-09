@@ -1,5 +1,6 @@
 import { authenticatedFetch, clearToken } from './auth.js';
 import { formatAcademicDate } from './academic-ui.js';
+import { userMessage } from './user-message.js';
 
 export const byId = (id) => document.getElementById(id);
 
@@ -16,7 +17,9 @@ export function positiveId(name) {
 }
 
 export async function requestJson(url, options = {}) {
-    const response = await authenticatedFetch(url, options);
+    let response;
+    try { response = await authenticatedFetch(url, options); }
+    catch { throw new Error('Não foi possível conectar. Confira sua conexão e tente novamente.'); }
     const body = await response.json().catch(() => ({}));
     if (response.status === 401) {
         clearToken();
@@ -35,7 +38,8 @@ export async function requestJson(url, options = {}) {
             503: 'Serviço temporariamente indisponível.'
         };
         throw Object.assign(new Error(
-            safeMessages[response.status] || 'Não foi possível carregar esta área.'
+            response.status < 500 ? userMessage(body.mensagem || body.message, safeMessages[response.status])
+                : safeMessages[response.status] || 'Não foi possível carregar esta área.'
         ), { status: response.status, code: body.code });
     }
     return body;

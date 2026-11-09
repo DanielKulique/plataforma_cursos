@@ -3909,3 +3909,31 @@
     border: 2px solid ButtonText;
   }
 }
+.admin-page .admin-professor-results {
+    display: grid;
+    gap: .5rem;
+    list-style: none;
+    padding: 0;
+    margin: .5rem 0;
+}
+.admin-page .admin-professor-results .btn {
+    width: 100%;
+    min-block-size: 44px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: start;
+}
+.admin-page .admin-professor-results [aria-pressed="true"] {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+.academic-page .academic-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+    margin-block-start: 1rem;
+}
+.academic-page .academic-pagination .action-button {
+    min-block-size: 44px;
+}

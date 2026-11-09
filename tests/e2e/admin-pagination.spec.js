@@ -106,6 +106,7 @@ test('@full admin classes and professor selection cover all pages', async ({ pag
     dialog = page.getByRole('dialog', { name: 'Replicar estrutura da turma', exact: true });
     await search(dialog, 'Buscar professores', 'prof101@pagination.example.test');
     await expect(dialog.getByRole('navigation', { name: 'Paginação de professores' })).toContainText('· 1 registro');
+    await dialog.getByRole('button', { name: /Professor 101.*prof101@pagination.example.test/ }).click();
     await dialog.getByLabel(/^Professor responsável\s/).selectOption(
         await dialog.getByLabel(/^Professor responsável\s/).locator('option').last().getAttribute('value'));
     await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
@@ -118,9 +119,13 @@ test('@full admin classes and professor selection cover all pages', async ({ pag
     await expect(professors).toContainText('Página 2 de 5');
     await search(dialog, 'Buscar professores', 'prof101@pagination.example.test');
     await expect(professors).toContainText('Página 1 de 1 · 1 registro');
+    const direct = dialog.getByRole('button', { name: /Professor 101.*prof101@pagination.example.test/ });
+    await direct.focus(); await direct.press('Enter');
+    await expect(direct).toHaveAttribute('aria-pressed', 'true');
     const select = dialog.getByLabel(/^Professor\s/);
     const id = await select.locator('option').last().getAttribute('value');
-    await select.selectOption(id);
+    await expect(select).toHaveValue(id);
+    expect((await direct.boundingBox()).y).toBeGreaterThan((await dialog.getByRole('searchbox', { name: 'Buscar professores', exact: true }).boundingBox()).y);
     await dialog.getByLabel(/^Nome da turma\s/).fill('Lab Paginação Turma 999');
     await dialog.getByLabel(/^Curso\s/).selectOption({ label: 'Curso E2E' });
     await dialog.getByLabel(/^Data inicial\s/).fill('2010-01-01');
@@ -147,7 +152,8 @@ test('@full admin pagination loading errors empty states and mobile controls', a
     await login(page);
     await page.route('**/api/admin/usuarios?**', route => route.fulfill({ status: 503, json: { message: 'Laboratório temporariamente indisponível' } }), { times: 1 });
     await search(page, 'Buscar usuários', 'Lab');
-    await expect(page.getByRole('alert')).toContainText('HTTP 503');
+    await expect(page.getByRole('alert')).toContainText('Não foi possível');
+    await expect(page.getByRole('alert')).not.toContainText('HTTP');
     await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
     await expect(page.getByRole('navigation', { name: 'Paginação de usuários' })).toBeVisible();
     await search(page, 'Buscar usuários', 'não-existe-pagination');

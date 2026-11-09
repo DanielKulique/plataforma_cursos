@@ -1,6 +1,7 @@
 import { authenticatedFetch, clearToken } from './auth.js';
 import { initSessionUI } from './session-ui.js';
 import { showAdminDialog } from './admin-dialog.js';
+import { userMessage } from './user-message.js';
 
 const state = {
     user: null,
@@ -27,6 +28,7 @@ let tabsBySection = new Map();
 let dialogSequence = 0;
 let elementSequence = 0;
 let loadSequence = 0;
+let feedbackTimer;
 
 function el(tag, { className, text, type, id } = {}) {
     const node = document.createElement(tag);
@@ -72,7 +74,8 @@ async function api(path, { method = 'GET', body, headers: customHeaders = {} } =
 
     const payload = response.status === 204 ? null : await response.json().catch(() => ({}));
     if (!response.ok) {
-        const error = new Error(mensagemErro(payload, `Operação recusada (HTTP ${response.status}).`));
+        const fallback = 'Não foi possível concluir a operação. Tente novamente.';
+        const error = new Error(response.status >= 500 ? fallback : userMessage(mensagemErro(payload, fallback), fallback));
         error.status = response.status;
         throw error;
     }
@@ -80,15 +83,18 @@ async function api(path, { method = 'GET', body, headers: customHeaders = {} } =
 }
 
 function showFeedback(message, type = 'success') {
+    clearTimeout(feedbackTimer);
     feedback.className = `admin-feedback admin-feedback--${type}`;
     feedback.textContent = message;
     feedback.hidden = false;
     feedback.setAttribute('role', type === 'error' ? 'alert' : 'status');
     feedback.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
     feedback.focus();
+    if (type === 'success') feedbackTimer = setTimeout(clearFeedback, 8000);
 }
 
 function clearFeedback() {
+    clearTimeout(feedbackTimer);
     feedback.hidden = true;
     feedback.textContent = '';
 }
@@ -108,13 +114,10 @@ function renderError(error) {
     content.setAttribute('aria-busy', 'false');
     const box = el('section', { className: 'ui-state is-error' });
     box.setAttribute('role', 'alert');
-    const status = Number(error.status);
-    const heading = Number.isInteger(status)
-        ? `Não foi possível carregar (HTTP ${status})`
-        : 'Não foi possível carregar';
+    const heading = 'Não foi possível carregar';
     box.append(
         el('strong', { text: heading }),
-        el('span', { text: error.message || 'Não foi possível carregar os dados.' }),
+        el('span', { text: userMessage(error, 'Não foi possível carregar os dados. Tente novamente.') }),
         actionButton('Tentar novamente', 'btn btn-ghost btn-sm', () => loadActive())
     );
     content.replaceChildren(box);
@@ -247,6 +250,8 @@ function addProfessorLookup(wrapper, control, dialogId) {
     label.htmlFor = search.id;
     const message = el('p');
     message.setAttribute('aria-live', 'polite');
+    const results = el('ul', { className: 'admin-professor-results' });
+    results.setAttribute('aria-label', 'Resultados da busca de professores');
     const paging = el('div');
     let sequence = 0;
     let query = '';
@@ -264,7 +269,7 @@ function addProfessorLookup(wrapper, control, dialogId) {
         submit.click();
     });
     const lookup = el('div', { className: 'admin-field' });
-    lookup.append(label, search, submit, message, paging, retry);
+    lookup.append(label, search, submit, results, message, paging, retry);
     wrapper.appendChild(lookup);
 
     async function load(focus = false) {
@@ -272,6 +277,7 @@ function addProfessorLookup(wrapper, control, dialogId) {
         lookup.setAttribute('aria-busy', 'true');
         message.setAttribute('role', 'status');
         message.textContent = 'Carregando professores...';
+        results.replaceChildren();
         retry.hidden = true;
         paging.querySelectorAll('button').forEach(button => { button.disabled = true; });
         try {
@@ -288,6 +294,21 @@ function addProfessorLookup(wrapper, control, dialogId) {
                 control.appendChild(node);
             }
             control.value = selected;
+            for (const user of result.items) {
+                const item = el('li');
+                const choose = actionButton(`${user.nome_completo} · ${user.email} · ID ${user.id_usuario}`, 'btn btn-ghost btn-sm', () => {
+                    control.value = String(user.id_usuario);
+                    control.dispatchEvent(new Event('input', { bubbles: true }));
+                    control.dispatchEvent(new Event('change', { bubbles: true }));
+                    results.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', 'false'));
+                    choose.setAttribute('aria-pressed', 'true');
+                    message.textContent = `Professor selecionado: ${user.nome_completo}.`;
+                });
+                choose.value = String(user.id_usuario);
+                choose.setAttribute('aria-pressed', String(String(user.id_usuario) === selected));
+                item.append(choose);
+                results.append(item);
+            }
             page = result.page;
             message.textContent = result.total ? '' : 'Nenhum professor encontrado.';
             paging.replaceChildren(paginationControls(result, 'professores', (next) => { page = next; load(true); }));
@@ -301,6 +322,9 @@ function addProfessorLookup(wrapper, control, dialogId) {
             if (current === sequence) lookup.setAttribute('aria-busy', 'false');
         }
     }
+    control.addEventListener('change', () => {
+        results.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button.value === control.value)));
+    });
     load();
 }
 

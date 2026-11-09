@@ -101,7 +101,7 @@ async function main() {
         await call(`/api/turmas/${turmaId}/questionarios/disponivel?tipo=PROVA&id_questionario=${prova.id}`, aluno);
         console.log('CASO B OK: 8/10 libera prova final.');
         assert.equal((await submeter(prova, 1)).resultado.percentual, 74.99);
-        assert.equal((await situacao()).status_aprovacao, 'CURSANDO');
+        assert.equal((await situacao()).status_aprovacao, 'REPROVADO');
         await submeter(prova, 2, aluno, 409);
         console.log('CASO C OK: 74.99 não aprova e consome a tentativa finalizada única.');
         for (const id of materiais.slice(0, 8)) {

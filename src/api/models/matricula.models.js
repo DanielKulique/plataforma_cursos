@@ -3,7 +3,7 @@ const db = require('../../config/database');
 
 const STATUS_APROVACAO_PADRAO = 'CURSANDO';
 
-const { COLUNAS_PROGRESSO_DERIVADO, normalizarProgresso, buscarRequisitos, avaliarAprovacao } = require('../services/academic-progress.service');
+const { COLUNAS_PROGRESSO_DERIVADO, COLUNAS_RESULTADO_FINAL, SITUACAO_RESULTADO_FINAL, normalizarProgresso, buscarRequisitos, avaliarAprovacao } = require('../services/academic-progress.service');
 const certificateService = require('../services/certificate.service');
 
 function enrollmentError(code, status, message) {
@@ -117,6 +117,7 @@ async function buscarMatriculaPorAluno(id_aluno) {
             m.nota_final,
             m.ciclo_atual,
             ${COLUNAS_PROGRESSO_DERIVADO},
+            ${COLUNAS_RESULTADO_FINAL},
             t.nome_turma,
             c.nome_curso,
             c.carga_horaria
@@ -140,6 +141,7 @@ async function buscarSalaVirtualDoAluno(id_aluno) {
             m.status_aprovacao,
             m.ciclo_atual,
             ${COLUNAS_PROGRESSO_DERIVADO},
+            ${COLUNAS_RESULTADO_FINAL},
             t.id_turma,
             t.nome_turma,
             t.status AS status_turma,
@@ -164,11 +166,13 @@ async function buscarSalaVirtualDoAluno(id_aluno) {
 }
 
 // Buscar todas as matrículas de uma turma específica
-async function buscarMatriculaPorTurma(id_turma, pagination) {
+async function buscarMatriculaPorTurma(id_turma, pagination, filters = {}) {
+    const filtro = filters.status ? ` AND (${SITUACAO_RESULTADO_FINAL}) = ?` : '';
+    const params = filters.status ? [id_turma, filters.status] : [id_turma];
     const [[count]] = await db.query(
-        `SELECT COUNT(*) AS total FROM Matriculas
-         WHERE id_turma = ? AND status_aprovacao <> 'CANCELADO'`,
-        [id_turma]
+        `SELECT COUNT(*) AS total FROM Matriculas m
+         WHERE m.id_turma = ? AND m.status_aprovacao <> 'CANCELADO'${filtro}`,
+        params
     );
     const [rows] = await db.query(
         `
@@ -181,6 +185,7 @@ async function buscarMatriculaPorTurma(id_turma, pagination) {
             m.nota_final,
             m.ciclo_atual,
             ${COLUNAS_PROGRESSO_DERIVADO},
+            ${COLUNAS_RESULTADO_FINAL},
             u.nome_completo,
             u.email,
             certificado.id_certificado,
@@ -196,13 +201,20 @@ async function buscarMatriculaPorTurma(id_turma, pagination) {
               WHERE c.id_aluno = m.id_aluno AND c.id_turma = m.id_turma
               ORDER BY c.versao DESC LIMIT 1
           )
-        WHERE m.id_turma = ? AND m.status_aprovacao <> 'CANCELADO'
+        WHERE m.id_turma = ? AND m.status_aprovacao <> 'CANCELADO'${filtro}
         ORDER BY u.nome_completo, m.id_matricula
         LIMIT ? OFFSET ?
         `,
-        [id_turma, pagination.limit, pagination.offset]
+        [...params, pagination.limit, pagination.offset]
     );
-    return { items: rows.map(normalizarProgresso), total: Number(count.total) };
+    const [totals] = await db.query(
+        `SELECT ${SITUACAO_RESULTADO_FINAL} AS status, COUNT(*) AS total
+         FROM Matriculas m WHERE m.id_turma = ? AND m.status_aprovacao <> 'CANCELADO'
+         GROUP BY status`, [id_turma]
+    );
+    const summary = { CURSANDO: 0, APROVADO: 0, REPROVADO: 0 };
+    for (const row of totals) summary[row.status] = Number(row.total);
+    return { items: rows.map(normalizarProgresso), total: Number(count.total), summary };
 }
 
 async function turmaExiste(id_turma) {
@@ -222,6 +234,7 @@ async function buscarMatriculaPorId(id) {
             m.status_aprovacao,
             m.ciclo_atual,
             ${COLUNAS_PROGRESSO_DERIVADO},
+            ${COLUNAS_RESULTADO_FINAL},
             u.nome_completo,
             u.email AS email_aluno,
             t.nome_turma,
@@ -279,27 +292,21 @@ async function atualizarMatricula(id, dadosParaAtualizar, usuario) {
                 'A matrícula cancelada deve ser reativada pelo fluxo de rematrícula.'
             );
         }
+        const requisitos = await buscarRequisitos(connection, atual.id_aluno, atual.id_turma);
+        if (requisitos.prova_final_tentada && atual.status_aprovacao !== 'CANCELADO') {
+            const statusReal = requisitos.prova_final_percentual >= 75 ? 'APROVADO' : 'REPROVADO';
+            if (statusFinal !== statusReal || (Object.prototype.hasOwnProperty.call(dadosParaAtualizar, 'nota_final')
+                && (notaFinal == null ? atual.nota_final != null : atual.nota_final == null || Number(notaFinal) !== Number(atual.nota_final)))) {
+                throw enrollmentError('RESULTADO_FINAL_IMUTAVEL', 409, 'A nota e a situação são definidas pelo Teste Final já concluído.');
+            }
+        } else if (atual.status_aprovacao !== 'CANCELADO' && statusFinal !== 'CURSANDO') {
+            throw enrollmentError('PROVA_FINAL_PENDENTE', 409, 'A situação acadêmica será definida após finalizar o Teste Final.');
+        }
 
         if (statusFinal === 'APROVADO') {
             const progresso = await buscarRequisitos(connection, atual.id_aluno, atual.id_turma);
             if (!progresso.prova_final_aprovada) {
                 throw enrollmentError('PROVA_FINAL_PENDENTE', 409, 'Conquiste pelo menos 75% na prova final.');
-            }
-        } else if (statusFinal === 'REPROVADO') {
-            const progresso = await buscarRequisitos(connection, atual.id_aluno, atual.id_turma);
-            if (!progresso.conteudo_concluido) {
-                throw enrollmentError(
-                    'CONTEUDOS_PENDENTES',
-                    409,
-                    'A situação REPROVADO manual exige a conclusão de todos os conteúdos.'
-                );
-            }
-            if (notaFinal === null || notaFinal === undefined || !Number.isFinite(Number(notaFinal))) {
-                throw enrollmentError(
-                    'NOTA_FINAL_OBRIGATORIA',
-                    409,
-                    'Informe a nota final antes de definir a situação acadêmica.'
-                );
             }
         }
 

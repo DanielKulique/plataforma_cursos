@@ -24,8 +24,9 @@ aluno + turma; duplicação de matrícula não cancelada retorna conflito. Não 
 nem bloqueio automático pelas datas de início/fim.
 
 Cancelar altera o status para CANCELADO, sem apagar a linha. Rematricular reaproveita essa linha,
-incrementa `ciclo_atual`, volta a CURSANDO, zera nota/progresso e limpa o progresso dos conteúdos
-da turma. Tentativas, respostas e certificados históricos são preservados. PATCH acadêmico
+incrementa `ciclo_atual`, zera nota/progresso e limpa o progresso dos conteúdos da turma.
+A situação volta a CURSANDO quando não há Teste Final concluído; se houver resultado final,
+APROVADO ou REPROVADO é restaurado a partir dessa tentativa histórica. Tentativas, respostas e certificados históricos são preservados. PATCH acadêmico
 não substitui a rematrícula. Certificado ATIVO bloqueia cancelamento ou saída de APROVADO
 até revogação administrativa.
 
@@ -71,7 +72,9 @@ O aluno pode finalizar o Teste Final uma vez por turma. Um reenvio com o mesmo `
 UUID devolve o resultado persistido; um novo ID após a tentativa finalizada recebe 409. A regra
 vale somente para PROVA FINAL. Exercícios, incluindo o Simulado, mantêm tentativas livres.
 
-CURSANDO vira APROVADO quando a tentativa finalizada do Teste Final tem percentual >=75.
+A tentativa finalizada do Teste Final determina automaticamente a situação: percentual >=75
+resulta em APROVADO; percentual <75 resulta em REPROVADO, mesmo com apenas 80% dos conteúdos.
+Sem tentativa finalizada o aluno continua CURSANDO. CANCELADO é preservado.
 74,99 não aprova; 75,00 aprova. Conteúdo incompleto não impede aprovação: 20/22 + 100% e
 18/22 + 75% são exemplos válidos. O progresso informa o aluno e libera o Teste Final, mas não
 é requisito de aprovação após a prova. Tentativa abaixo de 75% fica registrada como resultado
@@ -83,8 +86,11 @@ cria segunda tentativa final.
 
 `nota_final` é campo manual opcional entre 0 e 10, sem conversão automática do percentual.
 Sua ausência não impede aprovação. PATCH para APROVADO exige resultado do Teste Final >=75,
-sem exigir conclusão de 100% dos conteúdos. REPROVADO continua sendo decisão manual conforme
-o contrato existente. CANCELADO e REPROVADO não são promovidos automaticamente.
+sem exigir conclusão de 100% dos conteúdos. Após finalizar o Teste Final, PATCH não pode
+contradizer a situação calculada nem alterar a nota manual anterior. O percentual exibido
+na lista de alunos vem de `Q_Tentativas.percentual`, em campo separado de `nota_final`.
+As leituras históricas, contadores e filtros usam esse resultado; a reconciliação de situações
+é dry-run por padrão e APPLY é restrito a laboratório descartável explicitamente autorizado.
 
 ## Certificados e replicação
 

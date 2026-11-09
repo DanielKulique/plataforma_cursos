@@ -107,35 +107,28 @@ describe('modelo transacional de matrícula', () => {
     });
 });
 
- describe('gate acadêmico exato', () => {
+describe('resultado final é a fonte da situação e nota', () => {
     beforeEach(() => jest.clearAllMocks());
     it.each([
-        [0, 0, 'APROVADO', 9, null],
-        [201, 200, 'APROVADO', 9, null],
-        [201, 200, 'REPROVADO', 3, 'CONTEUDOS_PENDENTES'],
-        [201, 201, 'APROVADO', null, null],
-        [201, 201, 'APROVADO', 0, null],
-        [201, 201, 'REPROVADO', 9, null]
-    ])('total=%i concluídos=%i status=%s nota=%s', async (total, concluidos, status, nota, erro) => {
-        const connection = createConnection(async (sql) => {
-            if (sql.includes('SELECT m.id_matricula')) return [[{
-                id_matricula: 1, id_aluno: 3, id_turma: 7, nota_final: null,
-                status_aprovacao: 'CURSANDO', progresso_percentual: 100
-            }]];
-            if (sql.includes('FROM Questionarios')) return [[{ prova_final_aprovada: 1 }]];
-            if (sql.includes('FROM Conteudos')) return [[{ total, concluidos }]];
+        [80, 50, 'REPROVADO', null, null],
+        [80, 74.99, 'APROVADO', 7.5, 'RESULTADO_FINAL_IMUTAVEL'],
+        [80, 75, 'CURSANDO', 7.5, 'RESULTADO_FINAL_IMUTAVEL'],
+        [80, null, 'REPROVADO', 5, 'PROVA_FINAL_PENDENTE'],
+        [80, 75, 'APROVADO', 7.5, 'RESULTADO_FINAL_IMUTAVEL'],
+        [80, 75, 'APROVADO', null, null]
+    ])('progresso=%i resultado=%s status=%s nota=%s', async (concluidos, percentual, status, nota, erro) => {
+        const connection = createConnection(async sql => {
+            if (sql.includes('SELECT m.id_matricula')) return [[{id_matricula:1,id_aluno:3,id_turma:7,nota_final:null,status_aprovacao:'CURSANDO'}]];
+            if (sql.includes('FROM Questionarios')) return [[{status_aprovacao:'CURSANDO',prova_final_aprovada:percentual >= 75,prova_final_tentada:percentual != null,prova_final_percentual:percentual}]];
+            if (sql.includes('FROM Conteudos')) return [[{total:100,concluidos}]];
             if (sql.includes('FROM Certificados')) return [[]];
-            if (sql.includes('UPDATE Matriculas')) return [{ affectedRows: 1 }];
+            if (sql.includes('UPDATE Matriculas')) return [{affectedRows:1}];
             throw new Error(`SQL inesperado: ${sql}`);
         });
         db.getConnection.mockResolvedValue(connection);
-        const promise = matriculaModel.atualizarMatricula(1, { status_aprovacao: status, nota_final: nota }, { id_usuario: 1, tipo: 'ADMIN' });
-        if (erro) {
-            await expect(promise).rejects.toMatchObject({ code: erro, status: 409 });
-            expect(connection.commit).not.toHaveBeenCalled();
-        } else {
-            await expect(promise).resolves.toEqual({ affectedRows: 1 });
-        }
+        const promise = matriculaModel.atualizarMatricula(1,{status_aprovacao:status,nota_final:nota},{id_usuario:1,tipo:'ADMIN'});
+        if (erro) {await expect(promise).rejects.toMatchObject({code:erro,status:409});expect(connection.commit).not.toHaveBeenCalled();}
+        else await expect(promise).resolves.toEqual({affectedRows:1});
     });
 });
 

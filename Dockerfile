@@ -22,7 +22,7 @@ COPY --chown=node:node scripts/migrate_database.js scripts/schema_contract.js \
   scripts/backup_manifest.js scripts/capture_backup_metadata.js scripts/verify_restored_backup.js \
   scripts/operational_check.js \
   scripts/smoke_identity_email_staging.js \
-  scripts/seed_e2e_database.js scripts/reconcile_academic_certificates.js \
+  scripts/seed_e2e_database.js scripts/reconcile_academic_certificates.js scripts/reconcile_academic_results.js \
   scripts/smoke_course_pdf_staging.js \
   scripts/smoke_academic_completion_staging.js scripts/certificate_migration_preflight.js \
   scripts/smoke_certificate_versioning_staging.js scripts/smoke_enrollment_lifecycle_staging.js ./scripts/

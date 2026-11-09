@@ -197,7 +197,7 @@ describe('Matricula Controller', () => {
             const response = await request(app).get('/api/matriculas/turma/5?page=2&limit=999999');
             expect(response.status).toBe(200);
             expect(matriculaModel.buscarMatriculaPorTurma)
-                .toHaveBeenCalledWith('5', { page: 2, limit: 100, offset: 100 });
+                .toHaveBeenCalledWith('5', { page: 2, limit: 100, offset: 100 }, {});
             expect(response.body).toMatchObject({ page: 2, limit: 100, total: 500 });
         });
 

@@ -268,3 +268,19 @@ Fonte: [conteudos.routes.js](../../src/api/routes/conteudos.routes.js).
 | DELETE | `/api/conteudos/:id_conteudo` |
 | PUT | `/api/conteudos/:id_conteudo/progresso` |
 | GET | `/api/turmas/:id_turma/progresso` |
+
+## Situação acadêmica e lista de alunos
+
+`GET /api/matriculas/turma/:id_turma` mantém autorização de PROFESSOR responsável ou ADMIN.
+Aceita `page`, `limit` e `status=CURSANDO|APROVADO|REPROVADO`. O filtro é aplicado antes
+de LIMIT/OFFSET; `total` conta a seleção e `summary` informa os totais das três situações
+na turma, independentemente do filtro. Matrículas canceladas ficam fora da lista.
+Os aliases `items` e `matriculas` permanecem disponíveis.
+
+Nas consultas de matrículas e Sala Virtual, `prova_final_percentual` é nullable e vem
+da tentativa finalizada do Teste Final da mesma turma e aluno, incluindo ciclos anteriores.
+Não é progresso dos conteúdos nem a nota manual opcional `nota_final` (0–10), que mantém
+seu contrato e não recebe conversão automática do percentual. Situação e percentual
+exibidos usam o resultado finalizado, sem escrita nos endpoints GET. PATCH que contradiz
+o resultado recebe 409 `RESULTADO_FINAL_IMUTAVEL`; cancelamento e rematrícula mantêm
+seus endpoints próprios.

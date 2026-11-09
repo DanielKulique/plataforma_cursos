@@ -1,6 +1,17 @@
 'use strict';
 
 const PERCENTUAL_LIBERACAO_PROVA = 80;
+const PERCENTUAL_RESULTADO_FINAL = `(SELECT tentativa.percentual FROM Q_Tentativas tentativa
+    INNER JOIN Questionarios final ON final.id_questionario = tentativa.id_questionario
+        AND final.id_turma = tentativa.id_turma
+    WHERE final.id_turma = m.id_turma AND final.tipo = 'PROVA' AND final.prova_final = 1
+        AND tentativa.id_usuario = m.id_aluno AND tentativa.finalizada_em IS NOT NULL
+    ORDER BY tentativa.finalizada_em DESC, tentativa.id_tentativa DESC LIMIT 1)`;
+const COLUNAS_RESULTADO_FINAL = `${PERCENTUAL_RESULTADO_FINAL} AS prova_final_percentual`;
+const SITUACAO_RESULTADO_FINAL = `CASE WHEN m.status_aprovacao = 'CANCELADO' THEN 'CANCELADO'
+    WHEN ${PERCENTUAL_RESULTADO_FINAL} >= 75 THEN 'APROVADO'
+    WHEN ${PERCENTUAL_RESULTADO_FINAL} < 75 THEN 'REPROVADO'
+    ELSE m.status_aprovacao END`;
 
 // Todos os registros de Conteudos contam, independentemente do tipo ou módulo.
 // Questionarios (exercícios/provas) não participam deste progresso.
@@ -25,6 +36,10 @@ function resumirProgresso(total, concluidos) {
 
 function normalizarProgresso(row) {
     const normalizada = { ...row, ...resumirProgresso(row.total_conteudos, row.conteudos_concluidos) };
+    if (row.prova_final_percentual != null) {
+        normalizada.prova_final_percentual = Number(row.prova_final_percentual);
+        if (row.status_aprovacao !== 'CANCELADO') normalizada.status_aprovacao = normalizada.prova_final_percentual >= 75 ? 'APROVADO' : 'REPROVADO';
+    }
     if (Object.prototype.hasOwnProperty.call(row, 'ciclo_atual')) {
         normalizada.ciclo_atual = Number(row.ciclo_atual);
     }
@@ -123,7 +138,8 @@ async function buscarRequisitos(connection, idAluno, idTurma) {
             row.prova_final_percentual,
             row.prova_final_id_tentativa
         ),
-        status_aprovacao: row.status_aprovacao,
+        status_aprovacao: row.status_aprovacao === 'CANCELADO' || row.prova_final_percentual == null
+            ? row.status_aprovacao : Number(row.prova_final_percentual) >= 75 ? 'APROVADO' : 'REPROVADO',
         ciclo_atual: row.ciclo_atual == null ? null : Number(row.ciclo_atual)
     };
     const [certificados] = await connection.query(
@@ -147,18 +163,21 @@ function exigirProvaLiberada(requisitos) {
 async function avaliarAprovacao(connection, idAluno, idTurma) {
     // Chamadores já detêm os locks da turma/matrícula; não abre outra transação.
     const requisitos = await buscarRequisitos(connection, idAluno, idTurma);
-    if (requisitos.elegivel_aprovacao && requisitos.status_aprovacao === 'CURSANDO') {
+    if (requisitos.prova_final_tentada && requisitos.status_aprovacao !== 'CANCELADO') {
+        const status = requisitos.prova_final_percentual >= 75 ? 'APROVADO' : 'REPROVADO';
         const [result] = await connection.query(
-            `UPDATE Matriculas SET status_aprovacao = 'APROVADO'
-             WHERE id_aluno = ? AND id_turma = ? AND status_aprovacao = 'CURSANDO'`,
-            [idAluno, idTurma]
+            `UPDATE Matriculas SET status_aprovacao = ?
+             WHERE id_aluno = ? AND id_turma = ? AND status_aprovacao <> 'CANCELADO'
+               AND status_aprovacao <> ?`,
+            [status, idAluno, idTurma, status]
         );
+        requisitos.status_aprovacao = status;
         if (result.affectedRows) {
-            requisitos.status_aprovacao = 'APROVADO';
-            requisitos.aprovacao_atualizada = true;
+            requisitos.situacao_atualizada = true;
+            requisitos.aprovacao_atualizada = status === 'APROVADO';
         }
     }
     return requisitos;
 }
 
-module.exports = { buscarRequisitos, resumirRequisitos, exigirProvaLiberada, avaliarAprovacao, COLUNAS_PROGRESSO_DERIVADO, resumirProgresso, normalizarProgresso, buscarProgresso, PERCENTUAL_LIBERACAO_PROVA };
+module.exports = { buscarRequisitos, resumirRequisitos, exigirProvaLiberada, avaliarAprovacao, COLUNAS_PROGRESSO_DERIVADO, COLUNAS_RESULTADO_FINAL, SITUACAO_RESULTADO_FINAL, resumirProgresso, normalizarProgresso, buscarProgresso, PERCENTUAL_LIBERACAO_PROVA };

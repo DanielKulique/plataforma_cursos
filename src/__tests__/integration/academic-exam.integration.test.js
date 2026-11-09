@@ -9,6 +9,7 @@ const db = require('../../config/database');
 const { buscarRequisitos } = require('../../api/services/academic-progress.service');
 const pdf = require('../../api/services/certificate-pdf.service');
 const reconciliation = require('../../../scripts/reconcile_academic_certificates');
+const resultReconciliation = require('../../../scripts/reconcile_academic_results');
 const storage = fs.mkdtempSync(path.join(os.tmpdir(), 'academic-exam-'));
 process.env.CERTIFICATE_STORAGE_DIR = storage;
 let pool, users, curso, turma, matricula, conteudos, final, exercicio, outro, tokens;
@@ -38,6 +39,69 @@ const status = async () => (await pool.query('SELECT status_aprovacao,nota_final
 const abrir = () => request(app).get(`/api/turmas/${turma}/questionarios/disponivel?tipo=PROVA&id_questionario=${final.id}`).set(auth('aluno'));
 const enviar = (q, acertos, submission_id = crypto.randomUUID()) => request(app).post(`/api/questionarios/${q.id}/submissoes`).set(auth('aluno')).send({submission_id, respostas:q.perguntas.map((p,i)=>({id_pergunta:p.id,id_opcao:i < acertos ? p.certa : p.errada}))});
 const emitir = () => request(app).post(`/api/certificados/matriculas/${matricula}/emitir`).set(auth('professor'));
+
+test.each([[50,1,'REPROVADO'],[74.99,1,'REPROVADO'],[75,2,'APROVADO']])('80%% contents and %s%% final determine persisted academic status',async(percentual,correct,expected)=>{
+    await pool.query("INSERT INTO Conteudos (id_turma,titulo,tipo,ordem) VALUES (?, 'Conteúdo 9','TEXTO',9),(?, 'Conteúdo 10','TEXTO',10)",[turma,turma]);
+    await concluir(8);
+    if(percentual===50) for(const [i,points] of [500,250,250].entries()) await pool.query('UPDATE Q_Perguntas SET pontos=? WHERE id_pergunta=?',[points,final.perguntas[i].id]);
+    const uuid=crypto.randomUUID();const result=await enviar(final,correct,uuid);
+    expect(result.status).toBe(200);expect(result.body.resultado.percentual).toBe(percentual);
+    expect(await status()).toMatchObject({status_aprovacao:expected,nota_final:null});
+    const again=await enviar(final,correct,uuid);expect(again.status).toBe(200);expect(again.body.resultado.id_tentativa).toBe(result.body.resultado.id_tentativa);
+    expect((await enviar(final,correct)).status).toBe(409);
+    const [[cert]]=await pool.query('SELECT COUNT(*) AS n FROM Certificados');expect(cert.n).toBe(expected==='APROVADO'?1:0);
+    const rooms=await request(app).get('/api/matriculas/minha-sala').set(auth('aluno'));
+    expect(rooms.body.turmas[0]).toMatchObject({status_aprovacao:expected,prova_final_percentual:percentual,progresso_percentual:80});
+    for(const role of ['professor','admin']) {
+        const roster=await request(app).get(`/api/matriculas/turma/${turma}?status=${expected}&limit=1`).set(auth(role));
+        expect(roster.status).toBe(200);expect(roster.body.summary[expected]).toBe(1);expect(roster.body.matriculas[0].prova_final_percentual).toBe(percentual);
+        expect((await request(app).patch(`/api/matriculas/${matricula}`).set(auth(role)).send({status_aprovacao:'CURSANDO'})).status).toBe(409);
+    }
+});
+
+test.each([50,74.99,75])('historical %s reconciliation is dry by default, idempotent and preserves cancellation',async(percentual)=>{
+    await tentativa(final,percentual);
+    const snapshot=async()=>JSON.stringify((await pool.query('SELECT * FROM Matriculas ORDER BY id_matricula'))[0]);
+    const before=await snapshot();const dry=await resultReconciliation.reconcile([]);
+    console.info('GOAL25_RECONCILIATION_DRY_RUN', JSON.stringify(dry));
+    expect(dry.mode).toBe('DRY_RUN');expect(dry.items).toHaveLength(1);expect(dry.items[0].percentual).toBe(percentual.toFixed(2));expect(await snapshot()).toBe(before);
+    expect((await resultReconciliation.reconcile(['--apply','--allow-lab-apply'])).changed).toBe(1);
+    expect((await status()).status_aprovacao).toBe(percentual>=75?'APROVADO':'REPROVADO');
+    expect((await resultReconciliation.reconcile(['--apply','--allow-lab-apply'])).changed).toBe(0);
+    await pool.query("UPDATE Matriculas SET status_aprovacao='CANCELADO',nota_final=NULL WHERE id_matricula=?",[matricula]);
+    expect((await resultReconciliation.reconcile(['--apply','--allow-lab-apply'])).changed).toBe(0);
+    expect((await status()).status_aprovacao).toBe('CANCELADO');
+});
+
+test('reconciliation preserves existing certificate PDF, revocation and immutable attempts',async()=>{
+    await concluir(7);expect((await enviar(final,2)).status).toBe(200);
+    const [certs]=await pool.query('SELECT * FROM Certificados');const cert=certs[0];
+    const activeBefore=JSON.stringify(certs);
+    await pool.query("UPDATE Matriculas SET status_aprovacao='CURSANDO' WHERE id_matricula=?",[matricula]);
+    expect((await resultReconciliation.reconcile(['--apply','--allow-lab-apply'])).changed).toBe(1);
+    expect(JSON.stringify((await pool.query('SELECT * FROM Certificados'))[0])).toBe(activeBefore);
+    await pool.query("UPDATE Certificados SET status='REVOGADO',revogado_em=NOW(),id_usuario_revogador=?,motivo_revogacao='Laboratório Goal25' WHERE id_certificado=?",[users.admin.id_usuario,cert.id_certificado]);
+    const beforeCert=JSON.stringify((await pool.query('SELECT * FROM Certificados'))[0]);
+    const beforeAttempts=JSON.stringify((await pool.query('SELECT * FROM Q_Tentativas'))[0]);
+    const bytes=fs.readFileSync(path.join(storage,cert.storage_name));
+    await pool.query("UPDATE Matriculas SET status_aprovacao='CURSANDO',nota_final=NULL WHERE id_matricula=?",[matricula]);
+    expect((await resultReconciliation.reconcile(['--apply','--allow-lab-apply'])).changed).toBe(1);
+    expect(JSON.stringify((await pool.query('SELECT * FROM Certificados'))[0])).toBe(beforeCert);
+    expect(JSON.stringify((await pool.query('SELECT * FROM Q_Tentativas'))[0])).toBe(beforeAttempts);
+    expect(fs.readFileSync(path.join(storage,cert.storage_name))).toEqual(bytes);
+});
+
+test('failed final survives reenrollment with zero content progress and no second attempt',async()=>{
+    await concluir(7);const uuid=crypto.randomUUID();expect((await enviar(final,1,uuid)).status).toBe(200);
+    expect((await request(app).delete(`/api/matriculas/${matricula}`).set(auth('aluno'))).status).toBe(200);
+    const enrolled=await request(app).post('/api/matriculas').set(auth('aluno')).send({id_turma:turma});
+    expect(enrolled.status).toBe(200);expect(enrolled.body.matricula).toMatchObject({status_aprovacao:'REPROVADO',progresso_percentual:0,ciclo_atual:2});
+    expect(await requisitos()).toMatchObject({prova_final_tentada:true,prova_final_percentual:74.99,status_aprovacao:'REPROVADO',conteudos_concluidos:0});
+    const same=await enviar(final,1,uuid);expect(same.status).toBe(200);expect(same.body.resultado.percentual).toBe(74.99);
+    expect((await enviar(final,2)).status).toBe(409);
+    const history=await request(app).get(`/api/questionarios/historico?id_questionario=${final.id}`).set(auth('aluno'));
+    expect(history.body.tentativas).toHaveLength(1);expect(Number(history.body.tentativas[0].percentual)).toBe(74.99);
+});
 
 beforeAll(async()=>{ pool=await initTestPool(); });
 beforeEach(async()=>{
@@ -81,7 +145,7 @@ test('74.99 não aprova nem emite; a tentativa baixa também consome a tentativa
     const chave=crypto.randomUUID();
     const baixa=await enviar(final,1,chave);
     expect(baixa.status).toBe(200); expect(baixa.body.resultado.percentual).toBe(74.99);
-    expect((await status()).status_aprovacao).toBe('CURSANDO');
+    expect((await status()).status_aprovacao).toBe('REPROVADO');
     expect((await enviar(final,2)).status).toBe(409);
     expect((await requisitos()).prova_final_aprovada).toBe(false);
     const [[certificados]]=await pool.query('SELECT COUNT(*) AS n FROM Certificados'); expect(certificados.n).toBe(0);

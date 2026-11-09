@@ -2,6 +2,7 @@ const matriculaModel = require('../models/matricula.models');
 const { validationResult } = require('express-validator');
 const logger = require('../../utils/logger');
 const { paginated, parsePagination } = require('../../utils/pagination');
+const { parseListFilters } = require('../../utils/list-filters');
 
 // Criar nova matrícula (aluno entra em nova turma)
 async function criarMatricula(req, res) {
@@ -77,10 +78,12 @@ async function buscarMatriculasDaTurma(req, res) {
             return res.status(404).json({ message: 'Turma não encontrada.' });
         }
         const pagination = parsePagination(req.query);
-        const matriculas = await matriculaModel.buscarMatriculaPorTurma(id_turma, pagination);
+        const filters = parseListFilters(req.query, { status: ['CURSANDO', 'APROVADO', 'REPROVADO'] });
+        const matriculas = await matriculaModel.buscarMatriculaPorTurma(id_turma, pagination, filters);
 
         return res.status(200).json({
             ...paginated(matriculas.items, matriculas.total, pagination),
+            summary: matriculas.summary,
             matriculas: matriculas.items
         });
     } catch (error) {
